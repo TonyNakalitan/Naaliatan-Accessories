@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Character - {{ character.name }} | Naaliatan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('CharacterManagementFolder/show.css') }}">
+</head>
+<body class="min-h-screen">
+
+    <div class="flex h-screen">
+        <main class="flex-grow flex flex-col overflow-y-auto w-full bg-slate-50">
+            <div class="w-full p-4 sm:p-6 lg:p-8">
+
+                <!-- Main Container -->
+                <div class="bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border border-white/50">
+                    
+                    <!-- Header with Action Buttons -->
+                    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                                    <i class="fas fa-eye text-white text-lg sm:text-xl"></i>
+                                </div>
+                                <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                    {{ character.name }}
+                                </h1>
+                            </div>
+                            <p class="text-slate-600 text-sm sm:text-base flex items-center gap-2">
+                                <i class="fas fa-user-astronaut text-indigo-500"></i>
+                                Character Profile: <span class="font-semibold">{{ character.creator ?: 'Unknown Creator' }}</span>
+                            </p>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <a href="{{ path('app_admin_character_management_index') }}" class="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm text-slate-700 font-semibold rounded-xl hover:bg-white hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base border border-slate-200">
+                                <i class="fas fa-arrow-left"></i>
+                                <span class="hidden sm:inline">Back</span>
+                            </a>
+                            <a href="{{ path('app_admin_character_management_edit', {'id': character.id}) }}" class="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base">
+                                <i class="fas fa-edit"></i>
+                                <span>Edit</span>
+                            </a>
+                        </div>
+                    </div>
+
+                <!-- Content Wrapper -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                    
+                    <div class="lg:col-span-8 slide-in-left">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-6 border border-white/50">
+                            
+                            <!-- Section 1: Basic Info -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg shadow-indigo-200">
+                                        <i class="fas fa-info-circle text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Basic Information</h3>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="info-field">
+                                            <label class="info-label">Character Name</label>
+                                            <p class="info-value">{{ character.name }}</p>
+                                        </div>
+                                        <div class="info-field">
+                                            <label class="info-label">Creator</label>
+                                            <p class="info-value">{{ character.creator ?: 'Not specified' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-field">
+                                        <label class="info-label">Description</label>
+                                        <p class="info-value">{{ character.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Alignment -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg shadow-purple-200">
+                                        <i class="fas fa-balance-scale text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Character Alignment</h3>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div class="alignment-card-view {% if character.alignment == 'Good' %}active{% endif %} bg-gradient-to-br from-emerald-50 to-emerald-100">
+                                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl sm:text-3xl text-white shadow-xl">
+                                            <i class="fas fa-heart"></i>
+                                        </div>
+                                        <h4 class="text-lg sm:text-xl font-bold text-emerald-700 mb-2">Good</h4>
+                                        <p class="text-xs sm:text-sm text-emerald-600">Heroes and protectors</p>
+                                    </div>
+
+                                    <div class="alignment-card-view {% if character.alignment == 'Neutral' %}active{% endif %} bg-gradient-to-br from-slate-50 to-slate-100">
+                                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-slate-500 to-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl sm:text-3xl text-white shadow-xl">
+                                            <i class="fas fa-balance-scale"></i>
+                                        </div>
+                                        <h4 class="text-lg sm:text-xl font-bold text-slate-700 mb-2">Neutral</h4>
+                                        <p class="text-xs sm:text-sm text-slate-600">Balanced and independent</p>
+                                    </div>
+
+                                    <div class="alignment-card-view {% if character.alignment == 'Evil' %}active{% endif %} bg-gradient-to-br from-red-50 to-red-100">
+                                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl sm:text-3xl text-white shadow-xl">
+                                            <i class="fas fa-skull"></i>
+                                        </div>
+                                        <h4 class="text-lg sm:text-xl font-bold text-red-700 mb-2">Evil</h4>
+                                        <p class="text-xs sm:text-sm text-red-600">Villains and antagonists</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Appearance -->
+                            <div>
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg shadow-pink-200">
+                                        <i class="fas fa-palette text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-pink-600 to-red-600 bg-clip-text text-transparent">Appearance</h3>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div class="info-field">
+                                        <label class="info-label">Color Code</label>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-12 h-12 rounded-xl border-4 border-white shadow-xl color-preview" style="background-color: {{ character.colorCode }};"></div>
+                                            <p class="info-value font-mono">{{ character.colorCode }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if character.image %}
+                                    <div class="info-field">
+                                        <label class="info-label">Character Image</label>
+                                        <div class="mt-3">
+                                            <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}" class="max-h-64 rounded-2xl shadow-2xl border-4 border-white hover:scale-105 transition-transform duration-300">
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Metadata Section -->
+                            <div class="mt-8 pt-6 border-t border-slate-200">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm text-slate-500">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-calendar-alt text-indigo-500"></i>
+                                        <span class="font-semibold">Created:</span> {{ character.createdAt|date('F j, Y \\a\\t g:i A') }}
+                                    </div>
+                                    {% if character.createdBy %}
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-user text-indigo-500"></i>
+                                        <span class="font-semibold">Created by:</span> {{ character.createdBy.username }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <!-- Right Column: Character Preview Card -->
+                    <div class="lg:col-span-4 lg:sticky lg:top-8 slide-in-right">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden border border-white/50 shadow-2xl">
+                            <div class="p-3 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-white/80 to-indigo-50/50 backdrop-blur-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                    <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">Character Card</span>
+                                </div>
+                                <span class="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[9px] sm:text-[10px] font-bold rounded-full uppercase shadow-lg">Active</span>
+                            </div>
+                            
+                            <div class="aspect-[4/5] bg-slate-100 relative group overflow-hidden character-card-preview">
+                                {% if character.image %}
+                                <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}" class="w-full h-full object-cover">
+                                {% else %}
+                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-100 to-indigo-200">
+                                    <i class="fas fa-user-astronaut text-indigo-300 text-6xl"></i>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent character-card-overlay"></div>
+                                
+                                <div class="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                                    <div class="flex items-end justify-between gap-3 sm:gap-4">
+                                        <div class="flex-grow min-w-0">
+                                            <p class="text-indigo-300 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-1">{{ character.creator ?: 'Unknown Creator' }}</p>
+                                            <h2 class="text-white text-lg sm:text-2xl font-bold leading-tight mb-2 truncate drop-shadow-lg">{{ character.name }}</h2>
+                                            <div class="flex gap-2">
+                                                <span class="px-2 py-0.5 backdrop-blur-md rounded-full text-white text-[9px] sm:text-[10px] font-semibold border shadow-lg
+                                                {% if character.alignment == 'Good' %}border-emerald-400 bg-emerald-600/90
+                                                {% elseif character.alignment == 'Evil' %}border-red-400 bg-red-600/90
+                                                {% else %}border-slate-400 bg-slate-600/90{% endif %}">{{ character.alignment }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 sm:p-6 bg-gradient-to-br from-white to-slate-50">
+                                <h4 class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 sm:mb-3 flex items-center gap-2">
+                                    <i class="fas fa-align-left text-indigo-500"></i>
+                                    Description
+                                </h4>
+                                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                                    {{ character.description }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Stats Card -->
+                        <div class="mt-6 glass-panel rounded-2xl p-4 sm:p-6 border border-white/50 shadow-xl">
+                            <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-bar text-white text-xs"></i>
+                                </div>
+                                Character Statistics
+                            </h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center stats-item p-3 rounded-xl bg-gradient-to-r from-white to-indigo-50/30 border border-indigo-100">
+                                    <span class="text-xs text-slate-600 flex items-center gap-2 font-semibold">
+                                        <i class="fas fa-box text-indigo-500"></i>
+                                        Products
+                                    </span>
+                                    <span class="text-sm font-bold text-slate-900">{{ character.products|length }}</span>
+                                </div>
+                                <div class="flex justify-between items-center stats-item p-3 rounded-xl bg-gradient-to-r from-white to-purple-50/30 border border-purple-100">
+                                    <span class="text-xs text-slate-600 flex items-center gap-2 font-semibold">
+                                        <i class="fas fa-balance-scale text-purple-500"></i>
+                                        Alignment
+                                    </span>
+                                    <span class="text-sm font-bold text-slate-900">{{ character.alignment }}</span>
+                                </div>
+                                <div class="flex justify-between items-center stats-item p-3 rounded-xl bg-gradient-to-r from-white to-pink-50/30 border border-pink-100">
+                                    <span class="text-xs text-slate-600 flex items-center gap-2 font-semibold">
+                                        <i class="fas fa-palette text-pink-500"></i>
+                                        Color Code
+                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded border-2 border-white shadow-md color-preview" style="background-color: {{ character.colorCode }};"></div>
+                                        <span class="text-xs font-mono text-slate-600">{{ character.colorCode }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center stats-item p-3 rounded-xl bg-gradient-to-r from-white to-amber-50/30 border border-amber-100">
+                                    <span class="text-xs text-slate-600 flex items-center gap-2 font-semibold">
+                                        <i class="fas fa-user text-amber-500"></i>
+                                        Creator
+                                    </span>
+                                    <span class="text-xs font-semibold text-slate-700">{{ character.creator ?: 'Unknown' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <!-- End Main Container -->
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ asset('CharacterManagementFolder/show.js') }}"></script>
+</body>
+</html>

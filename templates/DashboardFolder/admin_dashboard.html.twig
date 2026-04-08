@@ -1,0 +1,175 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Admin Dashboard | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/admin_dashboard.css?v=' ~ random()) }}">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <div class="search-global">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search dashboard metrics...">
+            </div>
+            <div class="user-widget">
+                <button class="icon-btn"><i class="fas fa-bell"></i></button>
+                <div class="avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                    <p class="user-role">Admin</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="page-intro">
+                <div>
+                    <h1 class="page-title">Admin Dashboard</h1>
+                    <p class="page-subtitle">Overview of users, products, characters, inventory health, and recent activity.</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Users</h3>
+                        <p class="value">{{ stats.totalUsers }}</p>
+                        <span class="stat-badge">Active</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Staff Members</h3>
+                        <p class="value">{{ stats.totalStaff }}</p>
+                        <span class="stat-badge">Team</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-emerald">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Products</h3>
+                        <p class="value">{{ stats.totalProducts }}</p>
+                        <span class="stat-badge">Catalog</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-pink">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-ninja"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Characters</h3>
+                        <p class="value">{{ stats.totalCharacters }}</p>
+                        <span class="stat-badge">Collection</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Low Stock</h3>
+                        <p class="value">{{ stats.lowStockProducts }}</p>
+                        <span class="stat-badge">Alert</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrapper">
+                        <div class="panel-icon">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                        <span class="panel-title">Inventory Snapshot</span>
+                    </div>
+                    <div class="badge-group">
+                        <span class="badge-pill badge-red">
+                            <i class="fas fa-times-circle"></i> Out of stock: {{ stats.outOfStockProducts }}
+                        </span>
+                        <span class="badge-pill badge-green">
+                            <i class="fas fa-coins"></i> Total value: ?{{ stats.totalStockValue|number_format(0, '.', ',') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-box-open"></i> Low Stock Products</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-row">
+                                {% for product in lowStockProducts %}
+                                    <div class="list-item">
+                                        <div class="list-item-content">
+                                            <span class="list-item-name">{{ product.name }}</span>
+                                            <span class="list-item-code">#{{ product.productCode }}</span>
+                                        </div>
+                                        <strong class="list-item-value warning">{{ product.stockQuantity|default('0') }} left</strong>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>No low stock items right now.</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-balance-scale"></i> Character Alignment</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-row">
+                                {% for row in characterStats %}
+                                    <div class="list-item">
+                                        <div class="list-item-content">
+                                            <span class="list-item-name">{{ row.alignment }}</span>
+                                            <span class="alignment-badge alignment-{{ row.alignment|lower }}">
+                                                {% if row.alignment == 'Good' %}
+                                                    <i class="fas fa-heart"></i>
+                                                {% elseif row.alignment == 'Evil' %}
+                                                    <i class="fas fa-skull"></i>
+                                                {% else %}
+                                                    <i class="fas fa-balance-scale"></i>
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <strong class="list-item-value">{{ row.count }}</strong>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Character data unavailable.</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+{% endblock %}

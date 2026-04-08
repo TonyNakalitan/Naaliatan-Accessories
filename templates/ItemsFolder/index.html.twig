@@ -1,0 +1,181 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Items Management | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('ItemsFolder/index.css?v=' ~ random()) }}">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <div class="search-global">
+                <i class="fas fa-search"></i>
+                <input type="text" id="globalSearch" placeholder="Search characters...">
+            </div>
+            <div class="user-widget">
+                <button class="icon-btn"><i class="fas fa-bell"></i></button>
+                <div class="avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="page-intro">
+                <div>
+                    <h1 class="page-title">Items Management</h1>
+                    <p class="page-subtitle">Browse character collections and manage product inventory</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Products</h3>
+                        <p class="value">{{ products|length }}</p>
+                        <span class="stat-badge">Catalog</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-ninja"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Characters</h3>
+                        <p class="value">{{ totalCharacters }}</p>
+                        <span class="stat-badge">Collection</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-emerald">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Good</h3>
+                        <p class="value">{{ goodCount }}</p>
+                        <span class="stat-badge">Alignment</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Neutral</h3>
+                        <p class="value">{{ neutralCount }}</p>
+                        <span class="stat-badge">Alignment</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-pink">
+                    <div class="stat-icon">
+                        <i class="fas fa-skull"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Evil</h3>
+                        <p class="value">{{ evilCount }}</p>
+                        <span class="stat-badge">Alignment</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrapper">
+                        <div class="panel-icon">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <span class="panel-title">Character Collection</span>
+                    </div>
+                    <div class="badge-group">
+                        <select id="alignmentFilter" class="filter-select">
+                            <option value="all">All Alignments</option>
+                            <option value="good">Good</option>
+                            <option value="neutral">Neutral</option>
+                            <option value="evil">Evil</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="gallery-view">
+                    {% for character in characters %}
+                        <a href="{{ role_path('item_management_show', {'id': character.id}) }}" class="prod-card">
+                            <div class="prod-media">
+                                {% if character.image %}
+                                    <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}" />
+                                {% else %}
+                                    <div class="prod-placeholder">
+                                        <i class="fas fa-user-astronaut"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="prod-overlay">
+                                    <div class="overlay-actions">
+                                        <button class="overlay-btn">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="prod-content">
+                                <div class="prod-header">
+                                    <div class="alignment-badge alignment-{{ character.alignment|lower }}">
+                                        {% if character.alignment == 'Good' %}
+                                            <i class="fas fa-heart"></i>
+                                        {% elseif character.alignment == 'Evil' %}
+                                            <i class="fas fa-skull"></i>
+                                        {% else %}
+                                            <i class="fas fa-balance-scale"></i>
+                                        {% endif %}
+                                        {{ character.alignment|default('Unknown') }}
+                                    </div>
+                                </div>
+                                <h3 class="prod-title">{{ character.name }}</h3>
+                                {% if character.creator %}
+                                    <p class="prod-creator">by {{ character.creator }}</p>
+                                {% endif %}
+                                <div class="prod-footer">
+                                    <div class="prod-stats">
+                                        <div class="stat-item">
+                                            <i class="fas fa-box"></i>
+                                            <span>{{ character.products|length }} Products</span>
+                                        </div>
+                                    </div>
+                                    <div class="prod-action">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="empty-gallery">
+                            <i class="fas fa-user-astronaut"></i>
+                            <h3>No characters found</h3>
+                            <p>Start by adding characters to your collection</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('ItemsFolder/index.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product | Naaliatan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('ProductManagementFolder/edit.css') }}">
+</head>
+<body class="min-h-screen">
+
+    <div class="flex h-screen">
+        <main class="flex-grow flex flex-col overflow-y-auto w-full bg-slate-50">
+            <div class="w-full p-4 sm:p-6 lg:p-8">
+
+                {% if app.flashes('error') %}
+                    <div class="mb-4 sm:mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 shadow-sm">
+                        {% for message in app.flashes('error') %}
+                            <p class="text-sm sm:text-base"><i class="fas fa-exclamation-circle mr-2"></i>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Main Container -->
+                <div class="bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border border-white/50">
+                    
+                    <!-- Header with Back Button Inside Container -->
+                    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200">
+                                    <i class="fas fa-edit text-white text-lg sm:text-xl"></i>
+                                </div>
+                                <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
+                                    Edit Product
+                                </h1>
+                            </div>
+                            <p class="text-slate-600 text-sm sm:text-base">Update product information and details.</p>
+                        </div>
+                        <a href="{{ path('app_admin_product_management_index') }}" class="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm text-slate-700 font-semibold rounded-xl hover:bg-white hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap border border-slate-200">
+                            <i class="fas fa-arrow-left"></i>
+                            <span class="hidden sm:inline">Back to Product Management</span>
+                            <span class="sm:hidden">Back</span>
+                        </a>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'id': 'productForm', 'novalidate': 'novalidate'}}) }}
+
+                <!-- Wizard Wrapper -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                    
+                    <div class="lg:col-span-8">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-6 border border-white/50">
+                            
+                            <div class="flex gap-2 sm:gap-4 mb-8 sm:mb-10 overflow-x-auto pb-2 scrollbar-hide">
+                                <div class="step-pill active min-w-[80px] sm:min-w-0" id="pill-1">
+                                    <div class="step-number">1</div>
+                                    <div>
+                                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Step 1</span>
+                                        <p class="text-xs sm:text-sm font-semibold">Basic Info</p>
+                                    </div>
+                                </div>
+                                <div class="step-pill min-w-[80px] sm:min-w-0" id="pill-2">
+                                    <div class="step-number">2</div>
+                                    <div>
+                                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Step 2</span>
+                                        <p class="text-xs sm:text-sm font-semibold">Character</p>
+                                    </div>
+                                </div>
+                                <div class="step-pill min-w-[80px] sm:min-w-0" id="pill-3">
+                                    <div class="step-number">3</div>
+                                    <div>
+                                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Step 3</span>
+                                        <p class="text-xs sm:text-sm font-semibold">Assets</p>
+                                    </div>
+                                </div>
+                                <div class="step-pill min-w-[80px] sm:min-w-0" id="pill-4">
+                                    <div class="step-number">4</div>
+                                    <div>
+                                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Step 4</span>
+                                        <p class="text-xs sm:text-sm font-semibold">Review</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 1: Basic Info -->
+                            <div class="step-content active fade-in" data-step="1">
+                                <div class="space-y-4 sm:space-y-6">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                                        <div class="col-span-1">
+                                            <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Product Name</label>
+                                            {{ form_widget(form.name, {'attr': {'class': 'form-input-styled text-sm sm:text-base', 'placeholder': 'e.g. Deluxe Katana Stand', 'oninput': 'syncPreview("name", this.value)'}}) }}
+                                            {{ form_errors(form.name) }}
+                                        </div>
+                                        <div class="col-span-1">
+                                            <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Product Code</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">#</span>
+                                                {{ form_widget(form.productCode, {'attr': {'class': 'form-input-styled pl-8 text-sm sm:text-base', 'placeholder': 'SKU-001', 'oninput': 'syncPreview("code", this.value)'}}) }}
+                                            </div>
+                                            {{ form_errors(form.productCode) }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Description</label>
+                                        {{ form_widget(form.description, {'attr': {'class': 'form-input-styled text-sm sm:text-base', 'rows': '4', 'placeholder': 'Detail the features and material of the product...', 'oninput': 'syncPreview("description", this.value)'}}) }}
+                                        {{ form_errors(form.description) }}
+                                    </div>
+                                </div>
+                                
+                                <!-- PRO TIP for Step 1 -->
+                                <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
+                                    <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>
+                                    <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                                        <span class="font-bold block mb-1">PRO TIP</span>
+                                        Keep product names clear and descriptive. Update descriptions to reflect any new features or improvements.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Character Selection -->
+                            <div class="step-content fade-in" data-step="2">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
+                                    <h3 class="text-base sm:text-lg font-bold text-slate-900">Choose a Character</h3>
+                                    <div class="relative w-full sm:w-64">
+                                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs sm:text-sm"></i>
+                                        <input type="text" id="characterSearch" class="w-full pl-9 pr-4 py-2 bg-slate-100 border-none rounded-full text-xs sm:text-sm focus:ring-2 focus:ring-indigo-200" placeholder="Filter characters..." onkeyup="filterCharacters()">
+                                    </div>
+                                </div>
+                                
+                                <div style="display: none;">
+                                    {{ form_widget(form.character) }}
+                                </div>
+                                {{ form_errors(form.character) }}
+                                
+                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4" id="characterGrid">
+                                    {% for character in characters %}
+                                    <div class="character-card bg-slate-200 group character-item {% if product.character and product.character.id == character.id %}selected{% endif %}" data-character-id="{{ character.id }}" data-character-name="{{ character.name|lower }}" onclick="selectChar(this, {{ character.id }}, '{{ character.name|e('js') }}')">
+                                        <div class="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0"></div>
+                                        {% if character.image %}
+                                        <img src="{{ asset('images/characters/' ~ character.image) }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                        <div class="w-full h-full bg-gradient-to-br from-slate-300 to-slate-400"></div>
+                                        {% endif %}
+                                        <div class="absolute bottom-0 left-0 p-2 sm:p-3 z-10">
+                                            <p class="text-white text-[10px] sm:text-xs font-bold leading-tight">{{ character.name }}</p>
+                                            <p class="text-white/60 text-[8px] sm:text-[10px]">{{ character.creator }}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- PRO TIP for Step 2 -->
+                                <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
+                                    <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>
+                                    <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                                        <span class="font-bold block mb-1">PRO TIP</span>
+                                        Changing the character association can help reorganize your product catalog and improve discoverability.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Price & Image -->
+                            <div class="step-content fade-in" data-step="3">
+                                <div class="space-y-6 sm:space-y-8">
+                                    <div>
+                                        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Price Setting</label>
+                                        <div class="relative max-w-full sm:max-w-xs">
+                                            {{ form_widget(form.price, {'attr': {'class': 'form-input-styled text-lg sm:text-xl font-bold tracking-tight', 'placeholder': '0.00', 'oninput': 'syncPreview("price", this.value)'}}) }}
+                                        </div>
+                                        {{ form_errors(form.price) }}
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-4">Display Media</label>
+                                        <div class="drop-zone rounded-2xl p-6 sm:p-10 text-center relative" id="dropZone">
+                                            <div style="display: none;">
+                                                {{ form_widget(form.image, {'attr': {'class': 'file-input-hidden', 'onchange': 'handleFile(this)', 'accept': 'image/*'}}) }}
+                                            </div>
+                                            <div id="dropZoneUI" {% if product.image %}class="hidden"{% endif %}>
+                                                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 text-xl sm:text-2xl">
+                                                    <i class="fas fa-cloud-arrow-up"></i>
+                                                </div>
+                                                <p class="text-slate-900 font-bold text-sm sm:text-base">Upload Product Photo</p>
+                                                <p class="text-slate-500 text-xs sm:text-sm mt-1">Drag and drop your file here, or <span class="text-indigo-600 cursor-pointer hover:underline">browse</span></p>
+                                                <p class="text-slate-400 text-[10px] sm:text-xs mt-3 sm:mt-4 uppercase tracking-widest font-semibold">Supports: JPG, PNG (Max 10MB)</p>
+                                            </div>
+                                            <div id="previewContainer" {% if not product.image %}class="hidden"{% endif %}>
+                                                <div class="relative inline-block group">
+                                                    <img src="{% if product.image %}{{ asset('images/products/' ~ product.image) }}{% endif %}" id="imgResult" class="max-h-32 sm:max-h-48 rounded-xl shadow-lg border-4 border-white">
+                                                    <button type="button" onclick="resetFile(event)" class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-7 h-7 sm:w-8 sm:h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 text-xs sm:text-sm">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ form_errors(form.image) }}
+                                    </div>
+                                </div>
+                                
+                                <!-- PRO TIP for Step 3 -->
+                                <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
+                                    <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>
+                                    <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                                        <span class="font-bold block mb-1">PRO TIP</span>
+                                        Update product images regularly to showcase the latest version. Adjust pricing based on market trends and demand.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Review -->
+                            <div class="step-content fade-in" data-step="4">
+                                <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-2xl p-6 text-white mb-8 flex items-center gap-6 shadow-xl shadow-amber-200 relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
+                                    <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl relative z-10 animate-bounce-slow">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="relative z-10">
+                                        <h3 class="text-lg font-bold">Ready to Update!</h3>
+                                        <p class="text-white/90 text-sm">Please verify the changes on the right before saving.</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Checklist</h4>
+                                        <ul class="space-y-3">
+                                            <li class="flex items-center gap-3 text-sm font-medium text-slate-700">
+                                                <i class="fas fa-check-circle text-emerald-500"></i> Product information updated
+                                            </li>
+                                            <li class="flex items-center gap-3 text-sm font-medium text-slate-700">
+                                                <i class="fas fa-check-circle text-emerald-500"></i> Character linkage verified
+                                            </li>
+                                            <li class="flex items-center gap-3 text-sm font-medium text-slate-700">
+                                                <i class="fas fa-check-circle text-emerald-500"></i> Ready to save changes
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <!-- PRO TIP for Step 4 -->
+                                <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
+                                    <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>
+                                    <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                                        <span class="font-bold block mb-1">PRO TIP</span>
+                                        Review all changes carefully before saving. Updated products will reflect changes immediately for customers.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+                                <button type="button" id="prevBtn" onclick="moveStep(-1)" class="w-full sm:w-auto px-6 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-all opacity-0 pointer-events-none text-sm sm:text-base">
+                                    <i class="fas fa-arrow-left mr-2"></i> Previous
+                                </button>
+                                <button type="button" id="nextBtn" onclick="moveStep(1)" class="w-full sm:w-auto px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all text-sm sm:text-base">
+                                    Next Step <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                                <button type="submit" id="submitBtn" class="w-full sm:w-auto px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all hidden text-sm sm:text-base">
+                                    <span id="submitBtnText">Update Product <i class="fas fa-save ml-2"></i></span>
+                                    <span id="submitBtnLoading" class="hidden">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>Updating Product...
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Live Preview Card -->
+                    <div class="lg:col-span-4 lg:sticky lg:top-8">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden border border-white/50 shadow-2xl">
+                            <div class="p-3 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-white/80 to-amber-50/50 backdrop-blur-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                    <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">Live Preview</span>
+                                </div>
+                                <span class="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] sm:text-[10px] font-bold rounded-full uppercase shadow-lg">Editing</span>
+                            </div>
+                            
+                            <div class="aspect-[4/5] bg-slate-100 relative group overflow-hidden">
+                                <img id="previewMainImg" src="{% if product.image %}{{ asset('images/products/' ~ product.image) }}{% else %}https://placehold.co/400x500/f1f5f9/94a3b8?text=Product+Image{% endif %}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                                
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                
+                                <div class="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                                    <div class="flex items-end justify-between gap-3 sm:gap-4">
+                                        <div class="flex-grow min-w-0">
+                                            <p id="previewCode" class="text-indigo-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-1">#{{ product.productCode }}</p>
+                                            <h2 id="previewName" class="text-white text-lg sm:text-2xl font-bold leading-tight mb-2 truncate">{{ product.name }}</h2>
+                                            <div class="flex gap-2">
+                                                <span id="previewChar" class="px-2 py-0.5 backdrop-blur-md rounded-full text-white text-[9px] sm:text-[10px] font-semibold border {% if product.character %}border-indigo-400 bg-indigo-600{% else %}bg-white/10 border-white/20{% endif %}">{% if product.character %}{{ product.character.name }}{% else %}None Selected{% endif %}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right flex-shrink-0">
+                                            <p class="text-white/60 text-[9px] sm:text-[10px] uppercase font-bold">Retail Price</p>
+                                            <p id="previewPrice" class="text-white text-lg sm:text-2xl font-black">₱{{ product.price|number_format(2) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 sm:p-6 bg-white">
+                                <h4 class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 sm:mb-3">Specifications</h4>
+                                <p id="previewDesc" class="text-slate-600 text-xs sm:text-sm leading-relaxed line-clamp-3">
+                                    {{ product.description }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{ form_rest(form) }}
+                {{ form_end(form) }}
+                </div>
+                <!-- End Main Container -->
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ asset('ProductManagementFolder/edit.js') }}"></script>
+</body>
+</html>

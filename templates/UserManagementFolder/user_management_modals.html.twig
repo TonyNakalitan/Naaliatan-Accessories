@@ -1,0 +1,224 @@
+{# User Management Modals Component #}
+
+{# Delete User Modal #}
+<div id="deleteUserModal" class="modal modal-delete">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <div class="modal-header modal-header-danger">
+            <div class="modal-title-wrapper">
+                <div class="modal-icon-danger">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h2 class="modal-title">
+                    Delete User
+                </h2>
+            </div>
+            <button class="modal-close" onclick="closeDeleteModal()" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="delete-user-info">
+                <div class="user-preview">
+                    <div class="user-preview-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-preview-details">
+                        <span class="user-preview-label">User to be deleted</span>
+                        <span class="user-preview-name" id="deleteUserName"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="warning-box">
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="warning-content">
+                    <h4>Warning: Permanent Action</h4>
+                    <p>This action cannot be undone. All user data, including activity logs and associated records, will be permanently removed from the system.</p>
+                </div>
+            </div>
+            
+            <div class="confirmation-check">
+                <label class="confirmation-checkbox">
+                    <input type="checkbox" id="deleteConfirmation" onchange="toggleDeleteButton()">
+                    <span class="checkmark"></span>
+                    <span class="confirmation-label">I understand that this action is permanent and cannot be reversed.</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeDeleteModal()">
+                <i class="fas fa-times"></i>
+                Cancel
+            </button>
+            <form id="deleteUserForm" method="post" style="display: inline;">
+                <input type="hidden" name="_token" id="deleteToken">
+                <button type="submit" class="btn-danger" id="deleteSubmitBtn" disabled>
+                    <i class="fas fa-trash"></i>
+                    Delete User
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Toggle User Status Modal #}
+<div id="toggleUserModal" class="modal modal-toggle">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <div class="modal-header modal-header-danger" id="toggleModalHeader">
+            <h2 class="modal-title" id="toggleModalTitle">Deactivate User</h2>
+            <button class="modal-close" onclick="closeToggleModal()" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="toggle-user-info">
+                <div class="user-preview">
+                    <div class="user-preview-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-preview-details">
+                        <span class="user-preview-label">User</span>
+                        <span class="user-preview-name" id="toggleUserName"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box" id="toggleInfoBox">
+                <div class="info-icon">
+                    <i class="fas fa-info-circle" id="toggleInfoIcon"></i>
+                </div>
+                <div class="info-content">
+                    <h4 id="toggleInfoTitle">Status Change Notice</h4>
+                    <p id="toggleInfoMessage">You are about to change the status of this user.</p>
+                </div>
+            </div>
+            
+            <div class="confirmation-check">
+                <label class="confirmation-checkbox">
+                    <input type="checkbox" id="toggleConfirmation" onchange="toggleToggleButton()">
+                    <span class="checkmark"></span>
+                    <span class="confirmation-label">I confirm that I want to change this user's status.</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeToggleModal()">
+                <i class="fas fa-times"></i>
+                Cancel
+            </button>
+            <form id="toggleUserForm" method="post" style="display: inline;">
+                <input type="hidden" name="_token" id="toggleToken">
+                <button type="submit" class="btn-warning" id="toggleSubmitBtn" disabled>
+                    <i class="fas fa-power-off"></i>
+                    <span id="toggleSubmitText">Change Status</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Success Modal #}
+<div id="successModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-check-circle"></i>
+                Success!
+            </h2>
+            <button class="modal-close" onclick="closeSuccessModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="success-box">
+                <i class="fas fa-check-circle"></i>
+                <p id="successMessage">Operation completed successfully!</p>
+            </div>
+            
+            <p class="confirmation-text">The user information has been updated.</p>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn-primary" onclick="closeSuccessModal()">
+                <i class="fas fa-thumbs-up"></i>
+                Great!
+            </button>
+        </div>
+    </div>
+</div>
+
+{# Deactivate Success Modal #}
+<div id="deactivateSuccessModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-user-slash"></i>
+                User Deactivated!
+            </h2>
+            <button class="modal-close" onclick="closeDeactivateSuccessModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="deactivate-success-box">
+                <i class="fas fa-user-slash"></i>
+                <p id="deactivateSuccessMessage">User has been successfully deactivated.</p>
+            </div>
+            
+            <p class="confirmation-text">The user will no longer have access to the system and will not be able to log in.</p>
+            <p class="confirmation-text">You can reactivate this user at any time from the User Management panel.</p>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn-warning" onclick="closeDeactivateSuccessModal()">
+                <i class="fas fa-check"></i>
+                Understood
+            </button>
+        </div>
+    </div>
+</div>
+
+{# Activate Success Modal #}
+<div id="activateSuccessModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-user-check"></i>
+                User Activated!
+            </h2>
+            <button class="modal-close" onclick="closeActivateSuccessModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="activate-success-box">
+                <i class="fas fa-user-check"></i>
+                <p id="activateSuccessMessage">User has been successfully activated.</p>
+            </div>
+            
+            <p class="confirmation-text">The user now has access to the system and will be able to log in.</p>
+            <p class="confirmation-text">The user has been notified of their account activation.</p>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn-success" onclick="closeActivateSuccessModal()">
+                <i class="fas fa-check"></i>
+                Great!
+            </button>
+        </div>
+    </div>
+</div>

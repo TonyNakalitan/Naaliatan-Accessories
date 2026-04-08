@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order #{{ order.orderNumber }} | Naaliatan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('OrderFolder/show.css') }}">
+</head>
+<body class="min-h-screen">
+
+    <div class="flex h-screen">
+        <main class="flex-grow flex flex-col overflow-y-auto w-full bg-slate-50">
+            <div class="w-full p-4 sm:p-6 lg:p-8">
+
+                <!-- Main Container -->
+                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8">
+                    
+                    <!-- Header with Action Buttons -->
+                    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">
+                                Order #{{ order.orderNumber }}
+                            </h1>
+                            <p class="text-slate-500 mt-2 text-sm sm:text-base">Placed on {{ order.createdAt|date('F d, Y \\a\\t h:i A') }}</p>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto flex-wrap">
+                            <a href="{{ role_path('order_index') }}" class="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-all flex items-center justify-center gap-2 text-sm sm:text-base">
+                                <i class="fas fa-arrow-left"></i>
+                                <span class="hidden sm:inline">Back</span>
+                            </a>
+                            {% if order.status != 'completed' and order.status != 'cancelled' %}
+                                {% if is_granted('ROLE_ADMIN') %}
+                                <form action="{{ role_path('order_complete', {id: order.id}) }}" method="POST" class="flex-1 sm:flex-none">
+                                    <button type="submit" class="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Complete</span>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <form action="{{ role_path('order_cancel', {id: order.id}) }}" method="POST" class="flex-1 sm:flex-none" onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                                    <button type="submit" class="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all flex items-center justify-center gap-2 text-sm sm:text-base">
+                                        <i class="fas fa-times-circle"></i>
+                                        <span>Cancel</span>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                <!-- Content Wrapper -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                    
+                    <div class="lg:col-span-8 slide-in-left">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-6">
+                            
+                            <!-- Section 1: Customer Information -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold text-slate-900">Customer Information</h3>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="info-field">
+                                            <label class="info-label">Full Name</label>
+                                            <p class="info-value">{{ order.customerName }}</p>
+                                        </div>
+                                        <div class="info-field">
+                                            <label class="info-label">Phone Number</label>
+                                            <p class="info-value">{{ order.phoneNumber }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-field">
+                                        <label class="info-label">Address</label>
+                                        <p class="info-value">{{ order.customerAddress }}</p>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="info-field">
+                                            <label class="info-label">City</label>
+                                            <p class="info-value">{{ order.city }}</p>
+                                        </div>
+                                        <div class="info-field">
+                                            <label class="info-label">Province</label>
+                                            <p class="info-value">{{ order.province }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-field">
+                                        <label class="info-label">Delivery Type</label>
+                                        <p class="info-value">{{ order.deliveryType }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Order Items -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg">
+                                        <i class="fas fa-box text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold text-slate-900">Order Items</h3>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    {% for item in order.orderItems %}
+                                    <div class="order-item-card">
+                                        <div class="flex items-center gap-4">
+                                            {% if item.product and item.product.image %}
+                                                <img src="{{ asset('images/products/' ~ item.product.image) }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-md">
+                                            {% else %}
+                                                <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border-2 border-white shadow-md">
+                                                    <i class="fas fa-box text-slate-400 text-xl"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div class="flex-1 min-w-0">
+                                                <h4 class="font-semibold text-slate-900 truncate">
+                                                    {% if item.product %}
+                                                        {{ item.product.name }}
+                                                    {% else %}
+                                                        <span class="text-slate-400 italic">Product Deleted</span>
+                                                    {% endif %}
+                                                </h4>
+                                                <p class="text-sm text-slate-500">{{ item.formattedUnitPrice }} × {{ item.quantity }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-lg font-bold text-slate-900">{{ item.formattedSubtotal }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Order Summary -->
+                            <div>
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg">
+                                        <i class="fas fa-calculator text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold text-slate-900">Order Summary</h3>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                                        <span class="text-slate-600">Subtotal</span>
+                                        <span class="font-semibold text-slate-900">{{ order.formattedTotalAmount }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                                        <span class="text-slate-600">Delivery Fee</span>
+                                        <span class="font-semibold text-slate-900">₱0.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl px-4">
+                                        <span class="text-lg font-bold text-slate-900">Total Amount</span>
+                                        <span class="text-2xl font-bold text-indigo-600">{{ order.formattedTotalAmount }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Metadata Section -->
+                            <div class="mt-8 pt-6 border-t border-slate-200">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm text-slate-500">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-calendar-alt text-indigo-500"></i>
+                                        <span class="font-semibold">Created:</span> {{ order.createdAt|date('F j, Y \\a\\t g:i A') }}
+                                    </div>
+                                    {% if order.completedAt %}
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-emerald-500"></i>
+                                        <span class="font-semibold">Completed:</span> {{ order.completedAt|date('F j, Y \\a\\t g:i A') }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        {% if order.status != 'completed' and order.status != 'cancelled' %}
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            {% if is_granted('ROLE_ADMIN') %}
+                            <form action="{{ role_path('order_complete', {id: order.id}) }}" method="POST" class="flex-1">
+                                <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl action-btn">
+                                    <i class="fas fa-check-circle"></i>
+                                    Complete Order
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form action="{{ role_path('order_cancel', {id: order.id}) }}" method="POST" class="flex-1" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                                <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl hover:from-red-700 hover:to-red-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl action-btn">
+                                    <i class="fas fa-times-circle"></i>
+                                    Cancel Order
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Right Column: Order Card -->
+                    <div class="lg:col-span-4 lg:sticky lg:top-8 slide-in-right">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-slate-200">
+                            <div class="p-3 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-white/60 to-white/40">
+                                <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">Order Card</span>
+                                <span class="px-2 py-1 text-[9px] sm:text-[10px] font-bold rounded uppercase badge-pulse
+                                    {% if order.status == 'completed' %}bg-emerald-100 text-emerald-600
+                                    {% elseif order.status == 'cancelled' %}bg-red-100 text-red-600
+                                    {% elseif order.status == 'processing' %}bg-blue-100 text-blue-600
+                                    {% else %}bg-amber-100 text-amber-600{% endif %}">
+                                    {{ order.statusLabel }}
+                                </span>
+                            </div>
+                            
+                            <div class="aspect-square bg-gradient-to-br from-indigo-500 to-purple-600 relative overflow-hidden">
+                                <div class="absolute inset-0 opacity-10">
+                                    <div class="absolute top-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                                    <div class="absolute bottom-0 right-0 w-48 h-48 bg-white rounded-full translate-x-1/3 translate-y-1/3"></div>
+                                </div>
+                                
+                                <div class="relative h-full flex flex-col items-center justify-center p-6 text-white">
+                                    <div class="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-4 shadow-xl">
+                                        <i class="fas fa-shopping-cart text-4xl"></i>
+                                    </div>
+                                    <h2 class="text-3xl font-bold mb-2">#{{ order.orderNumber }}</h2>
+                                    <p class="text-sm opacity-90 mb-6">{{ order.createdAt|date('M d, Y') }}</p>
+                                    
+                                    <div class="w-full space-y-3">
+                                        <div class="flex justify-between items-center py-2 border-t border-white/20">
+                                            <span class="text-sm opacity-90">Items</span>
+                                            <span class="font-bold">{{ order.orderItems|length }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-t border-white/20">
+                                            <span class="text-sm opacity-90">Total</span>
+                                            <span class="text-2xl font-bold">{{ order.formattedTotalAmount }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 sm:p-6 bg-gradient-to-br from-white to-slate-50">
+                                <h4 class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 sm:mb-3 flex items-center gap-2">
+                                    <i class="fas fa-truck text-indigo-500"></i>
+                                    Delivery Details
+                                </h4>
+                                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mb-2">
+                                    <strong>{{ order.customerName }}</strong>
+                                </p>
+                                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                                    {{ order.customerAddress }}, {{ order.city }}, {{ order.province }}
+                                </p>
+                                <p class="text-slate-500 text-xs mt-2">
+                                    <i class="fas fa-phone text-indigo-400"></i> {{ order.phoneNumber }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Stats Card -->
+                        <div class="mt-6 glass-panel rounded-2xl p-4 sm:p-6 border-2 border-slate-200">
+                            <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                <i class="fas fa-chart-bar text-indigo-500"></i>
+                                Order Statistics
+                            </h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center stats-item">
+                                    <span class="text-xs text-slate-500 flex items-center gap-2">
+                                        <i class="fas fa-box text-indigo-400"></i>
+                                        Total Items
+                                    </span>
+                                    <span class="text-sm font-bold text-slate-900">{{ order.orderItems|length }}</span>
+                                </div>
+                                <div class="flex justify-between items-center stats-item">
+                                    <span class="text-xs text-slate-500 flex items-center gap-2">
+                                        <i class="fas fa-tag text-purple-400"></i>
+                                        Status
+                                    </span>
+                                    <span class="text-sm font-bold
+                                        {% if order.status == 'completed' %}text-emerald-600
+                                        {% elseif order.status == 'cancelled' %}text-red-600
+                                        {% elseif order.status == 'processing' %}text-blue-600
+                                        {% else %}text-amber-600{% endif %}">
+                                        {{ order.statusLabel }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center stats-item">
+                                    <span class="text-xs text-slate-500 flex items-center gap-2">
+                                        <i class="fas fa-truck text-pink-400"></i>
+                                        Delivery
+                                    </span>
+                                    <span class="text-xs font-semibold text-slate-600">{{ order.deliveryType }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <!-- End Main Container -->
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

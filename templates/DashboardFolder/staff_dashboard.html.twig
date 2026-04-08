@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Staff Dashboard | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/staff_dashboard.css?v=' ~ random()) }}">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <div class="search-global">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search dashboard metrics...">
+            </div>
+            <div class="user-widget">
+                <button class="icon-btn"><i class="fas fa-bell"></i></button>
+                <div class="avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                    <p class="user-role">Staff</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="page-intro">
+                <div>
+                    <h1 class="page-title">Staff Dashboard</h1>
+                    <p class="page-subtitle">Track product availability, low stock alerts, and recent activity at a glance.</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card stat-card-emerald">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Products</h3>
+                        <p class="value">{{ stats.totalProducts }}</p>
+                        <span class="stat-badge">Catalog</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-pink">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-ninja"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Characters</h3>
+                        <p class="value">{{ stats.totalCharacters }}</p>
+                        <span class="stat-badge">Collection</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Stock Items</h3>
+                        <p class="value">{{ stats.totalStockItems }}</p>
+                        <span class="stat-badge">Inventory</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Low Stock</h3>
+                        <p class="value">{{ stats.lowStockProducts }}</p>
+                        <span class="stat-badge">Alert</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrapper">
+                        <div class="panel-icon">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                        <span class="panel-title">Warehouse Snapshot</span>
+                    </div>
+                    <div class="badge-group">
+                        <span class="badge-pill badge-red">
+                            <i class="fas fa-times-circle"></i> Out of stock: {{ stats.outOfStockProducts }}
+                        </span>
+                        <span class="badge-pill badge-green">
+                            <i class="fas fa-box-open"></i> Restocked today: {{ stats.restockedToday }}
+                        </span>
+                    </div>
+                </div>
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-box-open"></i> Low Stock Products</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-row">
+                                {% for product in lowStockProducts %}
+                                    <div class="list-item">
+                                        <div class="list-item-content">
+                                            <span class="list-item-name">{{ product.name }}</span>
+                                            <span class="list-item-code">#{{ product.productCode }}</span>
+                                        </div>
+                                        <strong class="list-item-value warning">{{ product.stockQuantity|default('0') }} left</strong>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>No low stock items currently.</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-times-circle"></i> Out of Stock</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-row">
+                                {% for product in outOfStockProducts %}
+                                    <div class="list-item">
+                                        <div class="list-item-content">
+                                            <span class="list-item-name">{{ product.name }}</span>
+                                            <span class="list-item-code">#{{ product.productCode }}</span>
+                                        </div>
+                                        <strong class="list-item-value danger">Out</strong>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>All products have stock.</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+{% endblock %}

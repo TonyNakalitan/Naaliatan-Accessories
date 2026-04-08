@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stock History | Naaliatan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="{{ asset('css/datatables-custom.css') }}">
+    <script src="{{ asset('JSFolder/disable-zoom.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('StockManagementFolderCSS&JS/history.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar-tooltips.css') }}">
+</head>
+<body>
+    {# Sidebar #}<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="{{ asset('images/Naaliatan\'s Accessories.png') }}" alt="Naaliatan's Accessories">
+                <span class="logo-text">Naaliatan</span>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="{{ role_path('dashboard') }}" class="nav-item" data-tooltip="Dashboard" data-tooltip="Dashboard">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ role_path('user_management_index') }}" class="nav-item" data-tooltip="Users" data-tooltip="Users">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            {% endif %}
+            <a href="{{ role_path('product_management_index') }}" class="nav-item" data-tooltip="Products" data-tooltip="Products">
+                <i class="fas fa-box"></i>
+                <span>Products</span>
+            </a>
+            <a href="{{ role_path('item_management_index') }}" class="nav-item" data-tooltip="Items" data-tooltip="Shop">
+                <i class="fas fa-store"></i>
+                <span>Shop</span>
+            </a>
+            <a href="{{ role_path('order_index') }}" class="nav-item" data-tooltip="Orders">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Orders</span>
+            </a>
+            <a href="{{ role_path('cart_index') }}" class="nav-item" data-tooltip="Cart">
+                <i class="fas fa-shopping-bag"></i>
+                <span>Cart</span>
+            </a>
+            <a href="{{ role_path('character_management_index') }}" class="nav-item" data-tooltip="Characters" data-tooltip="Characters">
+                <i class="fas fa-user-ninja"></i>
+                <span>Characters</span>
+            </a>
+            <a href="{{ role_path('stock_management_index') }}" class="nav-item active">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock</span>
+            </a>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ role_path('activity_logs_index') }}" class="nav-item" data-tooltip="Reports">
+                <i class="fas fa-history"></i>
+                <span>Reports</span>
+            </a>
+            {% endif %}
+            <a href="{{ role_path('profile_show') }}" class="nav-item" data-tooltip="Profile">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{{ role_path('settings_index') }}" class="nav-item" data-tooltip="Settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <a href="{{ path('app_logout') }}" class="logout-btn" data-tooltip="Log out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Log out</span>
+        </a>
+    </aside>
+
+    {# Main Content #}
+    <main class="main-content">
+        {# Top Bar #}
+        <header class="top-bar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchHistory" placeholder="Search stock history...">
+            </div>
+
+            <div class="top-bar-right">
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.username }}" class="user-avatar">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ app.user.username|url_encode }}&background=667eea&color=fff" alt="{{ app.user.username }}" class="user-avatar">
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        {# Page Header #}
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-history"></i> Stock History</h1>
+                <p>View all stock transactions and movements</p>
+            </div>
+            <a href="{{ role_path('stock_management_index') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back to Stock
+            </a>
+        </div>
+
+        {# Stock History Table #}
+        <div class="table-container">
+            <h2><i class="fas fa-list"></i> All Transactions</h2>
+            <table id="historyTable" class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Product</th>
+                        <th>Action</th>
+                        <th>Quantity</th>
+                        <th>Performed By</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.createdAt|date('M d, Y h:i A') }}</td>
+                        <td><strong>{{ transaction.product.name }}</strong></td>
+                        <td>
+                            {% if transaction.type == 'RESTOCK' %}
+                                <span class="action-badge restock">
+                                    <i class="fas fa-plus-circle"></i> Restock
+                                </span>
+                            {% elseif transaction.type == 'SALE' %}
+                                <span class="action-badge sale">
+                                    <i class="fas fa-shopping-cart"></i> Sale
+                                </span>
+                            {% else %}
+                                <span class="action-badge adjustment">
+                                    <i class="fas fa-edit"></i> Adjustment
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if transaction.type == 'RESTOCK' %}
+                                <span style="color: #48bb78; font-weight: 600;">+{{ transaction.quantity }}</span>
+                            {% elseif transaction.type == 'SALE' %}
+                                <span style="color: #f56565; font-weight: 600;">-{{ transaction.quantity }}</span>
+                            {% else %}
+                                <span style="color: #3498db; font-weight: 600;">{{ transaction.quantity }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ transaction.user ? transaction.user.username : 'System' }}</td>
+                        <td>{{ transaction.notes ?: '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px 20px; color: #a0aec0;">
+                            <i class="fas fa-inbox fa-3x" style="margin-bottom: 16px; opacity: 0.5;"></i>
+                            <h4 style="font-size: 18px; color: #4a5568; margin-bottom: 8px;">No transactions found</h4>
+                            <p>Stock transactions will appear here.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    {# Scripts #}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+    <script src="{{ asset('StockManagementFolderCSS&JS/history.js') }}"></script>
+</body>
+</html>

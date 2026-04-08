@@ -1,0 +1,230 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Activity Logs | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('ActivityLogsFolder/index.css?v=' ~ random()) }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <div class="search-global">
+                <i class="fas fa-search"></i>
+                <input type="text" id="globalSearch" placeholder="Search activities...">
+            </div>
+            <div class="user-widget">
+                <button class="icon-btn"><i class="fas fa-bell"></i></button>
+                <div class="avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="page-intro">
+                <div>
+                    <h1 class="page-title">Activity Logs</h1>
+                    <p class="page-subtitle">Track all system activities and user actions in one place</p>
+                </div>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            <div class="stats-grid">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Logs</h3>
+                        <p class="value">{{ logs|length }}</p>
+                        <span class="stat-badge">All Actions</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-emerald">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Today's Activities</h3>
+                        <p class="value">{{ todayCount|default(0) }}</p>
+                        <span class="stat-badge">Recent</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Updates Today</h3>
+                        <p class="value">{{ updateCount|default(0) }}</p>
+                        <span class="stat-badge">Modified</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Logins Today</h3>
+                        <p class="value">{{ loginCount|default(0) }}</p>
+                        <span class="stat-badge">Sessions</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrapper">
+                        <div class="panel-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <span class="panel-title">Activity Feed</span>
+                    </div>
+                    <div class="badge-group">
+                        <select id="actionFilter" class="filter-select">
+                            <option value="all">All Actions</option>
+                            <option value="create">CREATE</option>
+                            <option value="update">UPDATE</option>
+                            <option value="delete">DELETE</option>
+                            <option value="login">LOGIN</option>
+                            <option value="logout">LOGOUT</option>
+                            <option value="restock">RESTOCK</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="myTable" class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Description</th>
+                                <th>Role</th>
+                                <th>Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody">
+                            {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.id }}</td>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar">
+                                                {% if log.user and log.user.profilePicture %}
+                                                    <img src="{{ asset('images/profiles/' ~ log.user.profilePicture) }}" alt="{{ log.username }}">
+                                                {% else %}
+                                                    {{ log.username|default('U')|slice(0,1)|upper }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="user-details">
+                                                <span class="user-name-text">{{ log.username|default('Unknown') }}</span>
+                                                <span class="user-email-text">{{ log.username|default('unknown') }}@naaliatan.local</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% set actionType = log.action|default('UNKNOWN')|upper %}
+                                        {% if actionType == 'CREATE' %}
+                                            <span class="action-badge action-create">
+                                                <i class="fas fa-plus-circle"></i>
+                                                CREATE
+                                            </span>
+                                        {% elseif actionType == 'UPDATE' %}
+                                            <span class="action-badge action-update">
+                                                <i class="fas fa-edit"></i>
+                                                UPDATE
+                                            </span>
+                                        {% elseif actionType == 'DELETE' %}
+                                            <span class="action-badge action-delete">
+                                                <i class="fas fa-trash-alt"></i>
+                                                DELETE
+                                            </span>
+                                        {% elseif actionType == 'LOGIN' %}
+                                            <span class="action-badge action-login">
+                                                <i class="fas fa-sign-in-alt"></i>
+                                                LOGIN
+                                            </span>
+                                        {% elseif actionType == 'LOGOUT' %}
+                                            <span class="action-badge action-logout">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                                LOGOUT
+                                            </span>
+                                        {% elseif actionType == 'RESTOCK' %}
+                                            <span class="action-badge action-restock">
+                                                <i class="fas fa-boxes"></i>
+                                                RESTOCK
+                                            </span>
+                                        {% else %}
+                                            <span class="action-badge action-other">
+                                                <i class="fas fa-info-circle"></i>
+                                                {{ actionType }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="description-text">{{ log.targetData|default('No details provided') }}</span></td>
+                                    <td>
+                                        {% set roleString = log.role|default('"ROLE_USER"')|replace({'"': '', '[': '', ']': ''})|trim %}
+                                        {% set roles = roleString|split(',') %}
+                                        <div class="role-badges">
+                                            {% for role in roles %}
+                                                {% set cleanRole = role|trim %}
+                                                <span class="badge {{ cleanRole == 'ROLE_ADMIN' ? 'badge-admin' : cleanRole == 'ROLE_STAFF' ? 'badge-staff' : 'badge-user' }}">
+                                                    {{ cleanRole|replace({'ROLE_': ''}) }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td><span class="date-text">{{ log.createdAt ? log.createdAt|date('M j, Y H:i') : '—' }}</span></td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="empty-state">
+                                        <i class="fas fa-history"></i>
+                                        <p>No activity logs found</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+    <script src="{{ asset('ActivityLogsFolder/index.js') }}"></script>
+{% endblock %}

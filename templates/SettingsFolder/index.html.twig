@@ -1,0 +1,280 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Settings | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('SettingsFolder/index.css?v=' ~ random()) }}">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <div class="search-global">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search settings...">
+            </div>
+            <div class="user-widget">
+                <button class="icon-btn"><i class="fas fa-bell"></i></button>
+                <div class="avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="page-intro">
+                <div>
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-subtitle">Manage your account preferences and application settings</p>
+                </div>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            <div class="settings-grid">
+                <!-- Account Settings -->
+                <div class="info-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrapper">
+                            <div class="panel-icon">
+                                <i class="fas fa-user-cog"></i>
+                            </div>
+                            <span class="panel-title">Account Settings</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <h4>Email Address</h4>
+                                    <p>{{ app.user.email }}</p>
+                                </div>
+                            </div>
+                            <a href="{{ role_path('profile_edit') }}" class="btn-action-link">Change</a>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-signature"></i>
+                                <div>
+                                    <h4>Display Name</h4>
+                                    <p>{{ app.user.displayName ?: 'Not set' }}</p>
+                                </div>
+                            </div>
+                            <a href="{{ role_path('profile_edit') }}" class="btn-action-link">Edit</a>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-key"></i>
+                                <div>
+                                    <h4>Password</h4>
+                                    <p>Last changed: Recently</p>
+                                </div>
+                            </div>
+                            <a href="{{ role_path('profile_edit') }}" class="btn-action-link">Update</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="info-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrapper">
+                            <div class="panel-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <span class="panel-title">Notifications</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-envelope-open"></i>
+                                <div>
+                                    <h4>Email Notifications</h4>
+                                    <p>Receive email updates about your account</p>
+                                </div>
+                            </div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-shopping-bag"></i>
+                                <div>
+                                    <h4>Order Updates</h4>
+                                    <p>Get notified when orders are placed or updated</p>
+                                </div>
+                            </div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-warehouse"></i>
+                                <div>
+                                    <h4>Stock Alerts</h4>
+                                    <p>Receive alerts when stock levels are low</p>
+                                </div>
+                            </div>
+                            <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Settings -->
+                <div class="info-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrapper">
+                            <div class="panel-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <span class="panel-title">Security</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-lock"></i>
+                                <div>
+                                    <h4>Two-Factor Authentication</h4>
+                                    <p>Add an extra layer of security to your account</p>
+                                </div>
+                            </div>
+                            <button class="btn-action-primary">Enable</button>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-desktop"></i>
+                                <div>
+                                    <h4>Active Sessions</h4>
+                                    <p>Manage devices where you're logged in</p>
+                                </div>
+                            </div>
+                            <button class="btn-action-link">View</button>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-history"></i>
+                                <div>
+                                    <h4>Login History</h4>
+                                    <p>Review recent login activity</p>
+                                </div>
+                            </div>
+                            <button class="btn-action-link">View</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appearance Settings -->
+                <div class="info-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrapper">
+                            <div class="panel-icon">
+                                <i class="fas fa-palette"></i>
+                            </div>
+                            <span class="panel-title">Appearance</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-moon"></i>
+                                <div>
+                                    <h4>Theme</h4>
+                                    <p>Choose your preferred color scheme</p>
+                                </div>
+                            </div>
+                            <select class="select-styled">
+                                <option>Light</option>
+                                <option>Dark</option>
+                                <option>Auto</option>
+                            </select>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-compress"></i>
+                                <div>
+                                    <h4>Compact Mode</h4>
+                                    <p>Show more content on screen</p>
+                                </div>
+                            </div>
+                            <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                {% if is_granted('ROLE_ADMIN') %}
+                <div class="info-panel danger-panel">
+                    <div class="panel-header danger-header">
+                        <div class="panel-title-wrapper">
+                            <div class="panel-icon danger-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <span class="panel-title danger-title">Danger Zone</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-trash-restore"></i>
+                                <div>
+                                    <h4>Clear All Cache</h4>
+                                    <p>Remove all cached data from the system</p>
+                                </div>
+                            </div>
+                            <button class="btn-action-danger">Clear Cache</button>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-undo"></i>
+                                <div>
+                                    <h4>Reset Settings</h4>
+                                    <p>Restore all settings to default values</p>
+                                </div>
+                            </div>
+                            <button class="btn-action-danger">Reset</button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <div class="info-box-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="info-box-content">
+                        <h4>Need Help?</h4>
+                        <p>If you have any questions about these settings, please contact your system administrator or check the documentation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+{% endblock %}

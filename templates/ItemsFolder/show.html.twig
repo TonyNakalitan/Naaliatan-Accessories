@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ character.name }} - Products | Naaliatan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('ItemsFolder/show.css?v=' ~ random()) }}">
+</head>
+<body>
+
+    <!-- Hero Banner -->
+    <section class="hero-banner" {% if character.image %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{{ asset('images/characters/' ~ character.image) }}');"{% endif %}>
+        <div class="hero-content">
+            <a href="{{ role_path('item_management_index') }}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Back to Items
+            </a>
+            <h1 class="hero-title">{{ character.name }}</h1>
+            <p class="hero-description">{{ character.description }}</p>
+            <div class="hero-badges">
+                <span class="alignment-badge" style="background: {{ character.colorCode }}20; color: {{ character.colorCode }}; border-color: {{ character.colorCode }};">
+                    {% if character.alignment == 'Good' %}
+                        <i class="fas fa-heart"></i>
+                    {% elseif character.alignment == 'Evil' %}
+                        <i class="fas fa-skull"></i>
+                    {% else %}
+                        <i class="fas fa-balance-scale"></i>
+                    {% endif %}
+                    {{ character.alignment }}
+                </span>
+                <span class="creator-badge">
+                    <i class="fas fa-user"></i>
+                    {{ character.creator }}
+                </span>
+                <span class="count-badge">
+                    <i class="fas fa-box"></i>
+                    {{ products|length }} Products
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        
+        <!-- Character Info Sidebar -->
+        <aside class="character-sidebar">
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <div class="sidebar-icon">
+                        <i class="fas fa-user-ninja"></i>
+                    </div>
+                    <h2 class="sidebar-title">Character Info</h2>
+                </div>
+                
+                {% if character.image %}
+                <div class="character-image">
+                    <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
+                </div>
+                {% endif %}
+
+                <div class="info-section">
+                    <div class="info-item">
+                        <span class="info-label">Name</span>
+                        <p class="info-value">{{ character.name }}</p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Creator</span>
+                        <p class="info-value">{{ character.creator }}</p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Alignment</span>
+                        <span class="alignment-tag" style="background: {{ character.colorCode }}20; color: {{ character.colorCode }};">
+                            {{ character.alignment }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stat-box">
+                        <div class="stat-icon" style="background: {{ character.colorCode }}20; color: {{ character.colorCode }};">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Products</span>
+                            <span class="stat-value">{{ products|length }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Product Grid Container -->
+        <main class="products-main">
+            <div class="products-header">
+                <div>
+                    <h2 class="products-title">Available Products</h2>
+                    <p class="products-subtitle">Showing {{ products|length }} product{{ products|length != 1 ? 's' : '' }} for {{ character.name }}</p>
+                </div>
+            </div>
+
+            {% if products|length > 0 %}
+            <!-- Product Grid -->
+            <div class="product-grid" id="productGrid">
+                {% for product in products %}
+                <div class="product-card">
+                    <div class="product-image-wrapper">
+                        {% if product.image %}
+                            <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="product-image">
+                        {% else %}
+                            <div class="product-image-placeholder">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                        <div class="product-overlay">
+                            <button class="overlay-btn" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-content">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-code">{{ product.productCode }}</p>
+                        <p class="product-price">{{ product.formattedPrice }}</p>
+                        
+                        <div class="product-stock">
+                            {% if product.isOutOfStock %}
+                                <span class="stock-badge stock-out">
+                                    <i class="fas fa-times-circle"></i>
+                                    Out of Stock
+                                </span>
+                            {% elseif product.isLowStock %}
+                                <span class="stock-badge stock-low">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    Low Stock ({{ product.stockQuantity }})
+                                </span>
+                            {% else %}
+                                <span class="stock-badge stock-in">
+                                    <i class="fas fa-check-circle"></i>
+                                    In Stock ({{ product.stockQuantity }})
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if product.isOutOfStock %}
+                            <div class="product-actions">
+                                <button class="add-to-cart-btn disabled" disabled>
+                                    <i class="fas fa-ban"></i>
+                                    Out of Stock
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="product-actions">
+                                <button class="add-to-cart-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Add to Cart
+                                </button>
+                                <button class="buy-now-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+                                    <i class="fas fa-bolt"></i>
+                                    Buy Now
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <h3 class="empty-title">No Products Available</h3>
+                <p class="empty-text">This character doesn't have any products yet.</p>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Add to Cart Modal -->
+    <div id="addToCartModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-cart-plus"></i>
+                    Add to Cart
+                </h2>
+                <button class="modal-close" onclick="closeAddToCartModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="addToCartForm" class="modal-body">
+                <input type="hidden" id="cartProductId" name="productId">
+                <input type="hidden" id="cartProductName" name="productName">
+                
+                <!-- Product Info -->
+                <div class="form-section">
+                    <h3 class="section-title">Product Details</h3>
+                    <div class="product-info-box">
+                        <div class="product-info-item">
+                            <span class="info-label">Product:</span>
+                            <span class="info-value" id="cartProductDisplay"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="cartQuantity" class="form-label">
+                                <i class="fas fa-boxes"></i>
+                                Quantity
+                            </label>
+                            <input type="number" id="cartQuantity" name="quantity" class="form-input" min="1" value="1" required>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeAddToCartModal()">
+                    Cancel
+                </button>
+                <button type="submit" form="addToCartForm" class="btn-primary">
+                    <i class="fas fa-cart-plus"></i>
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="{{ asset('ItemsFolder/show.js') }}"></script>
+</body>
+</html>

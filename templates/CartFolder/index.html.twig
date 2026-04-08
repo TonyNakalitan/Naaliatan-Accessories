@@ -1,0 +1,161 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Shopping Cart | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('CartFolder/index.css?v=' ~ random()) }}">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <div class="search-global">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search cart items...">
+            </div>
+            <div class="user-widget">
+                <button class="icon-btn"><i class="fas fa-bell"></i></button>
+                <div class="avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="page-intro">
+                <div>
+                    <h1 class="page-title">Shopping Cart</h1>
+                    <p class="page-subtitle">Review and manage items before checkout</p>
+                </div>
+            </div>
+
+            {% if cart.cartItems|length > 0 %}
+                <div class="cart-layout">
+                    <div class="cart-items-section">
+                        <div class="data-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-wrapper">
+                                    <div class="panel-icon">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                    <span class="panel-title">Cart Items ({{ cart.cartItems|length }})</span>
+                                </div>
+                                <form action="{{ role_path('cart_clear') }}" method="POST" onsubmit="return confirm('Clear all items from cart?');">
+                                    <button type="submit" class="btn-clear-cart">
+                                        <i class="fas fa-trash"></i>
+                                        Clear Cart
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="cart-items-list">
+                                {% for item in cart.cartItems %}
+                                    <div class="cart-item">
+                                        <div class="item-image">
+                                            {% if item.product.image %}
+                                                <img src="{{ asset('images/products/' ~ item.product.image) }}" alt="{{ item.product.name }}">
+                                            {% else %}
+                                                <i class="fas fa-box"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="item-details">
+                                            <h3 class="item-name">{{ item.product.name }}</h3>
+                                            <p class="item-category">{{ item.product.character ? item.product.character.name : 'Uncategorized' }}</p>
+                                            <p class="item-price">₱{{ item.product.price|number_format(2, '.', ',') }}</p>
+                                        </div>
+                                        <div class="item-actions">
+                                            <form action="{{ role_path('cart_update', {'id': item.id}) }}" method="POST" class="qty-control">
+                                                <button type="button" class="qty-btn" onclick="decrementQty(this)">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stockQuantity }}" class="qty-input" readonly>
+                                                <button type="button" class="qty-btn" onclick="incrementQty(this, {{ item.product.stockQuantity }})">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                                <button type="submit" class="btn-update" title="Update">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <div class="item-subtotal">
+                                                <span class="subtotal-label">Subtotal:</span>
+                                                <span class="subtotal-value">₱{{ (item.product.price * item.quantity)|number_format(2, '.', ',') }}</span>
+                                            </div>
+                                            <form action="{{ role_path('cart_remove', {'id': item.id}) }}" method="POST" onsubmit="return confirm('Remove this item from cart?');">
+                                                <button type="submit" class="btn-remove" title="Remove">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cart-summary-section">
+                        <div class="summary-card">
+                            <h3 class="summary-title">Order Summary</h3>
+                            
+                            <div class="summary-details">
+                                <div class="summary-row">
+                                    <span>Items</span>
+                                    <span>{{ cart.cartItems|length }}</span>
+                                </div>
+                                
+                                <div class="summary-row">
+                                    <span>Subtotal</span>
+                                    <span>₱{{ cart.totalPrice|number_format(2, '.', ',') }}</span>
+                                </div>
+                                
+                                <div class="summary-row">
+                                    <span>Tax (0%)</span>
+                                    <span>₱0.00</span>
+                                </div>
+                                
+                                <div class="summary-divider"></div>
+                                
+                                <div class="summary-row summary-total">
+                                    <span>Total</span>
+                                    <span>₱{{ cart.totalPrice|number_format(2, '.', ',') }}</span>
+                                </div>
+                            </div>
+
+                            <div class="summary-actions">
+                                <button class="btn-checkout">
+                                    <i class="fas fa-credit-card"></i>
+                                    Proceed to Checkout
+                                </button>
+                                <a href="{{ role_path('item_management_index') }}" class="btn-continue">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Continue Shopping
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="data-panel">
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Your Cart is Empty</h3>
+                        <p>Add some items to get started!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('CartFolder/index.js') }}"></script>
+{% endblock %}

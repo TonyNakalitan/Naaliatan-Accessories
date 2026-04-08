@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% if character %}{{ character.description }}{% else %}Browse our collection of premium products{% endif %}">
+    <title>{% if character %}{{ character.name }} - {% endif %}Products | Naaliatan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('HomeFolder/view_product.css?v=' ~ random()) }}">
+</head>
+<body>
+    <main class="content-area" role="main">
+        <!-- Top Navigation Bar -->
+        <header class="top-nav" role="banner">
+            <a href="{{ path('app_home') }}" class="nav-brand" aria-label="Naaliatan Home">
+                <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="brand-logo">
+            </a>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+            
+            <nav class="main-nav" id="mainNav" role="navigation" aria-label="Main navigation">
+                <a href="{{ path('app_home') }}" class="nav-link">
+                    <i class="fas fa-home" aria-hidden="true"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ path('app_about') }}" class="nav-link">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    <span>About</span>
+                </a>
+                <a href="{{ path('app_products') }}" class="nav-link active" aria-current="page">
+                    <i class="fas fa-box-open" aria-hidden="true"></i>
+                    <span>Products</span>
+                </a>
+                <a href="{{ path('app_contact') }}" class="nav-link">
+                    <i class="fas fa-envelope" aria-hidden="true"></i>
+                    <span>Contact</span>
+                </a>
+            </nav>
+            
+            <div class="user-widget">
+                {% if app.user %}
+                    <div class="avatar" aria-label="User avatar">
+                        {% if app.user.profilePicture %}
+                            <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        {% else %}
+                            <span>{{ (app.user.displayName ?: app.user.username)|default('U')|slice(0,1)|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="user-info">
+                        <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                        <p class="user-role">{{ app.user.roles[0] == 'ROLE_ADMIN' ? 'Admin' : 'Staff' }}</p>
+                    </div>
+                {% else %}
+                    <a href="{{ path('app_register') }}" class="btn-register">Register</a>
+                    <a href="{{ path('app_login') }}" class="btn-login">Login</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="page-container">
+            <!-- Background Decorations -->
+            <div class="bg-decorations" aria-hidden="true">
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+                <div class="blob blob-3"></div>
+                <div class="floating-element floating-element-1"></div>
+                <div class="floating-element floating-element-2"></div>
+            </div>
+
+            <!-- Hero Banner -->
+            <section class="hero-banner" {% if character and character.image %}style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(79, 70, 229, 0.75) 100%), url('{{ asset('images/characters/' ~ character.image) }}');"{% else %}style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(79, 70, 229, 0.85) 50%, rgba(139, 92, 246, 0.85) 100%);"{% endif %}>
+                <div class="hero-content">
+                    <a href="{{ path('app_products') }}" class="back-button">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        <span>Back to Products</span>
+                    </a>
+                    
+                    <div class="hero-header">
+                        <h1 class="hero-title">
+                            {% if character %}
+                                <span class="gradient-text">{{ character.name }}</span>
+                            {% else %}
+                                <span class="gradient-text">All Products</span>
+                            {% endif %}
+                        </h1>
+                        {% if character %}
+                            <div class="hero-badges">
+                                <span class="alignment-badge">
+                                    {% if character.alignment == 'Good' %}
+                                        <i class="fas fa-heart" aria-hidden="true"></i>
+                                    {% elseif character.alignment == 'Evil' %}
+                                        <i class="fas fa-skull" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fas fa-balance-scale" aria-hidden="true"></i>
+                                    {% endif %}
+                                    <span>{{ character.alignment }}</span>
+                                </span>
+                                <span class="creator-badge">
+                                    <i class="fas fa-user" aria-hidden="true"></i>
+                                    <span>{{ character.creator }}</span>
+                                </span>
+                                <span class="count-badge">
+                                    <i class="fas fa-box" aria-hidden="true"></i>
+                                    <span>{{ products|length }} Products</span>
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="hero-badges">
+                                <span class="count-badge">
+                                    <i class="fas fa-box" aria-hidden="true"></i>
+                                    <span>{{ products|length }} Products</span>
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="hero-description">{% if character %}{{ character.description }}{% else %}Discover our curated collection of premium accessories and collectibles. Quality craftsmanship meets exceptional design.{% endif %}</p>
+                </div>
+                
+                <!-- Decorative elements -->
+                <div class="hero-decoration" aria-hidden="true">
+                    <div class="hero-circle hero-circle-1"></div>
+                    <div class="hero-circle hero-circle-2"></div>
+                    <div class="hero-floating-cards">
+                        <div class="hero-floating-card hero-floating-card-1">
+                            <i class="fas fa-star"></i>
+                            <span>Premium Quality</span>
+                        </div>
+                        <div class="hero-floating-card hero-floating-card-2">
+                            <i class="fas fa-shipping-fast"></i>
+                            <span>Fast Delivery</span>
+                        </div>
+                        <div class="hero-floating-card hero-floating-card-3">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Secure Shopping</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Overview -->
+            <div class="stats-container">
+                <section class="stats-overview" aria-label="Store statistics">
+                    <div class="stat-card stat-card-blue">
+                        <div class="stat-icon" aria-hidden="true">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Products</h3>
+                            <p class="value">{{ products|length }}</p>
+                            <span class="stat-badge">Available</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-card-purple">
+                        <div class="stat-icon" aria-hidden="true">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Premium Quality</h3>
+                            <p class="value">100%</p>
+                            <span class="stat-badge">Guaranteed</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-card-emerald">
+                        <div class="stat-icon" aria-hidden="true">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Fast Delivery</h3>
+                            <p class="value">24h</p>
+                            <span class="stat-badge">Processing</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-card-pink">
+                        <div class="stat-icon" aria-hidden="true">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Secure Shop</h3>
+                            <p class="value">Safe</p>
+                            <span class="stat-badge">Protected</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-container">
+                <!-- Products Section -->
+                <main class="products-main">
+                    <div class="products-header">
+                        <div class="header-left">
+                            <h2 class="products-title">Available Products</h2>
+                            <p class="products-subtitle">
+                                Showing <strong>{{ products|length }}</strong> product{{ products|length != 1 ? 's' : '' }}
+                                {% if character %} in <em>{{ character.name }}</em> collection{% endif %}
+                            </p>
+                        </div>
+                        <div class="header-right">
+                            <div class="search-box">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                <input type="text" id="productSearch" placeholder="Search products..." aria-label="Search products">
+                                <button class="search-clear" id="searchClear" aria-label="Clear search" style="display: none;">
+                                    <i class="fas fa-times" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="sort-box">
+                                <label for="productSort" class="sort-label">
+                                    <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
+                                </label>
+                                <select id="productSort" aria-label="Sort products">
+                                    <option value="newest">Newest First</option>
+                                    <option value="price_low">Price: Low to High</option>
+                                    <option value="price_high">Price: High to Low</option>
+                                    <option value="name">Name: A-Z</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Chips -->
+                    <div class="filter-chips" role="tablist" aria-label="Product filters">
+                        <button class="filter-chip active" data-category="all" role="tab" aria-selected="true">
+                            <i class="fas fa-layer-group" aria-hidden="true"></i>
+                            <span>All Items</span>
+                        </button>
+                        <button class="filter-chip" data-category="premium" role="tab" aria-selected="false">
+                            <i class="fas fa-crown" aria-hidden="true"></i>
+                            <span>Premium</span>
+                        </button>
+                        <button class="filter-chip" data-category="limited" role="tab" aria-selected="false">
+                            <i class="fas fa-gem" aria-hidden="true"></i>
+                            <span>Limited Edition</span>
+                        </button>
+                        <button class="filter-chip" data-category="new" role="tab" aria-selected="false">
+                            <i class="fas fa-fire" aria-hidden="true"></i>
+                            <span>New Arrivals</span>
+                        </button>
+                    </div>
+
+                    {% if products|length > 0 %}
+                        <!-- Product Grid -->
+                        <div class="product-grid" id="productGrid" role="list">
+                            {% for product in products %}
+                                <article class="product-card" data-category="{{ loop.index is even ? 'premium' : 'new' }}" role="listitem" tabindex="0">
+                                    <div class="product-image-wrapper">
+                                        {% if product.image %}
+                                            <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="product-image" loading="lazy">
+                                        {% else %}
+                                            <div class="product-image-placeholder" aria-label="No image available">
+                                                <i class="fas fa-image" aria-hidden="true"></i>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Product Badge -->
+                                        <div class="card-badges">
+                                            {% if product.isLowStock and product.stockQuantity > 0 %}
+                                                <span class="card-badge badge-warning">
+                                                    <i class="fas fa-fire" aria-hidden="true"></i>
+                                                    Hot
+                                                </span>
+                                            {% elseif loop.index < 4 %}
+                                                <span class="card-badge badge-new">
+                                                    <i class="fas fa-star" aria-hidden="true"></i>
+                                                    New
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+                                    
+                                    <div class="product-content">
+                                        <div class="product-header">
+                                            <h3 class="product-name">{{ product.name }}</h3>
+                                            <span class="product-code">{{ product.productCode }}</span>
+                                        </div>
+                                        
+                                        <p class="product-price">{{ product.formattedPrice }}</p>
+                                        
+                                        <div class="product-stock">
+                                            {% if product.isOutOfStock %}
+                                                <span class="stock-badge stock-out">
+                                                    <i class="fas fa-times-circle" aria-hidden="true"></i>
+                                                    <span>Out of Stock</span>
+                                                </span>
+                                            {% elseif product.isLowStock %}
+                                                <span class="stock-badge stock-low">
+                                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                                    <span>Only {{ product.stockQuantity }} left</span>
+                                                </span>
+                                            {% else %}
+                                                <span class="stock-badge stock-in">
+                                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                                    <span>In Stock ({{ product.stockQuantity }})</span>
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        {% if product.isOutOfStock %}
+                                            <div class="product-actions out-of-stock">
+                                                <button class="btn-disabled" disabled aria-label="Product out of stock">
+                                                    <i class="fas fa-ban" aria-hidden="true"></i>
+                                                    <span>Out of Stock</span>
+                                                </button>
+                                            </div>
+                                        {% else %}
+                                            <div class="product-actions">
+                                                <button class="btn-cart add-to-cart-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" aria-label="Add {{ product.name }} to cart">
+                                                    <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                                                    <span>Add to Cart</span>
+                                                </button>
+                                                <button class="btn-buy buy-now-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" aria-label="Buy {{ product.name }} now">
+                                                    <i class="fas fa-bolt" aria-hidden="true"></i>
+                                                    <span>Buy Now</span>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="empty-state" role="alert">
+                            <div class="empty-icon-wrapper">
+                                <i class="fas fa-box-open" aria-hidden="true"></i>
+                                <div class="empty-icon-pulse"></div>
+                            </div>
+                            <h3 class="empty-title">No Products Found</h3>
+                            <p class="empty-text">{% if character %}We couldn't find any products for {{ character.name }} at the moment.{% else %}No products are available in this category. Check back soon!{% endif %}</p>
+                            <a href="{{ path('app_products') }}" class="btn-hero btn-primary">
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                                <span>Back to All Products</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </main>
+            </div>
+
+            <!-- Footer -->
+            <footer class="site-footer" role="contentinfo">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <div class="footer-logo" aria-hidden="true">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div class="footer-brand-info">
+                            <h3>Naaliatan's Accessories</h3>
+                            <p>Your premier destination for character collectibles and premium accessories</p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <div class="footer-column">
+                            <h4>Quick Links</h4>
+                            <ul>
+                                <li><a href="{{ path('app_home') }}"><i class="fas fa-chevron-right" aria-hidden="true"></i> Home</a></li>
+                                <li><a href="{{ path('app_about') }}"><i class="fas fa-chevron-right" aria-hidden="true"></i> About Us</a></li>
+                                <li><a href="{{ path('app_products') }}"><i class="fas fa-chevron-right" aria-hidden="true"></i> Products</a></li>
+                                <li><a href="{{ path('app_contact') }}"><i class="fas fa-chevron-right" aria-hidden="true"></i> Contact</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h4>Support</h4>
+                            <ul>
+                                <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Help Center</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Shipping Info</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Returns</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> FAQ</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h4>Connect</h4>
+                            <div class="social-links">
+                                <a href="#" class="social-icon" aria-label="Facebook" title="Follow us on Facebook">
+                                    <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                                </a>
+                                <a href="#" class="social-icon" aria-label="Twitter" title="Follow us on Twitter">
+                                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                                </a>
+                                <a href="#" class="social-icon" aria-label="Instagram" title="Follow us on Instagram">
+                                    <i class="fab fa-instagram" aria-hidden="true"></i>
+                                </a>
+                                <a href="#" class="social-icon" aria-label="Discord" title="Join our Discord">
+                                    <i class="fab fa-discord" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ "now"|date("Y") }} Naaliatan's Accessories. All rights reserved.</p>
+                    <div class="footer-legal">
+                        <a href="#">Privacy Policy</a>
+                        <span aria-hidden="true">|</span>
+                        <a href="#">Terms of Service</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" role="alert" aria-live="polite">
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Add to Cart Modal -->
+    <div id="addToCartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="addToCartTitle">
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="addToCartTitle">
+                    <i class="fas fa-cart-plus" aria-hidden="true"></i>
+                    <span>Add to Cart</span>
+                </h2>
+                <button class="modal-close" onclick="closeAddToCartModal()" aria-label="Close modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            
+            <form id="addToCartForm" class="modal-body">
+                <input type="hidden" id="cartProductId" name="productId">
+                <input type="hidden" id="cartProductName" name="productName">
+                
+                <!-- Product Info -->
+                <div class="form-section">
+                    <h3 class="section-title">Product Details</h3>
+                    <div class="product-info-box">
+                        <div class="product-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-tag" aria-hidden="true"></i>
+                                Product:
+                            </span>
+                            <span class="info-value" id="cartProductDisplay"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="cartQuantity" class="form-label">
+                                <i class="fas fa-boxes" aria-hidden="true"></i>
+                                Quantity
+                            </label>
+                            <div class="quantity-input-wrapper">
+                                <button type="button" class="quantity-btn quantity-minus" aria-label="Decrease quantity">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                </button>
+                                <input type="number" id="cartQuantity" name="quantity" class="form-input quantity-input" min="1" value="1" required>
+                                <button type="button" class="quantity-btn quantity-plus" aria-label="Increase quantity">
+                                    <i class="fas fa-plus" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeAddToCartModal()">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                    <span>Cancel</span>
+                </button>
+                <button type="submit" form="addToCartForm" class="btn-primary">
+                    <i class="fas fa-cart-plus" aria-hidden="true"></i>
+                    <span>Add to Cart</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buy Now Modal -->
+    <div id="buyNowModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="buyNowTitle">
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">
+                <h2 class="modal-title" id="buyNowTitle">
+                    <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                    <span>Complete Your Purchase</span>
+                </h2>
+                <button class="modal-close" onclick="closeBuyNowModal()" aria-label="Close modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            
+            <form id="buyNowForm" class="modal-body">
+                <input type="hidden" id="modalProductId" name="productId">
+                <input type="hidden" id="modalProductName" name="productName">
+                
+                <!-- Product Info -->
+                <div class="form-section">
+                    <h3 class="section-title">Product Details</h3>
+                    <div class="product-info-box">
+                        <div class="product-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-tag" aria-hidden="true"></i>
+                                Product:
+                            </span>
+                            <span class="info-value" id="modalProductDisplay"></span>
+                        </div>
+                        <div class="form-group form-group-inline">
+                            <label for="quantity" class="form-label">
+                                <i class="fas fa-boxes" aria-hidden="true"></i>
+                                Quantity
+                            </label>
+                            <div class="quantity-input-wrapper">
+                                <button type="button" class="quantity-btn quantity-minus" aria-label="Decrease quantity">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                </button>
+                                <input type="number" id="quantity" name="quantity" class="form-input quantity-input" min="1" value="1" required>
+                                <button type="button" class="quantity-btn quantity-plus" aria-label="Increase quantity">
+                                    <i class="fas fa-plus" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                        Customer Information
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="customerName" class="form-label">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                Full Name
+                            </label>
+                            <input type="text" id="customerName" name="customerName" class="form-input" placeholder="John Doe" required autocomplete="name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customerEmail" class="form-label">
+                                <i class="fas fa-envelope" aria-hidden="true"></i>
+                                Email Address
+                            </label>
+                            <input type="email" id="customerEmail" name="customerEmail" class="form-input" placeholder="john@example.com" required autocomplete="email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customerPhone" class="form-label">
+                                <i class="fas fa-phone" aria-hidden="true"></i>
+                                Phone Number
+                            </label>
+                            <input type="tel" id="customerPhone" name="customerPhone" class="form-input" placeholder="+63 912 345 6789" required autocomplete="tel">
+                        </div>
+                        
+                        <div class="form-group form-group-full">
+                            <label for="customerAddress" class="form-label">
+                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                Delivery Address
+                            </label>
+                            <textarea id="customerAddress" name="customerAddress" class="form-input" rows="3" placeholder="Enter complete delivery address including street, city, and postal code" required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeBuyNowModal()">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                    <span>Cancel</span>
+                </button>
+                <button type="submit" form="buyNowForm" class="btn-primary">
+                    <i class="fas fa-check" aria-hidden="true"></i>
+                    <span>Confirm Purchase</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ asset('HomeFolder/view_product.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+</body>
+</html>

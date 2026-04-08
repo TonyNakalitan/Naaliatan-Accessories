@@ -1,0 +1,214 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Order Management | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('OrderFolder/index.css?v=' ~ random()) }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <div class="search-global">
+                <i class="fas fa-search"></i>
+                <input type="text" id="globalSearch" placeholder="Search orders...">
+            </div>
+            <div class="user-widget">
+                <button class="icon-btn"><i class="fas fa-bell"></i></button>
+                <div class="avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="page-intro">
+                <div>
+                    <h1 class="page-title">Order Management</h1>
+                    <p class="page-subtitle">Monitor orders, manage status updates, and track fulfillment</p>
+                </div>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            <div class="stats-grid">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Orders</h3>
+                        <p class="value">{{ orders|length }}</p>
+                        <span class="stat-badge">All Time</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Pending</h3>
+                        <p class="value">{{ orders|filter(o => o.status == 'pending')|length }}</p>
+                        <span class="stat-badge">Processing</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-emerald">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Completed</h3>
+                        <p class="value">{{ orders|filter(o => o.status == 'completed')|length }}</p>
+                        <span class="stat-badge">Delivered</span>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-amber">
+                    <div class="stat-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Revenue</h3>
+                        <p class="value">₱{{ orders|filter(o => o.status == 'completed')|reduce((carry, o) => carry + o.totalAmount, 0)|number_format(0, '.', ',') }}</p>
+                        <span class="stat-badge">Total</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrapper">
+                        <div class="panel-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <span class="panel-title">All Orders</span>
+                    </div>
+                    <div class="badge-group">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <select id="deliveryFilter" class="filter-select">
+                            <option value="all">All Delivery</option>
+                            <option value="courier">Courier</option>
+                            <option value="pickup">Pickup</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="myTable" class="order-table">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Delivery</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th class="action-column">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody">
+                            {% for order in orders %}
+                                <tr>
+                                    <td><strong class="order-number">{{ order.orderNumber }}</strong></td>
+                                    <td>
+                                        <div class="customer-cell">
+                                            <div class="customer-avatar">
+                                                {{ (order.customerName ?: 'Guest')|slice(0,1)|upper }}
+                                            </div>
+                                            <span class="customer-name">{{ order.customerName ?: 'Guest Customer' }}</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="contact-text">{{ order.phoneNumber ?: 'No phone' }}</span></td>
+                                    <td>
+                                        <span class="delivery-badge">
+                                            <i class="fas fa-{{ order.deliveryType == 'Pickup' ? 'store' : 'truck' }}"></i>
+                                            {{ order.deliveryType ?: 'Standard' }}
+                                        </span>
+                                    </td>
+                                    <td><strong class="price-text">{{ order.formattedTotalAmount ?: '₱0.00' }}</strong></td>
+                                    <td>
+                                        {% set status = order.status|default('pending') %}
+                                        {% if status == 'completed' %}
+                                            <span class="status-badge status-completed">
+                                                <i class="fas fa-circle"></i>
+                                                Completed
+                                            </span>
+                                        {% elseif status == 'cancelled' %}
+                                            <span class="status-badge status-cancelled">
+                                                <i class="fas fa-circle"></i>
+                                                Cancelled
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-pending">
+                                                <i class="fas fa-circle"></i>
+                                                Pending
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ order.createdAt ? order.createdAt|date('M d, Y') : '—' }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{{ role_path('order_show', {'id': order.id}) }}" class="btn-action btn-view" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <form method="post" action="{{ role_path('order_delete', {'id': order.id}) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this order? Stock will be restored if order is not completed.');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+                                                <button type="submit" class="btn-action btn-delete" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="empty-state">
+                                        <i class="fas fa-shopping-bag"></i>
+                                        <p>No orders found</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+    <script src="{{ asset('OrderFolder/index.js') }}"></script>
+{% endblock %}

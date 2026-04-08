@@ -1,0 +1,416 @@
+/* App-wide styles */
+
+/* Sidebar Logo */
+.sidebar-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    margin-right: 0.75rem;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 1.5rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-footer .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar-footer .nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateX(4px);
+}
+
+.sidebar-footer .nav-item.active {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.sidebar-footer .nav-item.logout-item {
+    color: #ef4444;
+}
+
+.sidebar-footer .nav-item.logout-item:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Enhanced Logout Modal Styles - Matching Delete User Modal Design */
+.modal-logout .modal-header-danger {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-bottom: 1px solid #fecaca;
+    padding: 1.5rem;
+}
+
+.modal-logout .modal-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-logout .modal-icon-danger {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.modal-logout .modal-title {
+    color: #7f1d1d;
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.modal-logout .modal-title i {
+    display: none;
+}
+
+/* Logout User Info - Matching Delete User Info */
+.logout-user-info {
+    margin-bottom: 1.25rem;
+}
+
+.logout-user-info .user-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.logout-user-info .user-preview-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    overflow: hidden;
+}
+
+.logout-user-info .user-preview-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logout-user-info .user-preview-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.logout-user-info .user-preview-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.logout-user-info .user-preview-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Logout Warning Box - Matching Delete Modal Warning Box */
+.modal-logout .warning-box {
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border: 1px solid #991b1b;
+}
+
+.modal-logout .warning-box .warning-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.modal-logout .warning-box .warning-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: white;
+}
+
+.modal-logout .warning-box .warning-content p {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Logout Confirmation - Matching Delete Modal Confirmation */
+.modal-logout .confirmation-check {
+    margin-top: 0.5rem;
+}
+
+.modal-logout .confirmation-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.75rem;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.modal-logout .confirmation-checkbox:hover {
+    background: #f8fafc;
+}
+
+.modal-logout .confirmation-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.modal-logout .confirmation-checkbox .checkmark {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    margin-top: 2px;
+}
+
+.modal-logout .confirmation-checkbox input[type="checkbox"]:checked + .checkmark {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-color: #ef4444;
+}
+
+.modal-logout .confirmation-checkbox input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓';
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.modal-logout .confirmation-checkbox .confirmation-label {
+    font-size: 0.875rem;
+    color: #475569;
+    line-height: 1.5;
+}
+
+/* Enhanced Button States */
+.btn-danger:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-danger:disabled:hover {
+    background: #9ca3af;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Modal Animation for Logout Modal - Matching Delete Modal */
+.modal-logout .modal-content {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+
+
+/* Modal Status Box */
+.status-box {
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+/* Modal Success Box */
+.success-box {
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+/* Modal Deactivate Success Box */
+.deactivate-success-box {
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.deactivate-success-box i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.deactivate-success-box p {
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
+/* Modal Activate Success Box */
+.activate-success-box {
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.activate-success-box i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.activate-success-box p {
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
+.success-box i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.success-box p {
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
+.status-box i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.status-box p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Button Styles */
+.btn-primary {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}

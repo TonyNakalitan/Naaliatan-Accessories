@@ -1,0 +1,436 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Products - Naaliatan's Accessories{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('HomeFolder/index.css') }}">
+    <link rel="stylesheet" href="{{ asset('HomeFolder/products.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <a href="{{ path('app_home') }}" class="nav-brand" aria-label="Naaliatan Home">
+                <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="brand-logo">
+            </a>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <nav class="main-nav" id="mainNav">
+                <a href="{{ path('app_home') }}" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ path('app_about') }}" class="nav-link">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </a>
+                <a href="{{ path('app_products') }}" class="nav-link active">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+                <a href="{{ path('app_contact') }}" class="nav-link">
+                    <i class="fas fa-envelope"></i>
+                    <span>Contact</span>
+                </a>
+            </nav>
+            
+            <div class="user-widget">
+                {% if app.user %}
+                    <div class="avatar">
+                        {% if app.user.profilePicture %}
+                            <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        {% else %}
+                            {{ (app.user.displayName ?: app.user.username)|default('U')|slice(0,1)|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="user-info">
+                        <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                        <p class="user-role">{{ app.user.roles[0] == 'ROLE_ADMIN' ? 'Admin' : 'Staff' }}</p>
+                    </div>
+                {% else %}
+                    <a href="{{ path('app_register') }}" class="btn-register">Register</a>
+                    <a href="{{ path('app_login') }}" class="btn-login">Login</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="page-container">
+            {# Section 1: Hero Section #}
+            <section class="hero-section">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fas fa-sparkles"></i>
+                        <span>Product Collection</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Explore Our<br>
+                        <span class="gradient-text">Character Collection</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Discover premium accessories for your favorite characters. 
+                        From anime figures to gaming collectibles, find everything you need to complete your collection.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#characters" class="btn-hero btn-primary">
+                            <i class="fas fa-users"></i>
+                            Browse Characters
+                        </a>
+                        <a href="{{ path('app_admin_product_management_index') }}" class="btn-hero btn-secondary">
+                            <i class="fas fa-box-open"></i>
+                            View All Products
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="floating-card card-1">
+                        <i class="fas fa-user-ninja"></i>
+                        <span>{{ stats.totalCharacters|default('0') }} Characters</span>
+                    </div>
+                    <div class="floating-card card-2">
+                        <i class="fas fa-box-open"></i>
+                        <span>{{ stats.totalProducts|default('0') }} Products</span>
+                    </div>
+                    <div class="floating-card card-3">
+                        <i class="fas fa-star"></i>
+                        <span>Premium Quality</span>
+                    </div>
+                    <div class="hero-icon-main">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </section>
+
+            {# Section 2: Stats Overview #}
+            <section class="stats-overview">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Products</h3>
+                        <p class="value">{{ stats.totalProducts|default('0') }}</p>
+                        <span class="stat-badge">Catalog</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-ninja"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Characters</h3>
+                        <p class="value">{{ stats.totalCharacters|default('0') }}</p>
+                        <span class="stat-badge">Collection</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-emerald">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Top Rated</h3>
+                        <p class="value">{{ stats.topRated|default('0') }}</p>
+                        <span class="stat-badge">Quality</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-pink">
+                    <div class="stat-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Special Offers</h3>
+                        <p class="value">{{ stats.specialOffers|default('0') }}</p>
+                        <span class="stat-badge">Deals</span>
+                    </div>
+                </div>
+            </section>
+
+            {# Section 3: Features Section #}
+            <section class="features-section">
+                <div class="section-header">
+                    <h2 class="section-title">Why Choose Our Products?</h2>
+                    <p class="section-subtitle">We provide the best quality accessories for collectors</p>
+                </div>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon feature-icon-blue">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <h3>Premium Quality</h3>
+                        <p>All products are crafted with the highest quality materials and attention to detail</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Authentic materials</li>
+                            <li><i class="fas fa-check"></i> Expert craftsmanship</li>
+                            <li><i class="fas fa-check"></i> Quality guaranteed</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon feature-icon-green">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                        </div>
+                        <h3>Fast Delivery</h3>
+                        <p>Quick and reliable shipping to get your collectibles to you as soon as possible</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Same-day processing</li>
+                            <li><i class="fas fa-check"></i> Track your order</li>
+                            <li><i class="fas fa-check"></i> Secure packaging</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon feature-icon-red">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                        </div>
+                        <h3>Secure Shopping</h3>
+                        <p>Safe and secure payment processing with buyer protection on every purchase</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Encrypted payments</li>
+                            <li><i class="fas fa-check"></i> Money-back guarantee</li>
+                            <li><i class="fas fa-check"></i> 24/7 support</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            {# Section 4: Characters Gallery #}
+            <section class="products-section" id="characters">
+                <div class="section-header">
+                    <h2 class="section-title">Character Collection</h2>
+                    <p class="section-subtitle">Browse our extensive collection of character accessories</p>
+                </div>
+                
+                <div class="products-container">
+                    {% if characters is empty %}
+                        <div class="no-products">
+                            <div class="no-products-icon">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <h3>No Characters Available</h3>
+                            <p>Check back soon for new character accessories and collectibles.</p>
+                            <a href="{{ path('app_home') }}" class="btn-hero btn-primary">
+                                <i class="fas fa-home"></i>
+                                Return Home
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="gallery-grid">
+                            {% for character in characters %}
+                                <div class="character-card">
+                                    <div class="character-image-container">
+                                        {% if character.image %}
+                                            <img src="{{ asset('images/characters/' ~ character.image) }}" 
+                                                 alt="{{ character.name }}" 
+                                                 class="character-image"
+                                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ character.name|url_encode }}&background=random&size=400&color=fff';">
+                                        {% else %}
+                                            <img src="https://ui-avatars.com/api/?name={{ character.name|url_encode }}&background=random&size=400&color=fff" 
+                                                 alt="{{ character.name }}" 
+                                                 class="character-image">
+                                        {% endif %}
+                                        
+                                        <div class="character-overlay">
+                                            <div class="character-overlay-content">
+                                                <h3 class="character-name-overlay">{{ character.name }}</h3>
+                                                <span class="character-code-overlay">{{ character.creator }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="character-info">
+                                        <div class="character-header">
+                                            <h3 class="character-name">{{ character.name }}</h3>
+                                        </div>
+                                        
+                                        <div class="character-description-wrapper">
+                                            <p class="character-description">{{ character.description|default('Premium character accessories and collectibles') }}</p>
+                                        </div>
+                                        
+                                        <div class="character-stats">
+                                            <div class="stat-item">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-box"></i>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <span class="stat-label">Products</span>
+                                                    <span class="stat-value">{{ character.products|length }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-icon" style="background: {{ character.alignmentColor }}20; color: {{ character.alignmentColor }};">
+                                                    <i class="fas fa-shield-alt"></i>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <span class="stat-label">Alignment</span>
+                                                    <span class="stat-value">{{ character.alignment }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="character-actions">
+                                        <a href="{{ path('app_admin_character_management_show', {'id': character.id}) }}" class="btn-view">
+                                            <i class="fas fa-eye"></i>
+                                            View Details
+                                        </a>
+                                        {% if character.products|length > 0 %}
+                                            <a href="{{ path('app_view_products_by_character', {'characterId': character.id}) }}" class="btn-cart">
+                                                <i class="fas fa-shopping-cart"></i>
+                                                View Products
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            {# Section 5: Quick Actions Panel #}
+            <section class="quick-actions-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrapper">
+                        <div class="panel-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <span class="panel-title">Quick Actions</span>
+                    </div>
+                </div>
+                <div class="actions-grid">
+                    <a href="{{ path('app_admin_product_management_new') }}" class="action-card">
+                        <div class="action-icon action-icon-blue">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Add Product</h4>
+                            <p>Create new product listing</p>
+                        </div>
+                        <i class="fas fa-arrow-right action-arrow"></i>
+                    </a>
+
+                    <a href="{{ path('app_admin_character_management_new') }}" class="action-card">
+                        <div class="action-icon action-icon-purple">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Add Character</h4>
+                            <p>Add new character profile</p>
+                        </div>
+                        <i class="fas fa-arrow-right action-arrow"></i>
+                    </a>
+
+                    <a href="{{ path('app_admin_stock_management_index') }}" class="action-card">
+                        <div class="action-icon action-icon-emerald">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Manage Stock</h4>
+                            <p>Update inventory levels</p>
+                        </div>
+                        <i class="fas fa-arrow-right action-arrow"></i>
+                    </a>
+
+                    <a href="{{ path('app_admin_order_index') }}" class="action-card">
+                        <div class="action-icon action-icon-amber">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>View Orders</h4>
+                            <p>Check recent orders</p>
+                        </div>
+                        <i class="fas fa-arrow-right action-arrow"></i>
+                    </a>
+                </div>
+            </section>
+
+            {# Section 6: CTA Section #}
+            <section class="cta-section">
+                <div class="cta-content">
+                    <h2>Ready to Start Your Collection?</h2>
+                    <p>Browse our premium selection of character accessories and find the perfect pieces for your collection</p>
+                    <div class="cta-actions">
+                        <a href="#characters" class="btn-cta btn-cta-primary">
+                            <i class="fas fa-users"></i>
+                            Browse Characters
+                        </a>
+                        <a href="{{ path('app_admin_dashboard') }}" class="btn-cta btn-cta-secondary">
+                            <i class="fas fa-chart-line"></i>
+                            Go to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            {# Footer #}
+            <footer class="site-footer">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <div class="footer-logo">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div class="footer-brand-info">
+                            <h3>Naaliatan's Accessories</h3>
+                            <p>Your premier destination for character collectibles and accessories</p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <div class="footer-column">
+                            <h4>Quick Links</h4>
+                            <ul>
+                                <li><a href="{{ path('app_home') }}"><i class="fas fa-chevron-right"></i> Home</a></li>
+                                <li><a href="{{ path('app_about') }}"><i class="fas fa-chevron-right"></i> About Us</a></li>
+                                <li><a href="{{ path('app_products') }}"><i class="fas fa-chevron-right"></i> Products</a></li>
+                                <li><a href="{{ path('app_contact') }}"><i class="fas fa-chevron-right"></i> Contact</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h4>Support</h4>
+                            <ul>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Help Center</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Shipping Info</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Returns</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> FAQ</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h4>Connect</h4>
+                            <div class="social-links">
+                                <a href="https://www.facebook.com/profile.php?id=61576480294715" target="_blank" rel="noopener noreferrer" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ "now"|date("Y") }} Naaliatan's Accessories. All rights reserved.</p>
+                    <div class="footer-legal">
+                        <a href="#">Privacy Policy</a>
+                        <span>|</span>
+                        <a href="#">Terms of Service</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('HomeFolder/index.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+{% endblock %}

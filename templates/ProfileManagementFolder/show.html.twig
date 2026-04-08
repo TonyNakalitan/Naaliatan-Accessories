@@ -1,0 +1,266 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}My Profile | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('ProfileManagementFolder/show.css?v=' ~ random()) }}">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <div class="search-global">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search profile information...">
+            </div>
+            <div class="user-widget">
+                <button class="icon-btn"><i class="fas fa-bell"></i></button>
+                <div class="avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="page-intro">
+                <div>
+                    <h1 class="page-title">My Profile</h1>
+                    <p class="page-subtitle">View and manage your personal information and account details</p>
+                </div>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            <div class="profile-grid">
+                <!-- Left Column: Profile Card -->
+                <div class="profile-sidebar">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar-large">
+                                {% if user.profilePicture %}
+                                    <img src="{{ asset('images/profiles/' ~ user.profilePicture) }}" alt="{{ user.displayName ?: user.username }}">
+                                {% else %}
+                                    <div class="avatar-placeholder">
+                                        {{ (user.displayName ?: user.username)|slice(0,1)|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <h2 class="profile-name">{{ user.displayName ?: user.username }}</h2>
+                            <p class="profile-username">@{{ user.username }}</p>
+                            
+                            <div class="profile-badges">
+                                {% if user.isAdmin() %}
+                                    <span class="badge badge-admin">
+                                        <i class="fas fa-crown"></i>
+                                        Administrator
+                                    </span>
+                                {% elseif user.isStaff() %}
+                                    <span class="badge badge-staff">
+                                        <i class="fas fa-id-badge"></i>
+                                        Staff
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-user">
+                                        <i class="fas fa-user"></i>
+                                        User
+                                    </span>
+                                {% endif %}
+                                
+                                {% if user.isActive %}
+                                    <span class="status-badge status-active">
+                                        <i class="fas fa-check-circle"></i>
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">
+                                        <i class="fas fa-times-circle"></i>
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <a href="{{ role_path('profile_edit') }}" class="btn-edit-profile">
+                                <i class="fas fa-edit"></i>
+                                Edit Profile
+                            </a>
+                        </div>
+
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-icon stat-icon-blue">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <span class="stat-label">Member Since</span>
+                                    <span class="stat-value">{{ user.createdAt ? user.createdAt|date('M Y') : 'Unknown' }}</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon stat-icon-purple">
+                                    <i class="fas fa-history"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <span class="stat-label">Total Activities</span>
+                                    <span class="stat-value">{{ user.activityLogs|length }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Information Panels -->
+                <div class="profile-content">
+                    <!-- Account Information -->
+                    <div class="info-panel">
+                        <div class="panel-header">
+                            <div class="panel-title-wrapper">
+                                <div class="panel-icon">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <span class="panel-title">Account Information</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-user"></i>
+                                    <div>
+                                        <h4>Username</h4>
+                                        <p>Your unique identifier</p>
+                                    </div>
+                                </div>
+                                <span class="info-value">{{ user.username }}</span>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-signature"></i>
+                                    <div>
+                                        <h4>Display Name</h4>
+                                        <p>How others see your name</p>
+                                    </div>
+                                </div>
+                                <span class="info-value">{{ user.displayName ?: 'Not set' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-envelope"></i>
+                                    <div>
+                                        <h4>Email Address</h4>
+                                        <p>Your contact email</p>
+                                    </div>
+                                </div>
+                                <span class="info-value">{{ user.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Details -->
+                    {% if user.zodiacSign or user.bio %}
+                    <div class="info-panel">
+                        <div class="panel-header">
+                            <div class="panel-title-wrapper">
+                                <div class="panel-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="panel-title">Personal Details</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            {% if user.zodiacSign %}
+                            <div class="info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-moon"></i>
+                                    <div>
+                                        <h4>Zodiac Sign</h4>
+                                        <p>Your astrological sign</p>
+                                    </div>
+                                </div>
+                                <span class="info-value">{{ user.zodiacSign }}</span>
+                            </div>
+                            {% endif %}
+                            {% if user.bio %}
+                            <div class="info-row info-row-column">
+                                <div class="info-label">
+                                    <i class="fas fa-align-left"></i>
+                                    <div>
+                                        <h4>Bio</h4>
+                                        <p>About you</p>
+                                    </div>
+                                </div>
+                                <p class="bio-text">{{ user.bio }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Recent Activity -->
+                    <div class="info-panel">
+                        <div class="panel-header">
+                            <div class="panel-title-wrapper">
+                                <div class="panel-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <span class="panel-title">Recent Activity</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            {% set recentLogs = user.activityLogs|slice(0, 5) %}
+                            {% if recentLogs|length > 0 %}
+                                {% for log in recentLogs %}
+                                    <div class="activity-item">
+                                        <div class="activity-icon">
+                                            {% set actionType = log.action|default('UNKNOWN')|upper %}
+                                            {% if actionType == 'CREATE' %}
+                                                <i class="fas fa-plus-circle"></i>
+                                            {% elseif actionType == 'UPDATE' %}
+                                                <i class="fas fa-edit"></i>
+                                            {% elseif actionType == 'DELETE' %}
+                                                <i class="fas fa-trash-alt"></i>
+                                            {% elseif actionType == 'LOGIN' %}
+                                                <i class="fas fa-sign-in-alt"></i>
+                                            {% else %}
+                                                <i class="fas fa-info-circle"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="activity-details">
+                                            <h4>{{ log.action }}</h4>
+                                            <p>{{ log.targetData }}</p>
+                                            <span class="activity-time">{{ log.createdAt|date('M d, Y H:i') }}</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>No recent activity</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

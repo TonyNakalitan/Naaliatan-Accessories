@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User | Naaliatan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('UserManagementFolder/edit.css') }}">
+</head>
+<body class="min-h-screen">
+
+    <div class="flex h-screen">
+        <main class="flex-grow flex flex-col overflow-y-auto w-full bg-slate-50">
+            <div class="w-full p-4 sm:p-6 lg:p-8">
+
+                {% if app.flashes('success') %}
+                    <div class="mb-4 sm:mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 shadow-sm">
+                        {% for message in app.flashes('success') %}
+                            <p class="text-sm sm:text-base"><i class="fas fa-check-circle mr-2"></i>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if app.flashes('error') %}
+                    <div class="mb-4 sm:mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 shadow-sm">
+                        {% for message in app.flashes('error') %}
+                            <p class="text-sm sm:text-base"><i class="fas fa-exclamation-circle mr-2"></i>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Main Container -->
+                <div class="bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border border-white/50">
+                    
+                    <!-- Header with Back Button Inside Container -->
+                    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                                    <i class="fas fa-user-edit text-white text-lg sm:text-xl"></i>
+                                </div>
+                                <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                    Edit User
+                                </h1>
+                            </div>
+                            <p class="text-slate-600 text-sm sm:text-base">Update user account information and permissions.</p>
+                        </div>
+                        <a href="{{ path('app_admin_user_management_index') }}" class="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm text-slate-700 font-semibold rounded-xl hover:bg-white hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap border border-slate-200">
+                            <i class="fas fa-arrow-left"></i>
+                            <span class="hidden sm:inline">Back to User Management</span>
+                            <span class="sm:hidden">Back</span>
+                        </a>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'id': 'userForm', 'novalidate': 'novalidate'}}) }}
+
+                <!-- Wizard Wrapper -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                    
+                    <div class="lg:col-span-8">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-6 border border-white/50">
+                            
+                            <div class="flex gap-2 sm:gap-4 mb-8 sm:mb-10 overflow-x-auto pb-2 scrollbar-hide">
+                                <div class="step-pill active min-w-[80px] sm:min-w-0" id="pill-1">
+                                    <div class="step-number">1</div>
+                                    <div>
+                                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Step 1</span>
+                                        <p class="text-xs sm:text-sm font-semibold">Basic Info</p>
+                                    </div>
+                                </div>
+                                <div class="step-pill min-w-[80px] sm:min-w-0" id="pill-2">
+                                    <div class="step-number">2</div>
+                                    <div>
+                                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Step 2</span>
+                                        <p class="text-xs sm:text-sm font-semibold">Credentials</p>
+                                    </div>
+                                </div>
+                                <div class="step-pill min-w-[80px] sm:min-w-0" id="pill-3">
+                                    <div class="step-number">3</div>
+                                    <div>
+                                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Step 3</span>
+                                        <p class="text-xs sm:text-sm font-semibold">Permissions</p>
+                                    </div>
+                                </div>
+                                <div class="step-pill min-w-[80px] sm:min-w-0" id="pill-4">
+                                    <div class="step-number">4</div>
+                                    <div>
+                                        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Step 4</span>
+                                        <p class="text-xs sm:text-sm font-semibold">Review</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="step-content active fade-in" data-step="1">
+                                <div class="space-y-4 sm:space-y-6">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                                        <div class="col-span-1">
+                                            <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Username</label>
+                                            {{ form_widget(form.username, {'attr': {'class': 'form-input-styled text-sm sm:text-base', 'placeholder': 'e.g. john_doe', 'oninput': 'syncPreview("username", this.value)'}}) }}
+                                            {{ form_errors(form.username) }}
+                                        </div>
+                                        <div class="col-span-1">
+                                            <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Display Name</label>
+                                            {{ form_widget(form.displayName, {'attr': {'class': 'form-input-styled text-sm sm:text-base', 'placeholder': 'e.g. John Doe', 'oninput': 'syncPreview("displayName", this.value)'}}) }}
+                                            {{ form_errors(form.displayName) }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                                        {{ form_widget(form.email, {'attr': {'class': 'form-input-styled text-sm sm:text-base', 'placeholder': 'user@example.com', 'oninput': 'syncPreview("email", this.value)'}}) }}
+                                        {{ form_errors(form.email) }}
+                                    </div>
+                                </div>
+                                
+                                <!-- PRO TIP for Step 1 -->
+                                <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
+                                    <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>
+                                    <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                                        <span class="font-bold block mb-1">PRO TIP</span>
+                                        Changing the username may affect user login. Display names can be updated freely and are shown throughout the system.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="step-content fade-in" data-step="2">
+                                <div class="space-y-6 sm:space-y-8">
+                                    <div class="bg-blue-50 rounded-2xl p-4 sm:p-6 border border-blue-100 flex gap-3 sm:gap-4 mb-6">
+                                        <div class="text-blue-500 mt-1 text-sm sm:text-base"><i class="fas fa-info-circle"></i></div>
+                                        <p class="text-[10px] sm:text-xs text-blue-800 leading-relaxed">
+                                            <span class="font-bold block mb-1">PASSWORD UPDATE</span>
+                                            Leave the password field empty to keep the current password. Only enter a new password if you want to change it.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2">New Password (Optional)</label>
+                                        <div class="relative">
+                                            {{ form_widget(form.plainPassword, {'attr': {'class': 'form-input-styled text-sm sm:text-base pr-12', 'placeholder': 'Leave empty to keep current password', 'id': 'passwordInput'}}) }}
+                                            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                                <i class="fas fa-eye" id="toggleIcon"></i>
+                                            </button>
+                                        </div>
+                                        {{ form_errors(form.plainPassword) }}
+                                        
+                                        <!-- Password Strength Indicator -->
+                                        <div class="mt-3" id="passwordStrengthContainer" style="display: none;">
+                                            <div class="flex gap-1 mb-2">
+                                                <div class="h-1.5 flex-1 bg-slate-200 rounded-full strength-bar" data-level="1"></div>
+                                                <div class="h-1.5 flex-1 bg-slate-200 rounded-full strength-bar" data-level="2"></div>
+                                                <div class="h-1.5 flex-1 bg-slate-200 rounded-full strength-bar" data-level="3"></div>
+                                                <div class="h-1.5 flex-1 bg-slate-200 rounded-full strength-bar" data-level="4"></div>
+                                            </div>
+                                            <p class="text-xs text-slate-500" id="strengthText">Password strength: <span class="font-semibold">Not set</span></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-slate-50 rounded-2xl p-4 sm:p-6 border border-slate-200">
+                                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Password Requirements</h4>
+                                        <ul class="space-y-2">
+                                            <li class="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+                                                <i class="fas fa-check-circle text-slate-300" id="req-length"></i>
+                                                At least 8 characters
+                                            </li>
+                                            <li class="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+                                                <i class="fas fa-check-circle text-slate-300" id="req-uppercase"></i>
+                                                One uppercase letter
+                                            </li>
+                                            <li class="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+                                                <i class="fas fa-check-circle text-slate-300" id="req-lowercase"></i>
+                                                One lowercase letter
+                                            </li>
+                                            <li class="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+                                                <i class="fas fa-check-circle text-slate-300" id="req-number"></i>
+                                                One number
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <!-- PRO TIP for Step 2 -->
+                                <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
+                                    <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>
+                                    <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                                        <span class="font-bold block mb-1">PRO TIP</span>
+                                        Only update the password if necessary. The user will need to use the new password on their next login. Consider notifying them of the change.
+                                    </p>
+                                </div>
+                            </div>
+
+
+                            <div class="step-content fade-in" data-step="3">
+                                <div class="space-y-6 sm:space-y-8">
+                                    <div>
+                                        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-4">User Roles</label>
+                                        <div class="space-y-3">
+                                            {{ form_widget(form.roles, {'attr': {'class': 'hidden'}}) }}
+                                            <div class="role-card" onclick="toggleRole(this, 'ROLE_ADMIN')" data-role="ROLE_ADMIN">
+                                                <div class="flex items-start gap-4">
+                                                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0">
+                                                        <i class="fas fa-crown"></i>
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <h4 class="text-base font-bold text-slate-900 mb-1">Administrator</h4>
+                                                        <p class="text-xs text-slate-600">Full system access with all permissions including user management, product management, and system settings.</p>
+                                                    </div>
+                                                    <div class="role-checkbox">
+                                                        <i class="fas fa-check"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="role-card" onclick="toggleRole(this, 'ROLE_STAFF')" data-role="ROLE_STAFF">
+                                                <div class="flex items-start gap-4">
+                                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0">
+                                                        <i class="fas fa-user-tie"></i>
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <h4 class="text-base font-bold text-slate-900 mb-1">Staff</h4>
+                                                        <p class="text-xs text-slate-600">Limited access for daily operations including inventory management, order processing, and customer support.</p>
+                                                    </div>
+                                                    <div class="role-checkbox">
+                                                        <i class="fas fa-check"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ form_errors(form.roles) }}
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-4">Account Status</label>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div class="status-card" onclick="setStatus(this, true)" data-status="active">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 text-lg">
+                                                        <i class="fas fa-check-circle"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-sm font-bold text-slate-900">Active</h4>
+                                                        <p class="text-xs text-slate-600">User can log in</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="status-card" onclick="setStatus(this, false)" data-status="inactive">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-red-600 text-lg">
+                                                        <i class="fas fa-times-circle"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-sm font-bold text-slate-900">Inactive</h4>
+                                                        <p class="text-xs text-slate-600">User cannot log in</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display: none;">
+                                            {{ form_widget(form.isActive) }}
+                                        </div>
+                                        {{ form_errors(form.isActive) }}
+                                    </div>
+                                </div>
+                                
+                                <!-- PRO TIP for Step 3 -->
+                                <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
+                                    <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>
+                                    <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                                        <span class="font-bold block mb-1">PRO TIP</span>
+                                        Changing roles affects user permissions immediately. Deactivating an account will log the user out and prevent future logins until reactivated.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="step-content fade-in" data-step="4">
+                                <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-6 text-white mb-8 flex items-center gap-6 shadow-xl shadow-indigo-200 relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
+                                    <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-2xl relative z-10 animate-bounce-slow">
+                                        <i class="fas fa-save"></i>
+                                    </div>
+                                    <div class="relative z-10">
+                                        <h3 class="text-lg font-bold">Ready to Save Changes!</h3>
+                                        <p class="text-white/90 text-sm">Please verify the updated details on the right before saving.</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Changes Summary</h4>
+                                        <ul class="space-y-3">
+                                            <li class="flex items-center gap-3 text-sm font-medium text-slate-700">
+                                                <i class="fas fa-check-circle text-emerald-500"></i> User information updated
+                                            </li>
+                                            <li class="flex items-center gap-3 text-sm font-medium text-slate-700">
+                                                <i class="fas fa-check-circle text-emerald-500"></i> Credentials verified
+                                            </li>
+                                            <li class="flex items-center gap-3 text-sm font-medium text-slate-700">
+                                                <i class="fas fa-check-circle text-emerald-500"></i> Roles and permissions configured
+                                            </li>
+                                            <li class="flex items-center gap-3 text-sm font-medium text-slate-700">
+                                                <i class="fas fa-check-circle text-emerald-500"></i> Ready to save
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="bg-purple-50 rounded-2xl p-4 sm:p-6 border border-purple-100 flex gap-3 sm:gap-4">
+                                        <div class="text-purple-500 mt-1 text-sm sm:text-base"><i class="fas fa-history"></i></div>
+                                        <div>
+                                            <p class="text-[10px] sm:text-xs text-purple-800 leading-relaxed">
+                                                <span class="font-bold block mb-1">AUDIT TRAIL</span>
+                                                All changes to user accounts are logged for security and compliance purposes. This update will be recorded with your admin credentials.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- PRO TIP for Step 4 -->
+                                <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
+                                    <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>
+                                    <p class="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                                        <span class="font-bold block mb-1">PRO TIP</span>
+                                        Review all changes carefully before saving. Changes to roles and status take effect immediately and may impact the user's access to the system.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+                                <button type="button" id="prevBtn" onclick="moveStep(-1)" class="w-full sm:w-auto px-6 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-all opacity-0 pointer-events-none text-sm sm:text-base">
+                                    <i class="fas fa-arrow-left mr-2"></i> Previous
+                                </button>
+                                <button type="button" id="nextBtn" onclick="moveStep(1)" class="w-full sm:w-auto px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all text-sm sm:text-base">
+                                    Next Step <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                                <button type="submit" id="submitBtn" class="w-full sm:w-auto px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all hidden text-sm sm:text-base">
+                                    <span id="submitBtnText">Save Changes <i class="fas fa-save ml-2"></i></span>
+                                    <span id="submitBtnLoading" class="hidden">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>Saving Changes...
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Live Preview Card -->
+                    <div class="lg:col-span-4 lg:sticky lg:top-8">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden border border-white/50 shadow-2xl">
+                            <div class="p-3 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-white/80 to-indigo-50/50 backdrop-blur-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                    <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">Live Preview</span>
+                                </div>
+                                <span class="px-2.5 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-[9px] sm:text-[10px] font-bold rounded-full uppercase shadow-lg">Editing</span>
+                            </div>
+                            
+                            <div class="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-4xl sm:text-5xl mb-4 shadow-xl shadow-indigo-200">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <h2 id="previewDisplayName" class="text-xl sm:text-2xl font-bold text-slate-900 mb-1">{{ user.displayName ?: user.username }}</h2>
+                                    <p id="previewUsername" class="text-sm text-slate-500 mb-1">@{{ user.username }}</p>
+                                    <p id="previewEmail" class="text-xs text-slate-400 mb-4">{{ user.email }}</p>
+                                    
+                                    <div class="flex flex-wrap gap-2 justify-center mb-4" id="previewRolesContainer">
+                                        {% if 'ROLE_ADMIN' in user.roles %}
+                                            <span class="preview-role-badge px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-xs font-semibold" data-role="ROLE_ADMIN">Admin</span>
+                                        {% endif %}
+                                        {% if 'ROLE_STAFF' in user.roles %}
+                                            <span class="preview-role-badge px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full text-xs font-semibold" data-role="ROLE_STAFF">Staff</span>
+                                        {% endif %}
+                                        {% if user.roles|length == 0 or (user.roles|length == 1 and 'ROLE_USER' in user.roles) %}
+                                            <span id="previewRoles" class="px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-xs font-semibold text-slate-600 border border-slate-200">No roles assigned</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div id="previewStatus" class="px-4 py-2 {{ user.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }} rounded-xl text-xs font-bold uppercase tracking-wider">
+                                        {{ user.isActive ? 'Active' : 'Inactive' }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 sm:p-6 bg-white border-t border-slate-100">
+                                <h4 class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Account Details</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-slate-600">Password:</span>
+                                        <span id="previewPassword" class="font-semibold text-slate-600">Unchanged</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-slate-600">Created:</span>
+                                        <span class="font-semibold text-slate-900">{{ user.createdAt ? user.createdAt|date('M d, Y') : 'N/A' }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-slate-600">Verified:</span>
+                                        <span class="font-semibold {{ user.isVerified ? 'text-emerald-600' : 'text-slate-400' }}">{{ user.isVerified ? 'Yes' : 'No' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{ form_rest(form) }}
+                {{ form_end(form) }}
+                </div>
+                <!-- End Main Container -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize with existing user data
+        const existingRoles = {{ user.roles|json_encode|raw }};
+        const existingStatus = {{ user.isActive ? 'true' : 'false' }};
+    </script>
+    <script src="{{ asset('UserManagementFolder/edit.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: NAccessoriesMySQL
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: NaaliatanAccessoriesRoot
+      MYSQL_DATABASE: NAcessoriesDB
+      MYSQL_USER: AnthonyNaaliatan
+      MYSQL_PASSWORD: 09359730321
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - NAcessoriesNetwork
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: NAccessoriesPhpMyAdmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - "8083:80"
+    depends_on:
+      - mysql
+    networks:
+      - NAcessoriesNetwork
+
+volumes:
+  mysql_data:
+
+networks:
+  NAcessoriesNetwork:
+    driver: bridge

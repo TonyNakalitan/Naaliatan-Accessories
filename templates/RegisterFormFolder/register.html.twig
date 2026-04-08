@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Naaliatan's Accessories</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('RegisterFolder/register.css') }}?v={{ random() }}">
+</head>
+<body>
+    <div class="register-container">
+        <!-- Welcome Side -->
+        <div class="welcome-side">
+            <div class="circle-3"></div>
+            <div class="welcome-content">
+                <h1 class="welcome-title">JOIN US</h1>
+                <h2 class="welcome-headline">NAALIATAN'S ACCESSORIES</h2>
+                <p class="welcome-text">
+                    Create your account and become part of Naaliatan's Accessories community. Start managing your experience today.
+                </p>
+            </div>
+        </div>
+
+        <!-- Form Side -->
+        <div class="form-side">
+            <div class="form-header">
+                <h2 class="form-title">Sign up</h2>
+                <p class="form-subtitle">Create your account to get started</p>
+            </div>
+
+            {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+
+            {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+
+            {{ form_start(registrationForm, {'attr': {'class': 'register-form'}}) }}
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="far fa-user input-icon"></i>
+                        {{ form_widget(registrationForm.username, {
+                            'attr': {
+                                'class': 'form-input',
+                                'placeholder': 'Choose a username'
+                            }
+                        }) }}
+                    </div>
+                    {{ form_errors(registrationForm.username) }}
+                </div>
+
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="far fa-envelope input-icon"></i>
+                        {{ form_widget(registrationForm.email, {
+                            'attr': {
+                                'class': 'form-input',
+                                'placeholder': 'Enter your email'
+                            }
+                        }) }}
+                    </div>
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        {{ form_widget(registrationForm.plainPassword, {
+                            'attr': {
+                                'class': 'form-input',
+                                'id': 'password',
+                                'placeholder': 'Create a password'
+                            }
+                        }) }}
+                        <button type="button" class="password-toggle" id="togglePassword">SHOW</button>
+                    </div>
+                    {{ form_errors(registrationForm.plainPassword) }}
+                </div>
+
+                <div class="checkbox-wrapper">
+                    {{ form_widget(registrationForm.agreeTerms) }}
+                    {{ form_label(registrationForm.agreeTerms) }}
+                </div>
+                {{ form_errors(registrationForm.agreeTerms) }}
+
+                <button type="submit" class="register-btn">Sign up</button>
+            {{ form_end(registrationForm) }}
+
+            <div class="divider">
+                <span>Or</span>
+            </div>
+
+            <a href="{{ path('connect_google_start') }}" class="other-btn">
+                <i class="fab fa-google"></i>
+                Sign up with Google
+            </a>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ path('app_login') }}" class="auth-link">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+     <script src="{{ asset('RegisterFolder/register.js') }}"></script>
+     <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+</body>
+</html>

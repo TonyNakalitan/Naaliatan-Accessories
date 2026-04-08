@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} | Naaliatan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('ProductManagementFolder/show.css') }}">
+</head>
+<body class="min-h-screen">
+
+    <div class="flex h-screen">
+        <main class="flex-grow flex flex-col overflow-y-auto w-full bg-slate-50">
+            <div class="w-full p-4 sm:p-6 lg:p-8">
+
+                <!-- Main Container -->
+                <div class="bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border border-white/50">
+                    
+                    <!-- Header with Action Buttons -->
+                    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                                    <i class="fas fa-eye text-white text-lg sm:text-xl"></i>
+                                </div>
+                                <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                    {{ product.name }}
+                                </h1>
+                            </div>
+                            <p class="text-slate-600 text-sm sm:text-base flex items-center gap-2">
+                                <i class="fas fa-barcode text-indigo-500"></i>
+                                Product Code: <span class="font-semibold">{{ product.productCode }}</span>
+                            </p>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <a href="{{ role_path('product_management_index') }}" class="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm text-slate-700 font-semibold rounded-xl hover:bg-white hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base border border-slate-200">
+                                <i class="fas fa-arrow-left"></i>
+                                <span class="hidden sm:inline">Back</span>
+                            </a>
+                            <a href="{{ role_path('product_management_edit', {'id': product.id}) }}" class="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm sm:text-base">
+                                <i class="fas fa-edit"></i>
+                                <span>Edit</span>
+                            </a>
+                        </div>
+                    </div>
+
+                <!-- Content Wrapper -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                    
+                    <div class="lg:col-span-8 slide-in-left">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-6 border border-white/50">
+                            
+                            <!-- Section 1: Basic Information -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg shadow-indigo-200">
+                                        <i class="fas fa-info-circle text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Basic Information</h3>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="info-field">
+                                            <label class="info-label">Product Name</label>
+                                            <p class="info-value">{{ product.name }}</p>
+                                        </div>
+                                        <div class="info-field">
+                                            <label class="info-label">Product Code</label>
+                                            <p class="info-value">{{ product.productCode }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="info-field">
+                                            <label class="info-label">Price</label>
+                                            <p class="info-value text-indigo-600">{{ product.formattedPrice }}</p>
+                                        </div>
+                                        <div class="info-field">
+                                            <label class="info-label">Character</label>
+                                            <p class="info-value">{{ product.character.name }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-field">
+                                        <label class="info-label">Description</label>
+                                        <p class="info-value">{{ product.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Stock Information -->
+                            <div class="mb-8">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg shadow-purple-200">
+                                        <i class="fas fa-warehouse text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Stock Information</h3>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div class="stock-card {% if product.isOutOfStock %}stock-out{% elseif product.isLowStock %}stock-low{% else %}stock-good{% endif %}">
+                                        <div class="stock-icon">
+                                            {% if product.isOutOfStock %}
+                                                <i class="fas fa-times-circle"></i>
+                                            {% elseif product.isLowStock %}
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            {% else %}
+                                                <i class="fas fa-check-circle"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="stock-info">
+                                            <p class="stock-label">Status</p>
+                                            <p class="stock-value">
+                                                {% if product.isOutOfStock %}
+                                                    Out of Stock
+                                                {% elseif product.isLowStock %}
+                                                    Low Stock
+                                                {% else %}
+                                                    In Stock
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="stock-card stock-neutral">
+                                        <div class="stock-icon">
+                                            <i class="fas fa-boxes"></i>
+                                        </div>
+                                        <div class="stock-info">
+                                            <p class="stock-label">Quantity</p>
+                                            <p class="stock-value">{{ product.stockQuantity }} units</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="stock-card stock-neutral">
+                                        <div class="stock-icon">
+                                            <i class="fas fa-history"></i>
+                                        </div>
+                                        <div class="stock-info">
+                                            <p class="stock-label">Transactions</p>
+                                            <p class="stock-value">{{ product.stockTransactions|length }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Product Image -->
+                            <div>
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center section-header-icon shadow-lg shadow-pink-200">
+                                        <i class="fas fa-image text-white"></i>
+                                    </div>
+                                    <h3 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-pink-600 to-red-600 bg-clip-text text-transparent">Product Image</h3>
+                                </div>
+                                
+                                <div class="info-field">
+                                    {% if product.image %}
+                                        <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="w-full max-h-96 object-contain rounded-2xl shadow-2xl border-4 border-white hover:scale-105 transition-transform duration-300">
+                                    {% else %}
+                                        <div class="w-full h-64 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center">
+                                            <div class="text-center">
+                                                <i class="fas fa-box text-slate-300 text-6xl mb-4"></i>
+                                                <p class="text-slate-500 font-semibold">No image available</p>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Metadata Section -->
+                            <div class="mt-8 pt-6 border-t border-slate-200">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm text-slate-500">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-calendar-alt text-indigo-500"></i>
+                                        <span class="font-semibold">Created:</span> {{ product.createdAt|date('F j, Y \\a\\t g:i A') }}
+                                    </div>
+                                    {% if product.createdBy %}
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-user text-indigo-500"></i>
+                                        <span class="font-semibold">Created by:</span> {{ product.createdBy.displayName ?: product.createdBy.username }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Product Card -->
+                    <div class="lg:col-span-4 lg:sticky lg:top-8 slide-in-right">
+                        <div class="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden border border-white/50 shadow-2xl">
+                            <div class="p-3 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-white/80 to-indigo-50/50 backdrop-blur-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full animate-pulse
+                                        {% if product.isOutOfStock %}bg-red-500
+                                        {% elseif product.isLowStock %}bg-amber-500
+                                        {% else %}bg-emerald-500{% endif %}"></div>
+                                    <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">Product Card</span>
+                                </div>
+                                <span class="px-2.5 py-1 text-[9px] sm:text-[10px] font-bold rounded-full uppercase shadow-lg
+                                    {% if product.isOutOfStock %}bg-gradient-to-r from-red-500 to-red-600 text-white
+                                    {% elseif product.isLowStock %}bg-gradient-to-r from-amber-500 to-orange-500 text-white
+                                    {% else %}bg-gradient-to-r from-emerald-500 to-teal-500 text-white{% endif %}">
+                                    {% if product.isOutOfStock %}Out of Stock
+                                    {% elseif product.isLowStock %}Low Stock
+                                    {% else %}In Stock{% endif %}
+                                </span>
+                            </div>
+                            
+                            <div class="aspect-[4/5] bg-slate-100 relative group overflow-hidden character-card-preview">
+                                {% if product.image %}
+                                <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                                {% else %}
+                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-100 to-indigo-200">
+                                    <i class="fas fa-box text-indigo-300 text-6xl"></i>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent character-card-overlay"></div>
+                                
+                                <div class="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                                    <div class="flex items-end justify-between gap-3 sm:gap-4">
+                                        <div class="flex-grow min-w-0">
+                                            <p class="text-indigo-300 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-1">#{{ product.productCode }}</p>
+                                            <h2 class="text-white text-lg sm:text-2xl font-bold leading-tight mb-2 truncate drop-shadow-lg">{{ product.name }}</h2>
+                                            <div class="flex gap-2">
+                                                <span class="px-2 py-0.5 backdrop-blur-md rounded-full text-white text-[9px] sm:text-[10px] font-semibold border border-indigo-400 bg-indigo-600/90 shadow-lg">{{ product.character.name }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right flex-shrink-0">
+                                            <p class="text-white/60 text-[9px] sm:text-[10px] uppercase font-bold">Price</p>
+                                            <p class="text-white text-lg sm:text-2xl font-black drop-shadow-lg">{{ product.formattedPrice }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 sm:p-6 bg-gradient-to-br from-white to-slate-50">
+                                <h4 class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 sm:mb-3 flex items-center gap-2">
+                                    <i class="fas fa-align-left text-indigo-500"></i>
+                                    Description
+                                </h4>
+                                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                                    {{ product.description }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Stats Card -->
+                        <div class="mt-6 glass-panel rounded-2xl p-4 sm:p-6 border border-white/50 shadow-xl">
+                            <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-bar text-white text-xs"></i>
+                                </div>
+                                Product Statistics
+                            </h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center stats-item p-3 rounded-xl bg-gradient-to-r from-white to-indigo-50/30 border border-indigo-100">
+                                    <span class="text-xs text-slate-600 flex items-center gap-2 font-semibold">
+                                        <i class="fas fa-boxes text-indigo-500"></i>
+                                        Stock Quantity
+                                    </span>
+                                    <span class="text-sm font-bold text-slate-900">{{ product.stockQuantity }} units</span>
+                                </div>
+                                <div class="flex justify-between items-center stats-item p-3 rounded-xl bg-gradient-to-r from-white to-purple-50/30 border border-purple-100">
+                                    <span class="text-xs text-slate-600 flex items-center gap-2 font-semibold">
+                                        <i class="fas fa-tag text-purple-500"></i>
+                                        Price
+                                    </span>
+                                    <span class="text-sm font-bold text-indigo-600">{{ product.formattedPrice }}</span>
+                                </div>
+                                <div class="flex justify-between items-center stats-item p-3 rounded-xl bg-gradient-to-r from-white to-pink-50/30 border border-pink-100">
+                                    <span class="text-xs text-slate-600 flex items-center gap-2 font-semibold">
+                                        <i class="fas fa-user-ninja text-pink-500"></i>
+                                        Character
+                                    </span>
+                                    <span class="text-xs font-semibold text-slate-700">{{ product.character.name }}</span>
+                                </div>
+                                <div class="flex justify-between items-center stats-item p-3 rounded-xl bg-gradient-to-r from-white to-amber-50/30 border border-amber-100">
+                                    <span class="text-xs text-slate-600 flex items-center gap-2 font-semibold">
+                                        <i class="fas fa-history text-amber-500"></i>
+                                        Transactions
+                                    </span>
+                                    <span class="text-sm font-bold text-slate-900">{{ product.stockTransactions|length }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <!-- End Main Container -->
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

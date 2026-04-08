@@ -1,0 +1,424 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact - Naaliatan's Accessories{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('HomeFolder/index.css') }}">
+    <link rel="stylesheet" href="{{ asset('HomeFolder/contact.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="content-area">
+        <header class="top-nav">
+            <a href="{{ path('app_home') }}" class="nav-brand" aria-label="Naaliatan Home">
+                <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="brand-logo">
+            </a>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <nav class="main-nav" id="mainNav">
+                <a href="{{ path('app_home') }}" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ path('app_about') }}" class="nav-link">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </a>
+                <a href="{{ path('app_products') }}" class="nav-link">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+                <a href="{{ path('app_contact') }}" class="nav-link active">
+                    <i class="fas fa-envelope"></i>
+                    <span>Contact</span>
+                </a>
+            </nav>
+            
+            <div class="user-widget">
+                {% if app.user %}
+                    <div class="avatar">
+                        {% if app.user.profilePicture %}
+                            <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        {% else %}
+                            {{ (app.user.displayName ?: app.user.username)|default('U')|slice(0,1)|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="user-info">
+                        <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                        <p class="user-role">{{ app.user.roles[0] == 'ROLE_ADMIN' ? 'Admin' : 'Staff' }}</p>
+                    </div>
+                {% else %}
+                    <a href="{{ path('app_register') }}" class="btn-register">Register</a>
+                    <a href="{{ path('app_login') }}" class="btn-login">Login</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="page-container">
+            {# Section 1: Hero Section #}
+            <section class="hero-section">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fas fa-envelope"></i>
+                        <span>Get in Touch</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Contact<br>
+                        <span class="gradient-text">Naaliatan's Accessories</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Have questions about our character collectibles? 
+                        Need assistance with your order? We're here to help you every step of the way.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#contact-form" class="btn-hero btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </a>
+                        <a href="#contact-info" class="btn-hero btn-secondary">
+                            <i class="fas fa-info-circle"></i>
+                            Contact Info
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="floating-card card-1">
+                        <i class="fas fa-headset"></i>
+                        <span>24/7 Support</span>
+                    </div>
+                    <div class="floating-card card-2">
+                        <i class="fas fa-clock"></i>
+                        <span>Quick Response</span>
+                    </div>
+                    <div class="floating-card card-3">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Secure Contact</span>
+                    </div>
+                    <div class="hero-icon-main">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                </div>
+            </section>
+
+            {# Section 2: Contact Stats Overview #}
+            <section class="stats-overview">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Support Team</h3>
+                        <p class="value">24/7</p>
+                        <span class="stat-badge">Available</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Response Time</h3>
+                        <p class="value">< 1hr</p>
+                        <span class="stat-badge">Average</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-emerald">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Happy Customers</h3>
+                        <p class="value">{{ stats.happyCustomers|default('5000+') }}</p>
+                        <span class="stat-badge">Satisfied</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-pink">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Service Rating</h3>
+                        <p class="value">4.9/5</p>
+                        <span class="stat-badge">Excellent</span>
+                    </div>
+                </div>
+            </section>
+
+            {# Section 3: Contact Information Cards #}
+            <section class="contact-info-section" id="contact-info">
+                <div class="section-header">
+                    <h2 class="section-title">How to Reach Us</h2>
+                    <p class="section-subtitle">Multiple ways to get in touch with our team</p>
+                </div>
+                
+                <div class="contact-info-grid">
+                    <div class="contact-card">
+                        <div class="contact-icon-wrapper">
+                            <div class="contact-icon contact-icon-blue">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                        </div>
+                        <h3>Email Support</h3>
+                        <p>Send us an email and we'll respond within 24 hours</p>
+                        <div class="contact-details">
+                            <a href="mailto:support@naaliatan.com" class="contact-link">support@naaliatan.com</a>
+                            <ul class="contact-features">
+                                <li><i class="fas fa-check"></i> Detailed responses</li>
+                                <li><i class="fas fa-check"></i> File attachments</li>
+                                <li><i class="fas fa-check"></i> Thread history</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon-wrapper">
+                            <div class="contact-icon contact-icon-green">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                        </div>
+                        <h3>Phone Support</h3>
+                        <p>Call us for immediate assistance during business hours</p>
+                        <div class="contact-details">
+                            <a href="tel:+1234567890" class="contact-link">+1 (234) 567-890</a>
+                            <ul class="contact-features">
+                                <li><i class="fas fa-check"></i> Immediate help</li>
+                                <li><i class="fas fa-check"></i> Live conversation</li>
+                                <li><i class="fas fa-check"></i> Order tracking</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon-wrapper">
+                            <div class="contact-icon contact-icon-red">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                        </div>
+                        <h3>Live Chat</h3>
+                        <p>Chat with our support team in real-time</p>
+                        <div class="contact-details">
+                            <button class="contact-link chat-btn" onclick="startLiveChat()">
+                                <i class="fas fa-comment-dots"></i> Start Chat
+                            </button>
+                            <ul class="contact-features">
+                                <li><i class="fas fa-check"></i> Instant responses</li>
+                                <li><i class="fas fa-check"></i> Screen sharing</li>
+                                <li><i class="fas fa-check"></i> Quick solutions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# Section 4: Google Form Button #}
+            <section class="contact-form-section" id="contact-form">
+                <div class="section-header">
+                    <h2 class="section-title">Send Us a Message</h2>
+                    <p class="section-subtitle">Click the button below to open our contact form and we'll get back to you soon</p>
+                </div>
+                
+                <div class="contact-form-container">
+                    <div class="form-wrapper">
+                        <div class="google-form-section">
+                            <div class="google-form-icon">
+                                <i class="fab fa-google"></i>
+                            </div>
+                            <h3>Quick & Easy Contact</h3>
+                            <p>Use our secure Google Form to send us your message. It's fast, reliable, and we'll respond within 24 hours.</p>
+                            
+                            <div class="google-form-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Secure & Private</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Quick Response</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <span>Mobile Friendly</span>
+                                </div>
+                            </div>
+                            
+                            <div class="google-form-button">
+                                <a href="https://docs.google.com/forms/d/e/1FAIpQLSftCZlf9eLAFOGiOctdG_ueEhtuhU0hscOpv2LvCbBnxOXwCA/viewform?usp=sf_link" target="_blank" class="btn-google-form" rel="noopener noreferrer" id="googleFormBtn">
+                                    <i class="fab fa-google"></i>
+                                    Open Contact Form
+                                </a>
+                                <p class="form-note">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    Opens in a new tab - Form submission detected on return
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-info-panel">
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <h4>Response Time</h4>
+                            <p>We typically respond to all inquiries within 24 hours during business days.</p>
+                        </div>
+                        
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h4>Business Hours</h4>
+                            <p>Monday - Friday: 9:00 AM - 6:00 PM<br>
+                               Saturday: 10:00 AM - 4:00 PM<br>
+                               Sunday: Closed</p>
+                        </div>
+                        
+                        <div class="info-card">
+                            <div class="info-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <h4>Office Location</h4>
+                            <p>Purok Mapahiyumon<br>
+                               Jose Romero Road, Junob<br>
+                               Dumaguete City, 6200</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# Section 5: FAQ Section #}
+            <section class="faq-section">
+                <div class="section-header">
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+                    <p class="section-subtitle">Quick answers to common questions</p>
+                </div>
+                
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <h4>How long does shipping take?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Standard shipping typically takes 5-7 business days within the continental US. Express shipping options are available for 2-3 business day delivery. International shipping times vary by location.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <h4>What is your return policy?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We offer a 30-day return policy for unused items in their original packaging. Please contact our support team to initiate a return. Custom orders may have different return conditions.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <h4>Do you ship internationally?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, we ship to most countries worldwide. International shipping rates and delivery times vary by destination. Please check our shipping information page for specific details about your country.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <h4>How can I track my order?</h4>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Once your order ships, you'll receive a tracking number via email. You can use this number to track your package on our website or the carrier's website.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {# Section 6: CTA Section #}
+            <section class="cta-section">
+                <div class="cta-content">
+                    <h2>Still Have Questions?</h2>
+                    <p>Our dedicated support team is ready to assist you with any inquiries about our products and services</p>
+                    <div class="cta-actions">
+                        <a href="#contact-form" class="btn-cta btn-cta-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Contact Us Now
+                        </a>
+                        <a href="{{ path('app_products') }}" class="btn-cta btn-cta-secondary">
+                            <i class="fas fa-box-open"></i>
+                            Browse Products
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            {# Footer #}
+            <footer class="site-footer">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <div class="footer-logo">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div class="footer-brand-info">
+                            <h3>Naaliatan's Accessories</h3>
+                            <p>Your premier destination for character collectibles and accessories</p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <div class="footer-column">
+                            <h4>Quick Links</h4>
+                            <ul>
+                                <li><a href="{{ path('app_home') }}"><i class="fas fa-chevron-right"></i> Home</a></li>
+                                <li><a href="{{ path('app_about') }}"><i class="fas fa-chevron-right"></i> About Us</a></li>
+                                <li><a href="{{ path('app_products') }}"><i class="fas fa-chevron-right"></i> Products</a></li>
+                                <li><a href="{{ path('app_contact') }}"><i class="fas fa-chevron-right"></i> Contact</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h4>Support</h4>
+                            <ul>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Help Center</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Shipping Info</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Returns</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> FAQ</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h4>Connect</h4>
+                            <div class="social-links">
+                                <a href="https://www.facebook.com/profile.php?id=61576480294715" target="_blank" rel="noopener noreferrer" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ "now"|date("Y") }} Naaliatan's Accessories. All rights reserved.</p>
+                    <div class="footer-legal">
+                        <a href="#">Privacy Policy</a>
+                        <span>|</span>
+                        <a href="#">Terms of Service</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('HomeFolder/index.js') }}"></script>
+    <script src="{{ asset('HomeFolder/contact.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+{% endblock %}

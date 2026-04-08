@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Deactivated - Naaliatan's Accessories</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        .icon-container {
+            position: relative;
+            z-index: 1;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .icon-container i {
+            font-size: 48px;
+            animation: shake 2s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-10deg);
+            }
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .header h1 {
+            position: relative;
+            z-index: 1;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            position: relative;
+            z-index: 1;
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .alert-box {
+            background: #fff3cd;
+            border-left: 4px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .alert-box i {
+            color: #f59e0b;
+            font-size: 24px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .alert-content h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .alert-content p {
+            font-size: 14px;
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .info-section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .info-section h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-section h3 i {
+            color: #667eea;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list li i {
+            color: #667eea;
+            width: 20px;
+            text-align: center;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: #667eea;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f7fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer p {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        @media (max-width: 640px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon-container">
+                <i class="fas fa-user-lock"></i>
+            </div>
+            <h1>Account Deactivated</h1>
+            <p>Your account access has been temporarily suspended</p>
+        </div>
+
+        <div class="content">
+            <div class="alert-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="alert-content">
+                    <h3>Access Restricted</h3>
+                    <p>Your account has been deactivated by an administrator. You cannot access the system at this time.</p>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3><i class="fas fa-info-circle"></i> What This Means</h3>
+                <ul class="info-list">
+                    <li>
+                        <i class="fas fa-ban"></i>
+                        <span>You cannot log in to your account</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-lock"></i>
+                        <span>All system features are currently unavailable</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-clock"></i>
+                        <span>This is a temporary restriction that can be lifted</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Your data remains secure and intact</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3><i class="fas fa-question-circle"></i> Need Help?</h3>
+                <ul class="info-list">
+                    <li>
+                        <i class="fas fa-user-shield"></i>
+                        <span>Contact your system administrator for assistance</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <span>Request account reactivation if needed</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-comments"></i>
+                        <span>Discuss any concerns about your account status</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="actions">
+                <a href="{{ path('app_home') }}" class="btn btn-primary">
+                    <i class="fas fa-home"></i>
+                    Go to Homepage
+                </a>
+                <a href="{{ path('app_logout') }}" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; {{ "now"|date('Y') }} Naaliatan's Accessories. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

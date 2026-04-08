@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ product.name }} - Stock History | Naaliatan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="{{ asset('JSFolder/disable-zoom.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('StockManagementFolderCSS&JS/product_history.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar-tooltips.css') }}">
+</head>
+<body>
+    {# Sidebar #}
+    <aside class="sidebar hidden">
+        <div class="logo">
+            <img src="{{ asset('images/Naaliatan\'s Accessories.png') }}" alt="Naaliatan's Accessories">
+        </div>
+
+        <nav class="nav-menu">
+            <a href="{{ role_path('dashboard') }}" class="nav-item" data-tooltip="Dashboard">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ role_path('user_management_index') }}" class="nav-item" data-tooltip="Users">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            {% endif %}
+            <a href="{{ role_path('product_management_index') }}" class="nav-item" data-tooltip="Products">
+                <i class="fas fa-box"></i>
+                <span>Products</span>
+            </a>
+            <a href="{{ role_path('item_management_index') }}" class="nav-item" data-tooltip="Items">
+                <i class="fas fa-cubes"></i>
+                <span>Items</span>
+            </a>
+            <a href="{{ role_path('order_index') }}" class="nav-item" data-tooltip="Orders">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Orders</span>
+            </a>
+            <a href="{{ role_path('cart_index') }}" class="nav-item" data-tooltip="Cart">
+                <i class="fas fa-shopping-bag"></i>
+                <span>Cart</span>
+            </a>
+            <a href="{{ role_path('character_management_index') }}" class="nav-item" data-tooltip="Characters">
+                <i class="fas fa-user-ninja"></i>
+                <span>Characters</span>
+            </a>
+            <a href="{{ role_path('stock_management_index') }}" class="nav-item active">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock</span>
+            </a>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ role_path('activity_logs_index') }}" class="nav-item" data-tooltip="Reports">
+                <i class="fas fa-history"></i>
+                <span>Reports</span>
+            </a>
+            {% endif %}
+            <a href="{{ role_path('profile_show') }}" class="nav-item" data-tooltip="Profile">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{{ role_path('settings_index') }}" class="nav-item" data-tooltip="Settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <a href="{{ path('app_logout') }}" class="logout-btn" data-tooltip="Log out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Log out</span>
+        </a>
+    </aside>
+
+    {# Main Content #}
+    <main class="main-content">
+        {# Top Bar #}
+        <header class="top-bar">
+            <a href="{{ role_path('stock_management_index') }}" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Stock Management
+            </a>
+
+            <div class="top-bar-right">
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.username }}" class="user-avatar">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ app.user.username|url_encode }}&background=667eea&color=fff" alt="{{ app.user.username }}" class="user-avatar">
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        {# Product Details #}
+        <div class="details-container">
+            {# Left: Product Card #}
+            <div>
+                <div class="product-card">
+                    {% if product.image %}
+                        <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="product-image">
+                    {% else %}
+                        <div class="product-image-placeholder">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    {% endif %}
+
+                    <h2 class="product-name">{{ product.name }}</h2>
+                    <div class="product-code">{{ product.productCode }}</div>
+
+                    <div>
+                        {% if product.stockQuantity > 10 %}
+                            <span class="stock-badge stock-in">
+                                <i class="fas fa-check-circle"></i> In Stock
+                            </span>
+                        {% elseif product.stockQuantity > 0 %}
+                            <span class="stock-badge stock-low">
+                                <i class="fas fa-exclamation-triangle"></i> Low Stock
+                            </span>
+                        {% else %}
+                            <span class="stock-badge stock-out">
+                                <i class="fas fa-times-circle"></i> Out of Stock
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="price-display">
+                        <i class="fas fa-dollar-sign" style="color: #667eea; font-size: 20px;"></i>
+                        <span class="price-value">{{ product.price }}</span>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Total Restocked</div>
+                            <div class="stat-value positive">+{{ transactions|filter(t => t.type == 'RESTOCK')|reduce((total, t) => total + t.quantity, 0) }}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Total Sales</div>
+                            <div class="stat-value negative">-{{ transactions|filter(t => t.type == 'SALE')|reduce((total, t) => total + t.quantity, 0) }}</div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{{ role_path('stock_management_restock', {'id': product.id}) }}" class="btn-action btn-restock">
+                            <i class="fas fa-plus-circle"></i> Restock Product
+                        </a>
+                        <a href="{{ path('app_stock_management_adjust', {'id': product.id}) }}" class="btn-action btn-adjust">
+                            <i class="fas fa-sliders-h"></i> Adjust Stock
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {# Right: Info & Transactions #}
+            <div>
+                {# Product Information #}
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Product Information
+                    </h3>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Product Code</div>
+                            <div class="info-value">{{ product.productCode }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Current Stock</div>
+                            <div class="info-value">{{ product.stockQuantity }} units</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Price</div>
+                            <div class="info-value">${{ product.price }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Total Transactions</div>
+                            <div class="info-value">{{ transactions|length }}</div>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">Character</div>
+                        <div class="info-value">
+                            <a href="{{ role_path('character_management_show', {'id': product.character.id}) }}" class="character-link">
+                                <span class="color-dot" style="background-color: {{ product.character.colorCode }};"></span>
+                                {{ product.character.name }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {# Transaction History #}
+                <div class="transactions-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Transaction History
+                    </h3>
+
+                    {% if transactions|length > 0 %}
+                        <div style="overflow-x: auto;">
+                            <table class="transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Type</th>
+                                        <th>Quantity</th>
+                                        <th>User</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                        <tr>
+                                            <td>
+                                                <div style="font-weight: 600;">{{ transaction.createdAt|date('M d, Y') }}</div>
+                                                <div style="font-size: 12px; color: #a0aec0;">{{ transaction.createdAt|date('H:i:s') }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="type-badge type-{{ transaction.type|lower }}">
+                                                    <i class="fas fa-{{
+                                                        transaction.type == 'RESTOCK'    ? 'box-open'     :
+                                                        transaction.type == 'ADJUSTMENT' ? 'sliders-h'    :
+                                                        transaction.type == 'SALE'       ? 'shopping-cart':
+                                                        'exchange-alt'
+                                                    }}"></i>
+                                                    {{ transaction.type }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="quantity-change {{ transaction.quantity > 0 ? 'quantity-positive' : 'quantity-negative' }}">
+                                                    {{ transaction.quantity > 0 ? '+' : '' }}{{ transaction.quantity }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="user-pill">
+                                                    {% if transaction.user %}
+                                                        {% if transaction.user.profilePicture %}
+                                                            <img src="{{ asset('images/profiles/' ~ transaction.user.profilePicture) }}" alt="{{ transaction.user.username }}" class="user-pill-avatar">
+                                                        {% else %}
+                                                            <i class="fas fa-user-circle" style="color: #a0aec0;"></i>
+                                                        {% endif %}
+                                                        {{ transaction.user.displayName ?: transaction.user.username }}
+                                                    {% else %}
+                                                        <i class="fas fa-user-slash" style="color: #a0aec0;"></i>
+                                                        Deleted User
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td style="color: #718096; font-size: 13px;">
+                                                {{ transaction.notes ?: '-' }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <h4>No transactions found</h4>
+                            <p>No stock movements have been recorded for this product yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ asset('StockManagementFolderCSS&JS/product_history.js') }}"></script>
+</body>
+</html>
