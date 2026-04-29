@@ -81,9 +81,9 @@
                     <div class="hero-header">
                         <h1 class="hero-title">
                             {% if character %}
-                                <span class="gradient-text">{{ character.name }}</span>
+                                <span class="gradient-text" data-text="{{ character.name }}">{{ character.name }}</span>
                             {% else %}
-                                <span class="gradient-text">All Products</span>
+                                <span class="gradient-text" data-text="All Products">All Products</span>
                             {% endif %}
                         </h1>
                         {% if character %}
@@ -246,6 +246,23 @@
                         <div class="product-grid" id="productGrid" role="list">
                             {% for product in products %}
                                 <article class="product-card" data-category="{{ loop.index is even ? 'premium' : 'new' }}" role="listitem" tabindex="0">
+                                    <div class="card-background">
+                                        <div class="glow-effect glow-{{ loop.index % 3 == 0 ? 'blue' : (loop.index % 3 == 1 ? 'purple' : 'orange') }}"></div>
+                                        <div class="decorative-waves">
+                                            <svg class="wave wave-1" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M0,50 Q50,20 100,50 T200,50" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/>
+                                            </svg>
+                                            <svg class="wave wave-2" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M0,30 Q50,60 100,30 T200,30" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" fill="none"/>
+                                            </svg>
+                                        </div>
+                                        <div class="decorative-circles">
+                                            <div class="circle circle-1"></div>
+                                            <div class="circle circle-2"></div>
+                                            <div class="circle circle-3"></div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="product-image-wrapper">
                                         {% if product.image %}
                                             <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="product-image" loading="lazy">
@@ -255,73 +272,129 @@
                                             </div>
                                         {% endif %}
                                         
-                                        <!-- Product Badge -->
-                                        <div class="card-badges">
-                                            {% if product.isLowStock and product.stockQuantity > 0 %}
-                                                <span class="card-badge badge-warning">
-                                                    <i class="fas fa-fire" aria-hidden="true"></i>
-                                                    Hot
-                                                </span>
-                                            {% elseif loop.index < 4 %}
-                                                <span class="card-badge badge-new">
-                                                    <i class="fas fa-star" aria-hidden="true"></i>
-                                                    New
-                                                </span>
-                                            {% endif %}
+                                        <!-- Price Tag -->
+                                        <div class="price-tag">
+                                            <span class="price-amount">{{ product.formattedPrice }}</span>
                                         </div>
-
                                     </div>
                                     
                                     <div class="product-content">
                                         <div class="product-header">
                                             <h3 class="product-name">{{ product.name }}</h3>
-                                            <span class="product-code">{{ product.productCode }}</span>
+                                            <p class="product-description">Premium quality product with exceptional design and durability.</p>
                                         </div>
                                         
-                                        <p class="product-price">{{ product.formattedPrice }}</p>
-                                        
-                                        <div class="product-stock">
-                                            {% if product.isOutOfStock %}
-                                                <span class="stock-badge stock-out">
-                                                    <i class="fas fa-times-circle" aria-hidden="true"></i>
-                                                    <span>Out of Stock</span>
-                                                </span>
-                                            {% elseif product.isLowStock %}
-                                                <span class="stock-badge stock-low">
-                                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
-                                                    <span>Only {{ product.stockQuantity }} left</span>
-                                                </span>
-                                            {% else %}
-                                                <span class="stock-badge stock-in">
-                                                    <i class="fas fa-check-circle" aria-hidden="true"></i>
-                                                    <span>In Stock ({{ product.stockQuantity }})</span>
-                                                </span>
-                                            {% endif %}
+                                        <!-- Star Rating -->
+                                        <div class="star-rating">
+                                            <div class="stars">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star-half-alt"></i>
+                                            </div>
+                                            <span class="rating-text">4.5 (128 reviews)</span>
                                         </div>
                                         
                                         {% if product.isOutOfStock %}
                                             <div class="product-actions out-of-stock">
-                                                <button class="btn-disabled" disabled aria-label="Product out of stock">
-                                                    <i class="fas fa-ban" aria-hidden="true"></i>
-                                                    <span>Out of Stock</span>
-                                                </button>
+                                                {% if character %}
+                                                    <div class="character-name-display">
+                                                        <i class="fas fa-user" aria-hidden="true"></i>
+                                                        <span>{{ character.name }}</span>
+                                                    </div>
+                                                {% endif %}
                                             </div>
                                         {% else %}
                                             <div class="product-actions">
-                                                <button class="btn-cart add-to-cart-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" aria-label="Add {{ product.name }} to cart">
-                                                    <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-                                                    <span>Add to Cart</span>
-                                                </button>
-                                                <button class="btn-buy buy-now-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" aria-label="Buy {{ product.name }} now">
-                                                    <i class="fas fa-bolt" aria-hidden="true"></i>
-                                                    <span>Buy Now</span>
-                                                </button>
+                                                {% if character %}
+                                                    <div class="character-name-display">
+                                                        <i class="fas fa-user" aria-hidden="true"></i>
+                                                        <span>{{ character.name }}</span>
+                                                    </div>
+                                                {% endif %}
                                             </div>
                                         {% endif %}
                                     </div>
                                 </article>
                             {% endfor %}
                         </div>
+
+                        <!-- Pagination -->
+                        {% if showPagination and totalPages > 1 %}
+                            <nav class="pagination-wrapper" role="navigation" aria-label="Product pagination">
+                                <div class="pagination-container">
+                                    <div class="pagination-info">
+                                        <span class="pagination-text">
+                                            Showing {{ ((currentPage - 1) * limit) + 1 }}-{{ min(currentPage * limit, totalProducts) }} of {{ totalProducts }} products
+                                        </span>
+                                    </div>
+                                    
+                                    <ul class="pagination">
+                                        <!-- Previous Button -->
+                                        <li class="pagination-item">
+                                            <a href="{{ path(character ? 'app_view_products_by_character' : 'app_view_products', (character ? {characterId: character.id} : {})|merge({page: max(1, currentPage - 1)})) }}" 
+                                               class="pagination-link pagination-prev {{ currentPage == 1 ? 'disabled' : '' }}"
+                                               aria-label="Previous page"
+                                               {% if currentPage == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                                <span>Previous</span>
+                                            </a>
+                                        </li>
+
+                                        <!-- Page Numbers -->
+                                        {% set startPage = max(1, currentPage - 2) %}
+                                        {% set endPage = min(totalPages, currentPage + 2) %}
+                                        
+                                        {% if startPage > 1 %}
+                                            <li class="pagination-item">
+                                                <a href="{{ path(character ? 'app_view_products_by_character' : 'app_view_products', (character ? {characterId: character.id} : {})|merge({page: 1})) }}" 
+                                                   class="pagination-link" aria-label="Go to page 1">1</a>
+                                            </li>
+                                            {% if startPage > 2 %}
+                                                <li class="pagination-item">
+                                                    <span class="pagination-ellipsis">...</span>
+                                                </li>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% for page in range(startPage, endPage) %}
+                                            <li class="pagination-item">
+                                                <a href="{{ path(character ? 'app_view_products_by_character' : 'app_view_products', (character ? {characterId: character.id} : {})|merge({page: page})) }}" 
+                                                   class="pagination-link {{ page == currentPage ? 'active' : '' }}"
+                                                   aria-label="Go to page {{ page }}"
+                                                   aria-current="{{ page == currentPage ? 'page' : 'false' }}">
+                                                    {{ page }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+
+                                        {% if endPage < totalPages %}
+                                            {% if endPage < totalPages - 1 %}
+                                                <li class="pagination-item">
+                                                    <span class="pagination-ellipsis">...</span>
+                                                </li>
+                                            {% endif %}
+                                            <li class="pagination-item">
+                                                <a href="{{ path(character ? 'app_view_products_by_character' : 'app_view_products', (character ? {characterId: character.id} : {})|merge({page: totalPages})) }}" 
+                                                   class="pagination-link" aria-label="Go to page {{ totalPages }}">{{ totalPages }}</a>
+                                            </li>
+                                        {% endif %}
+
+                                        <!-- Next Button -->
+                                        <li class="pagination-item">
+                                            <a href="{{ path(character ? 'app_view_products_by_character' : 'app_view_products', (character ? {characterId: character.id} : {})|merge({page: min(totalPages, currentPage + 1)})) }}" 
+                                               class="pagination-link pagination-next {{ currentPage == totalPages ? 'disabled' : '' }}"
+                                               aria-label="Next page"
+                                               {% if currentPage == totalPages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                                <span>Next</span>
+                                                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </nav>
+                        {% endif %}
                     {% else %}
                         <!-- Empty State -->
                         <div class="empty-state" role="alert">
@@ -412,67 +485,7 @@
         <span id="toastMessage"></span>
     </div>
 
-    <!-- Add to Cart Modal -->
-    <div id="addToCartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="addToCartTitle">
-        <div class="modal-overlay" tabindex="-1"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="addToCartTitle">
-                    <i class="fas fa-cart-plus" aria-hidden="true"></i>
-                    <span>Add to Cart</span>
-                </h2>
-                <button class="modal-close" onclick="closeAddToCartModal()" aria-label="Close modal">
-                    <i class="fas fa-times" aria-hidden="true"></i>
-                </button>
-            </div>
-            
-            <form id="addToCartForm" class="modal-body">
-                <input type="hidden" id="cartProductId" name="productId">
-                <input type="hidden" id="cartProductName" name="productName">
-                
-                <!-- Product Info -->
-                <div class="form-section">
-                    <h3 class="section-title">Product Details</h3>
-                    <div class="product-info-box">
-                        <div class="product-info-item">
-                            <span class="info-label">
-                                <i class="fas fa-tag" aria-hidden="true"></i>
-                                Product:
-                            </span>
-                            <span class="info-value" id="cartProductDisplay"></span>
-                        </div>
-                        <div class="form-group">
-                            <label for="cartQuantity" class="form-label">
-                                <i class="fas fa-boxes" aria-hidden="true"></i>
-                                Quantity
-                            </label>
-                            <div class="quantity-input-wrapper">
-                                <button type="button" class="quantity-btn quantity-minus" aria-label="Decrease quantity">
-                                    <i class="fas fa-minus" aria-hidden="true"></i>
-                                </button>
-                                <input type="number" id="cartQuantity" name="quantity" class="form-input quantity-input" min="1" value="1" required>
-                                <button type="button" class="quantity-btn quantity-plus" aria-label="Increase quantity">
-                                    <i class="fas fa-plus" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeAddToCartModal()">
-                    <i class="fas fa-times" aria-hidden="true"></i>
-                    <span>Cancel</span>
-                </button>
-                <button type="submit" form="addToCartForm" class="btn-primary">
-                    <i class="fas fa-cart-plus" aria-hidden="true"></i>
-                    <span>Add to Cart</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
+    
     <!-- Buy Now Modal -->
     <div id="buyNowModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="buyNowTitle">
         <div class="modal-overlay" tabindex="-1"></div>

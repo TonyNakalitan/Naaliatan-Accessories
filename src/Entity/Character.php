@@ -43,7 +43,7 @@ class Character
     #[Groups(['character:read', 'character:write', 'product:read'])]
     private ?string $name = null;
 
-    #[ORM\Column(length: 100, unique: true)]
+    #[ORM\Column(length: 100)]
     #[Groups(['character:read', 'character:write'])]
     private ?string $creator = null;
 
@@ -148,7 +148,9 @@ class Character
 
     public function setColorCode(string $colorCode): static
     {
-        $this->colorCode = $colorCode;
+        // Normalize: ensure value is stored as #RRGGBB
+        $colorCode = ltrim(trim($colorCode), '#');
+        $this->colorCode = '#' . strtoupper($colorCode);
         return $this;
     }
 

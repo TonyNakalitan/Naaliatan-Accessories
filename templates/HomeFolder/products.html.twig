@@ -226,71 +226,86 @@
                         <div class="gallery-grid">
                             {% for character in characters %}
                                 <div class="character-card">
-                                    <div class="character-image-container">
-                                        {% if character.image %}
-                                            <img src="{{ asset('images/characters/' ~ character.image) }}" 
-                                                 alt="{{ character.name }}" 
-                                                 class="character-image"
-                                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ character.name|url_encode }}&background=random&size=400&color=fff';">
-                                        {% else %}
-                                            <img src="https://ui-avatars.com/api/?name={{ character.name|url_encode }}&background=random&size=400&color=fff" 
-                                                 alt="{{ character.name }}" 
-                                                 class="character-image">
-                                        {% endif %}
-                                        
-                                        <div class="character-overlay">
-                                            <div class="character-overlay-content">
-                                                <h3 class="character-name-overlay">{{ character.name }}</h3>
-                                                <span class="character-code-overlay">{{ character.creator }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="character-info">
-                                        <div class="character-header">
-                                            <h3 class="character-name">{{ character.name }}</h3>
+                                    <div class="game-card-container">
+                                        <div class="game-card-image">
+                                            {% if character.image %}
+                                                <img src="{{ asset('images/characters/' ~ character.image) }}" 
+                                                     alt="{{ character.name }}" 
+                                                     class="game-cover"
+                                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ character.name|url_encode }}&background=2d3748&size=400&color=fff';">
+                                            {% else %}
+                                                <img src="https://ui-avatars.com/api/?name={{ character.name|url_encode }}&background=2d3748&size=400&color=fff" 
+                                                     alt="{{ character.name }}" 
+                                                     class="game-cover">
+                                            {% endif %}
                                         </div>
                                         
-                                        <div class="character-description-wrapper">
-                                            <p class="character-description">{{ character.description|default('Premium character accessories and collectibles') }}</p>
+                                        <div class="game-card-info">
+                                            <h3 class="game-title">{{ character.name }}</h3>
+                                            <p class="game-creator">{{ character.creator }}</p>
                                         </div>
                                         
-                                        <div class="character-stats">
-                                            <div class="stat-item">
-                                                <div class="stat-icon">
-                                                    <i class="fas fa-box"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <span class="stat-label">Products</span>
-                                                    <span class="stat-value">{{ character.products|length }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-item">
-                                                <div class="stat-icon" style="background: {{ character.alignmentColor }}20; color: {{ character.alignmentColor }};">
-                                                    <i class="fas fa-shield-alt"></i>
-                                                </div>
-                                                <div class="stat-content">
-                                                    <span class="stat-label">Alignment</span>
-                                                    <span class="stat-value">{{ character.alignment }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="character-actions">
-                                        <a href="{{ path('app_admin_character_management_show', {'id': character.id}) }}" class="btn-view">
-                                            <i class="fas fa-eye"></i>
-                                            View Details
-                                        </a>
-                                        {% if character.products|length > 0 %}
-                                            <a href="{{ path('app_view_products_by_character', {'characterId': character.id}) }}" class="btn-cart">
-                                                <i class="fas fa-shopping-cart"></i>
-                                                View Products
+                                        <div class="game-card-actions">
+                                            {% if character.products|length > 0 %}
+                                                <a href="{{ path('app_view_products_by_character', {'characterId': character.id}) }}" 
+                                                   class="download-btn" 
+                                                   title="View Products ({{ character.products|length }} available)">
+                                                    <i class="fas fa-download"></i>
+                                                    <span class="download-count">{{ character.products|length }}</span>
+                                                </a>
+                                            {% endif %}
+                                            <a href="{{ path('app_view_character', {'characterId': character.id}) }}" 
+                                               class="view-btn" 
+                                               title="View Details">
+                                                <i class="fas fa-eye"></i>
                                             </a>
-                                        {% endif %}
+                                        </div>
                                     </div>
                                 </div>
                             {% endfor %}
                         </div>
+                        
+                        {# Pagination Controls #}
+                        {% if totalPages > 1 %}
+                            <div class="pagination-controls">
+                                <div class="pagination-info">
+                                    <span>Showing {{ ((currentPage - 1) * 10) + 1 }} to 
+                                    {% if currentPage == totalPages %}
+                                        {{ totalCharacters }}
+                                    {% else %}
+                                        {{ currentPage * 10 }}
+                                    {% endif %}
+                                    of {{ totalCharacters }} characters</span>
+                                </div>
+                                
+                                <div class="pagination-buttons">
+                                    {% if currentPage > 1 %}
+                                        <a href="{{ path('app_products', {'page': currentPage - 1}) }}" 
+                                           class="pagination-btn pagination-btn-prev">
+                                            <i class="fas fa-chevron-left"></i>
+                                            Previous
+                                        </a>
+                                    {% endif %}
+                                    
+                                    {% for page in 1..totalPages %}
+                                        {% if page == currentPage %}
+                                            <span class="pagination-btn pagination-btn-active">{{ page }}</span>
+                                        {% else %}
+                                            <a href="{{ path('app_products', {'page': page}) }}" 
+                                               class="pagination-btn">{{ page }}</a>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if currentPage < totalPages %}
+                                        <a href="{{ path('app_products', {'page': currentPage + 1}) }}" 
+                                           class="pagination-btn pagination-btn-next">
+                                            Next
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </section>

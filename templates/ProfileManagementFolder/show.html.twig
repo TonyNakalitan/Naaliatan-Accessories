@@ -4,263 +4,453 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('ProfileManagementFolder/show.css?v=' ~ random()) }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('ProfileManagementFolder/show.css') }}?v={{ random() }}">
 {% endblock %}
 
 {% block body %}
-    <main class="content-area">
-        <header class="top-nav">
-            <div class="search-global">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search profile information...">
+<div id="profile-app-wrapper" class="min-h-screen">
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_admin_dashboard') }}" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ path('app_admin_user_management_index') }}" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>User Management</span>
+                </a>
+                <a href="{{ path('app_admin_product_management_index') }}" class="nav-item">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+                <a href="{{ path('app_admin_stock_management_index') }}" class="nav-item">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Stock Control</span>
+                </a>
+                <a href="{{ path('app_admin_order_index') }}" class="nav-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="{{ path('app_admin_item_management_index') }}" class="nav-item">
+                    <i class="fas fa-boxes"></i>
+                    <span>Items</span>
+                </a>
+                <a href="{{ path('app_admin_cart_index') }}" class="nav-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Cart</span>
+                </a>
+                <a href="{{ path('app_admin_character_management_index') }}" class="nav-item">
+                    <i class="fas fa-id-badge"></i>
+                    <span>Characters</span>
+                </a>
+                <a href="{{ path('app_admin_activity_logs_index') }}" class="nav-item">
+                    <i class="fas fa-history"></i>
+                    <span>Activity Logs</span>
+                </a>
+            {% else %}
+                <a href="{{ path('app_staff_dashboard') }}" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ path('app_staff_product_management_index') }}" class="nav-item">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+                <a href="{{ path('app_staff_stock_management_index') }}" class="nav-item">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Stock Control</span>
+                </a>
+                <a href="{{ path('app_staff_order_index') }}" class="nav-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Orders</span>
+                </a>
+            {% endif %}
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ role_path('profile_show') }}" class="nav-item active">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- App Wrapper -->
+    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">
+                    My Profile
+                </span>
             </div>
-            <div class="user-widget">
-                <button class="icon-btn"><i class="fas fa-bell"></i></button>
-                <div class="avatar">
-                    {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+
+            <!-- Search bar -->
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search profile..." class="bg-transparent outline-none text-sm w-full">
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ role_path('profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = user.displayName ?: user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0, 2)|upper }}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                </div>
-                <div class="user-info">
-                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
-                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
-                </div>
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ user.displayName ?: user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ user.isAdmin() ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                </a>
             </div>
         </header>
 
-        <div class="page-container">
-            <div class="page-intro">
-                <div>
-                    <h1 class="page-title">My Profile</h1>
-                    <p class="page-subtitle">View and manage your personal information and account details</p>
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="mx-10 mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-green-800">
+                <i class="fas fa-check-circle text-xl"></i>
+                <span>{{ message }}</span>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="mx-10 mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-red-800">
+                <i class="fas fa-exclamation-circle text-xl"></i>
+                <span>{{ message }}</span>
+            </div>
+        {% endfor %}
+
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-hidden">
+            
+            <!-- GRID VIEW (The Carousel) -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+                
+                <!-- Carousel at bottom -->
+                <div id="statsCarousel" class="flex gap-8 items-end h-[500px] mb-6">
+                    <!-- Cards injected by JS -->
+                </div>
+
+                <!-- Footer Nav -->
+                <div class="flex items-center justify-between pt-4 pb-2">
+                    <div class="flex gap-6 text-sm font-medium text-gray-500">
+                        <span>Member Since: <span class="text-gray-800">{{ user.createdAt ? user.createdAt|date('M Y') : 'Unknown' }}</span></span>
+                        <span>Activities: <span class="text-gray-800">{{ user.activityLogs|length }}</span></span>
+                        <span>Status: <span class="text-gray-800">{{ user.isActive ? 'Active' : 'Inactive' }}</span></span>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="fa fa-chevron-left text-xs"></i> Prev
+                        </button>
+                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
+            <!-- DETAIL / HERO VIEW -->
+            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
+                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
+                
+                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
+                    <i class="fa fa-times text-red-500"></i> Close
+                </button>
 
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
+                <div class="relative z-10 h-full flex items-center px-16">
+                    <!-- Left Side: Large Icon -->
+                    <div class="w-1/2 flex justify-center items-center">
+                        <div class="hero-icon-frame">
+                            <div id="heroIcon" class="hero-icon-wrapper"></div>
+                        </div>
+                    </div>
 
-            <div class="profile-grid">
-                <!-- Left Column: Profile Card -->
-                <div class="profile-sidebar">
-                    <div class="profile-card">
-                        <div class="profile-header">
-                            <div class="profile-avatar-large">
-                                {% if user.profilePicture %}
-                                    <img src="{{ asset('images/profiles/' ~ user.profilePicture) }}" alt="{{ user.displayName ?: user.username }}">
-                                {% else %}
-                                    <div class="avatar-placeholder">
-                                        {{ (user.displayName ?: user.username)|slice(0,1)|upper }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <h2 class="profile-name">{{ user.displayName ?: user.username }}</h2>
-                            <p class="profile-username">@{{ user.username }}</p>
+                    <!-- Right Side: Content -->
+                    <div class="w-1/2 pl-12 pr-8">
+                        <div class="hero-content-wrapper">
+                            <h2 id="heroTitle" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
                             
-                            <div class="profile-badges">
-                                {% if user.isAdmin() %}
-                                    <span class="badge badge-admin">
-                                        <i class="fas fa-crown"></i>
-                                        Administrator
-                                    </span>
-                                {% elseif user.isStaff() %}
-                                    <span class="badge badge-staff">
-                                        <i class="fas fa-id-badge"></i>
-                                        Staff
-                                    </span>
-                                {% else %}
-                                    <span class="badge badge-user">
-                                        <i class="fas fa-user"></i>
-                                        User
-                                    </span>
-                                {% endif %}
-                                
-                                {% if user.isActive %}
-                                    <span class="status-badge status-active">
-                                        <i class="fas fa-check-circle"></i>
-                                        Active
-                                    </span>
-                                {% else %}
-                                    <span class="status-badge status-inactive">
-                                        <i class="fas fa-times-circle"></i>
-                                        Inactive
-                                    </span>
-                                {% endif %}
+                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
+                                <div class="meta-item">
+                                    <i id="heroMetaIcon1" class="text-blue-500"></i>
+                                    <span class="meta-label" id="heroMetaLabel1"></span>
+                                    <span id="heroMetaValue1" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i id="heroMetaIcon2" class="text-purple-500"></i>
+                                    <span class="meta-label" id="heroMetaLabel2"></span>
+                                    <span id="heroMetaValue2" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i id="heroMetaIcon3" class="text-green-500"></i>
+                                    <span class="meta-label" id="heroMetaLabel3"></span>
+                                    <span id="heroMetaValue3" class="meta-value"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
+                                <h3 class="description-title">Details</h3>
+                                <div id="heroDescription" class="description-text"></div>
                             </div>
 
-                            <a href="{{ role_path('profile_edit') }}" class="btn-edit-profile">
-                                <i class="fas fa-edit"></i>
-                                Edit Profile
-                            </a>
-                        </div>
-
-                        <div class="profile-stats">
-                            <div class="stat-item">
-                                <div class="stat-icon stat-icon-blue">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </div>
-                                <div class="stat-details">
-                                    <span class="stat-label">Member Since</span>
-                                    <span class="stat-value">{{ user.createdAt ? user.createdAt|date('M Y') : 'Unknown' }}</span>
-                                </div>
+                            <div class="hero-actions slide-in" style="animation-delay: 0.4s" id="heroActions">
+                                <!-- Actions injected by JS -->
                             </div>
-                            <div class="stat-item">
-                                <div class="stat-icon stat-icon-purple">
-                                    <i class="fas fa-history"></i>
-                                </div>
-                                <div class="stat-details">
-                                    <span class="stat-label">Total Activities</span>
-                                    <span class="stat-value">{{ user.activityLogs|length }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Information Panels -->
-                <div class="profile-content">
-                    <!-- Account Information -->
-                    <div class="info-panel">
-                        <div class="panel-header">
-                            <div class="panel-title-wrapper">
-                                <div class="panel-icon">
-                                    <i class="fas fa-user-circle"></i>
-                                </div>
-                                <span class="panel-title">Account Information</span>
-                            </div>
-                        </div>
-                        <div class="panel-body">
-                            <div class="info-row">
-                                <div class="info-label">
-                                    <i class="fas fa-user"></i>
-                                    <div>
-                                        <h4>Username</h4>
-                                        <p>Your unique identifier</p>
-                                    </div>
-                                </div>
-                                <span class="info-value">{{ user.username }}</span>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">
-                                    <i class="fas fa-signature"></i>
-                                    <div>
-                                        <h4>Display Name</h4>
-                                        <p>How others see your name</p>
-                                    </div>
-                                </div>
-                                <span class="info-value">{{ user.displayName ?: 'Not set' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">
-                                    <i class="fas fa-envelope"></i>
-                                    <div>
-                                        <h4>Email Address</h4>
-                                        <p>Your contact email</p>
-                                    </div>
-                                </div>
-                                <span class="info-value">{{ user.email }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Personal Details -->
-                    {% if user.zodiacSign or user.bio %}
-                    <div class="info-panel">
-                        <div class="panel-header">
-                            <div class="panel-title-wrapper">
-                                <div class="panel-icon">
-                                    <i class="fas fa-star"></i>
-                                </div>
-                                <span class="panel-title">Personal Details</span>
-                            </div>
-                        </div>
-                        <div class="panel-body">
-                            {% if user.zodiacSign %}
-                            <div class="info-row">
-                                <div class="info-label">
-                                    <i class="fas fa-moon"></i>
-                                    <div>
-                                        <h4>Zodiac Sign</h4>
-                                        <p>Your astrological sign</p>
-                                    </div>
-                                </div>
-                                <span class="info-value">{{ user.zodiacSign }}</span>
-                            </div>
-                            {% endif %}
-                            {% if user.bio %}
-                            <div class="info-row info-row-column">
-                                <div class="info-label">
-                                    <i class="fas fa-align-left"></i>
-                                    <div>
-                                        <h4>Bio</h4>
-                                        <p>About you</p>
-                                    </div>
-                                </div>
-                                <p class="bio-text">{{ user.bio }}</p>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Recent Activity -->
-                    <div class="info-panel">
-                        <div class="panel-header">
-                            <div class="panel-title-wrapper">
-                                <div class="panel-icon">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <span class="panel-title">Recent Activity</span>
-                            </div>
-                        </div>
-                        <div class="panel-body">
-                            {% set recentLogs = user.activityLogs|slice(0, 5) %}
-                            {% if recentLogs|length > 0 %}
-                                {% for log in recentLogs %}
-                                    <div class="activity-item">
-                                        <div class="activity-icon">
-                                            {% set actionType = log.action|default('UNKNOWN')|upper %}
-                                            {% if actionType == 'CREATE' %}
-                                                <i class="fas fa-plus-circle"></i>
-                                            {% elseif actionType == 'UPDATE' %}
-                                                <i class="fas fa-edit"></i>
-                                            {% elseif actionType == 'DELETE' %}
-                                                <i class="fas fa-trash-alt"></i>
-                                            {% elseif actionType == 'LOGIN' %}
-                                                <i class="fas fa-sign-in-alt"></i>
-                                            {% else %}
-                                                <i class="fas fa-info-circle"></i>
-                                            {% endif %}
-                                        </div>
-                                        <div class="activity-details">
-                                            <h4>{{ log.action }}</h4>
-                                            <p>{{ log.targetData }}</p>
-                                            <span class="activity-time">{{ log.createdAt|date('M d, Y H:i') }}</span>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="empty-state">
-                                    <i class="fas fa-inbox"></i>
-                                    <p>No recent activity</p>
-                                </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        const profileData = [
+            {
+                id: 'account',
+                title: 'Account Info',
+                value: '{{ user.username }}',
+                badge: 'Profile',
+                icon: 'fa-user-circle',
+                colorCode: '#3b82f6',
+                description: 'Your account information including username, email, and display name',
+                meta: [
+                    { icon: 'fa-user', label: 'Username', value: '{{ user.username }}' },
+                    { icon: 'fa-envelope', label: 'Email', value: '{{ user.email }}' },
+                    { icon: 'fa-signature', label: 'Display Name', value: '{{ user.displayName ?: "Not set" }}' }
+                ],
+                actions: [
+                    { label: 'Edit Profile', url: '{{ role_path('profile_edit') }}', class: 'primary' }
+                ]
+            },
+            {
+                id: 'role',
+                title: 'User Role',
+                value: '{{ user.isAdmin() ? "Admin" : (user.isStaff() ? "Staff" : "User") }}',
+                badge: 'Access',
+                icon: '{{ user.isAdmin() ? "fa-crown" : (user.isStaff() ? "fa-id-badge" : "fa-user") }}',
+                colorCode: '{{ user.isAdmin() ? "#8b5cf6" : (user.isStaff() ? "#10b981" : "#6b7280") }}',
+                description: 'Your role determines your access level and permissions within the system',
+                meta: [
+                    { icon: 'fa-shield-alt', label: 'Role', value: '{{ user.isAdmin() ? "Administrator" : (user.isStaff() ? "Staff Member" : "User") }}' },
+                    { icon: 'fa-check-circle', label: 'Status', value: '{{ user.isActive ? "Active" : "Inactive" }}' },
+                    { icon: 'fa-calendar', label: 'Member Since', value: '{{ user.createdAt ? user.createdAt|date("M Y") : "Unknown" }}' }
+                ],
+                actions: []
+            },
+            {
+                id: 'activity',
+                title: 'Activity Logs',
+                value: '{{ user.activityLogs|length }}',
+                badge: 'History',
+                icon: 'fa-history',
+                colorCode: '#ec4899',
+                description: 'Your recent activity and actions within the system',
+                meta: [
+                    { icon: 'fa-list', label: 'Total Activities', value: '{{ user.activityLogs|length }}' },
+                    { icon: 'fa-clock', label: 'Last Activity', value: '{{ user.activityLogs|first ? user.activityLogs|first.createdAt|date("M d, Y") : "No activity" }}' },
+                    { icon: 'fa-calendar-check', label: 'This Month', value: 'N/A' }
+                ],
+                actions: [
+                    {% if is_granted('ROLE_ADMIN') %}
+                        { label: 'View All Logs', url: '{{ path('app_admin_activity_logs_index') }}', class: 'primary' }
+                    {% endif %}
+                ]
+            }
+            {% if user.zodiacSign or user.bio %},
+            {
+                id: 'personal',
+                title: 'Personal Details',
+                value: '{{ user.zodiacSign ?: "Custom" }}',
+                badge: 'Info',
+                icon: 'fa-star',
+                colorCode: '#f59e0b',
+                description: '{{ user.bio ?: "Your personal information and preferences" }}',
+                meta: [
+                    {% if user.zodiacSign %}
+                        { icon: 'fa-moon', label: 'Zodiac Sign', value: '{{ user.zodiacSign }}' },
+                    {% endif %}
+                    { icon: 'fa-align-left', label: 'Bio', value: '{{ user.bio ? "Set" : "Not set" }}' },
+                    { icon: 'fa-info-circle', label: 'Profile', value: '{{ user.profilePicture ? "Has Picture" : "No Picture" }}' }
+                ],
+                actions: [
+                    { label: 'Update Details', url: '{{ role_path('profile_edit') }}', class: 'primary' }
+                ]
+            }
+            {% endif %}
+        ];
+
+        let currentIndex = 0;
+        const visibleCount = 3;
+
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#",""), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('statsCarousel');
+            container.innerHTML = '';
+            
+            const displayed = profileData.slice(currentIndex, currentIndex + visibleCount);
+
+            displayed.forEach((stat) => {
+                const colorLight = adjustColor(stat.colorCode, 30);
+                const colorDark = adjustColor(stat.colorCode, -30);
+                
+                const card = document.createElement('div');
+                card.className = `stat-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
+                card.style.cssText = `background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
+                card.setAttribute('data-color', stat.colorCode);
+                
+                card.innerHTML = `
+                    <div class="stat-icon-wrapper">
+                        <i class="fas ${stat.icon}"></i>
+                    </div>
+                    <div class="relative z-10 pt-8">
+                        <h3 class="text-4xl font-bold text-white mb-1">${stat.title}</h3>
+                        <p class="text-white/70 text-sm mb-2">${stat.badge}</p>
+                        <p class="text-6xl font-extrabold text-white mb-4">${stat.value}</p>
+                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
+                            View Details >
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => openHero(stat);
+                container.appendChild(card);
+            });
+            
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex + visibleCount >= profileData.length;
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex + visibleCount < profileData.length) {
+                currentIndex++;
+                renderCarousel();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCarousel();
+            }
+        }
+
+        let currentStat = null;
+        
+        function openHero(stat) {
+            currentStat = stat;
+            const app = document.getElementById('app');
+            const heroBg = document.getElementById('heroBg');
+            const heroIcon = document.getElementById('heroIcon');
+            const heroTitle = document.getElementById('heroTitle');
+            const heroDescription = document.getElementById('heroDescription');
+
+            const colorLight = adjustColor(stat.colorCode, 30);
+            const colorDark = adjustColor(stat.colorCode, -30);
+            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
+            
+            heroIcon.innerHTML = `<i class="fas ${stat.icon}"></i>`;
+            heroTitle.innerText = stat.title;
+            heroDescription.innerText = stat.description;
+            
+            // Set meta items
+            stat.meta.forEach((meta, index) => {
+                document.getElementById(`heroMetaIcon${index + 1}`).className = `fas ${meta.icon} text-blue-500`;
+                document.getElementById(`heroMetaLabel${index + 1}`).innerText = meta.label + ':';
+                document.getElementById(`heroMetaValue${index + 1}`).innerText = meta.value;
+            });
+            
+            // Set actions
+            const actionsContainer = document.getElementById('heroActions');
+            actionsContainer.innerHTML = '';
+            stat.actions.forEach(action => {
+                const btn = document.createElement('a');
+                btn.href = action.url;
+                btn.className = `action-btn action-btn-${action.class}`;
+                btn.innerHTML = `<i class="fa fa-arrow-right"></i><span>${action.label}</span>`;
+                actionsContainer.appendChild(btn);
+            });
+
+            app.classList.add('hero-active');
+            
+            const animatedElements = document.querySelectorAll('.slide-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function closeHero() {
+            document.getElementById('app').classList.remove('hero-active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCarousel();
+            
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+                
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 {% endblock %}

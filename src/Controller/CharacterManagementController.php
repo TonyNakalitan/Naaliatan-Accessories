@@ -6,13 +6,13 @@ use App\Entity\ActivityLog;
 use App\Entity\Character;
 use App\Form\CharacterType;
 use App\Repository\CharacterRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Doctrine\ORM\EntityManagerInterface;
 
 class CharacterManagementController extends AbstractController
 {
@@ -23,9 +23,9 @@ class CharacterManagementController extends AbstractController
     // Admin routes
     #[Route('/admin/characters', name: 'app_admin_character_management_index')]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminIndex(): Response
+    public function adminIndex(Request $request): Response
     {
-        return $this->index();
+        return $this->index($request);
     }
 
     #[Route('/admin/characters/new', name: 'app_admin_character_management_new')]
@@ -59,9 +59,9 @@ class CharacterManagementController extends AbstractController
     // Staff routes
     #[Route('/staff/characters', name: 'app_staff_character_management_index')]
     #[IsGranted('ROLE_STAFF')]
-    public function staffIndex(): Response
+    public function staffIndex(Request $request): Response
     {
-        return $this->index();
+        return $this->index($request);
     }
 
     #[Route('/staff/characters/new', name: 'app_staff_character_management_new')]
@@ -86,14 +86,29 @@ class CharacterManagementController extends AbstractController
     }
 
     // Shared implementation methods
-    private function index(): Response
+    private function index(Request $request): Response
     {
-        $characters = $this->characterRepository->findBy([], ['name' => 'ASC']);
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+        
+        // Get all characters for pagination calculation
+        $allCharacters = $this->characterRepository->findBy([], ['name' => 'ASC']);
+        $totalCharacters = count($allCharacters);
+        $totalPages = ceil($totalCharacters / $limit);
+        
+        // Get characters for current page
+        $characters = array_slice($allCharacters, $offset, $limit);
         
         return $this->render('CharacterManagementFolder/index.html.twig', [
             'characters' => $characters,
+            'allCharacters' => $allCharacters,
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
             'isStaff' => $this->isGranted('ROLE_STAFF'),
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalCharacters' => $totalCharacters,
+            'hasPagination' => $totalCharacters > $limit,
         ]);
     }
 
@@ -167,6 +182,9 @@ class CharacterManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
+                // Store old image filename to delete after successful upload
+                $oldImage = $character->getImage();
+                
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
@@ -177,6 +195,14 @@ class CharacterManagementController extends AbstractController
                         $newFilename
                     );
                     $character->setImage($newFilename);
+                    
+                    // Delete old image file if it exists
+                    if ($oldImage) {
+                        $oldImagePath = $this->getParameter('character_images_directory') . '/' . $oldImage;
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                        }
+                    }
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
@@ -211,6 +237,14 @@ class CharacterManagementController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$character->getId(), $request->request->get('_token'))) {
             $characterName = $character->getName();
             $characterId = $character->getId();
+
+            // Delete the character image file if it exists
+            if ($character->getImage()) {
+                $imagePath = $this->getParameter('character_images_directory') . '/' . $character->getImage();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
 
             $entityManager->remove($character);
             $entityManager->flush();

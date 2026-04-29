@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% if character %}{{ character.description }}{% else %}Browse our collection of premium products{% endif %}">
+    <title>{% if character %}{{ character.name }} - {% endif %}Products | Naaliatan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('HomeFolder/view_product.css?v=' ~ random()) }}">
+</head>
+<body>
+    <main class="content-area" role="main">
+        <!-- Top Navigation Bar -->
+        <header class="top-nav" role="banner">
+            <a href="{{ path('app_home') }}" class="nav-brand" aria-label="Naaliatan Home">
+                <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="brand-logo">
+            </a>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+            
+            <nav class="main-nav" id="mainNav" role="navigation" aria-label="Main navigation">
+                <a href="{{ path('app_home') }}" class="nav-link">
+                    <i class="fas fa-home" aria-hidden="true"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ path('app_about') }}" class="nav-link">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    <span>About</span>
+                </a>
+                <a href="{{ path('app_products') }}" class="nav-link active" aria-current="page">
+                    <i class="fas fa-box-open" aria-hidden="true"></i>
+                    <span>Products</span>
+                </a>
+                <a href="{{ path('app_contact') }}" class="nav-link">
+                    <i class="fas fa-envelope" aria-hidden="true"></i>
+                    <span>Contact</span>
+                </a>
+            </nav>
+            
+            <div class="user-widget">
+                {% if app.user %}
+                    <div class="avatar" aria-label="User avatar">
+                        {% if app.user.profilePicture %}
+                            <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        {% else %}
+                            <span>{{ (app.user.displayName ?: app.user.username)|default('U')|slice(0,1)|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="user-info">
+                        <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
+                        <p class="user-role">{{ app.user.roles[0] == 'ROLE_ADMIN' ? 'Admin' : 'Staff' }}</p>
+                    </div>
+                {% else %}
+                    <a href="{{ path('app_register') }}" class="btn-register">Register</a>
+                    <a href="{{ path('app_login') }}" class="btn-login">Login</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="page-container">
+            <!-- Back Navigation -->
+            <div class="back-nav">
+                <a href="{{ path('app_products') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Products</span>
+                </a>
+            </div>
+
+            {% if character %}
+            <!-- Main Character Layout -->
+            <div class="character-layout">
+                <!-- Left Side: Main Character Image -->
+                <div class="main-character-section">
+                    <div class="main-character-image">
+                        {% if character.image %}
+                            <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
+                        {% else %}
+                            <div class="no-image-placeholder">
+                                <i class="fas fa-user"></i>
+                                <span>No Image</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Character Card (Bottom Left) -->
+                    <div class="character-card">
+                        <div class="character-card-image">
+                            {% if character.image %}
+                                <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
+                            {% else %}
+                                <div class="card-no-image">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="character-card-info">
+                            <h4 class="character-card-name">{{ character.name }}</h4>
+                            <p class="character-card-va">VA. Not specified</p>
+                            <div class="character-card-likes">
+                                <i class="fas fa-heart"></i>
+                                <span>567</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Character Info and Related Characters -->
+                <div class="right-section">
+                    <!-- Character Information Panel -->
+                    <div class="character-info-panel">
+                        <div class="panel-header">
+                            <h2 class="character-title">{{ character.name }}</h2>
+                            <span class="character-role">Main character</span>
+                        </div>
+                        
+                        <div class="character-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Class</span>
+                                <span class="detail-value">Class 3, year 1 attendance number 1</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Creator</span>
+                                <span class="detail-value">{{ character.creator }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Alignment</span>
+                                <span class="detail-value">{{ character.alignment }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="character-description">
+                            <h3>Description</h3>
+                            <p>{{ character.description }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Color Hex Container -->
+                    <div class="color-hex-container">
+                        <h3 class="sidebar-title">Color Information</h3>
+                        <div class="color-display-main">
+                            <div class="color-swatch-large" style="background-color: {{ character.colorCode|default('#6366f1') }};"></div>
+                            <div class="color-details">
+                                <div class="color-code-main">
+                                    <span class="color-label">Hex Code</span>
+                                    <span class="color-value">{{ character.colorCode|default('#6366f1') }}</span>
+                                </div>
+                                <div class="color-rgb">
+                                    <span class="color-label">RGB Values</span>
+                                    <div class="rgb-values" id="rgbValues">
+                                        <div class="rgb-item">
+                                            <span class="rgb-label">R</span>
+                                            <span class="rgb-value" id="rgbR">-</span>
+                                        </div>
+                                        <div class="rgb-item">
+                                            <span class="rgb-label">G</span>
+                                            <span class="rgb-value" id="rgbG">-</span>
+                                        </div>
+                                        <div class="rgb-item">
+                                            <span class="rgb-label">B</span>
+                                            <span class="rgb-value" id="rgbB">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="color-variations">
+                            <h4>Color Variations</h4>
+                            <div class="variation-list">
+                                <div class="color-variation">
+                                    <div class="variation-swatch" style="background-color: {{ character.colorCode|default('#6366f1') }}; opacity: 0.8;"></div>
+                                    <span class="variation-label">80% Opacity</span>
+                                </div>
+                                <div class="color-variation">
+                                    <div class="variation-swatch" style="background-color: {{ character.colorCode|default('#6366f1') }}; opacity: 0.6;"></div>
+                                    <span class="variation-label">60% Opacity</span>
+                                </div>
+                                <div class="color-variation">
+                                    <div class="variation-swatch" style="background-color: {{ character.colorCode|default('#6366f1') }}; opacity: 0.4;"></div>
+                                    <span class="variation-label">40% Opacity</span>
+                                </div>
+                                <div class="color-variation">
+                                    <div class="variation-swatch" style="background-color: {{ character.colorCode|default('#6366f1') }}; opacity: 0.2;"></div>
+                                    <span class="variation-label">20% Opacity</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- No Character Found -->
+            <div class="empty-state" role="alert">
+                <div class="empty-icon-wrapper">
+                    <i class="fas fa-user" aria-hidden="true"></i>
+                    <div class="empty-icon-pulse"></div>
+                </div>
+                <h3 class="empty-title">Character Not Found</h3>
+                <p class="empty-text">We couldn't find the character you're looking for. Please check back soon!</p>
+                <a href="{{ path('app_products') }}" class="btn-hero btn-primary">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    <span>Back to All Products</span>
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <footer class="site-footer" role="contentinfo">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <div class="footer-logo" aria-hidden="true">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div class="footer-brand-info">
+                            <h3>Naaliatan's Accessories</h3>
+                            <p>Your premier destination for character collectibles and premium accessories</p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <div class="footer-column">
+                            <h4>Quick Links</h4>
+                            <ul>
+                                <li><a href="{{ path('app_home') }}"><i class="fas fa-chevron-right" aria-hidden="true"></i> Home</a></li>
+                                <li><a href="{{ path('app_about') }}"><i class="fas fa-chevron-right" aria-hidden="true"></i> About Us</a></li>
+                                <li><a href="{{ path('app_products') }}"><i class="fas fa-chevron-right" aria-hidden="true"></i> Products</a></li>
+                                <li><a href="{{ path('app_contact') }}"><i class="fas fa-chevron-right" aria-hidden="true"></i> Contact</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h4>Support</h4>
+                            <ul>
+                                <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Help Center</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Shipping Info</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> Returns</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right" aria-hidden="true"></i> FAQ</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h4>Connect</h4>
+                            <div class="social-links">
+                                <a href="#" class="social-icon" aria-label="Facebook" title="Follow us on Facebook">
+                                    <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                                </a>
+                                <a href="#" class="social-icon" aria-label="Twitter" title="Follow us on Twitter">
+                                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                                </a>
+                                <a href="#" class="social-icon" aria-label="Instagram" title="Follow us on Instagram">
+                                    <i class="fab fa-instagram" aria-hidden="true"></i>
+                                </a>
+                                <a href="#" class="social-icon" aria-label="Discord" title="Join our Discord">
+                                    <i class="fab fa-discord" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; {{ "now"|date("Y") }} Naaliatan's Accessories. All rights reserved.</p>
+                    <div class="footer-legal">
+                        <a href="#">Privacy Policy</a>
+                        <span aria-hidden="true">|</span>
+                        <a href="#">Terms of Service</a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" role="alert" aria-live="polite">
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            const nav = document.getElementById('mainNav');
+            const btn = this;
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            nav.classList.toggle('active');
+            btn.setAttribute('aria-expanded', !isExpanded);
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('productSearch');
+        const searchClear = document.getElementById('searchClear');
+        const productGrid = document.getElementById('productGrid');
+        const productCards = productGrid ? productGrid.querySelectorAll('.product-card') : [];
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            searchClear.style.display = searchTerm ? 'block' : 'none';
+            
+            productCards.forEach(card => {
+                const productName = card.querySelector('.product-name').textContent.toLowerCase();
+                const productDescription = card.querySelector('.product-description').textContent.toLowerCase();
+                
+                if (productName.includes(searchTerm) || productDescription.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        searchClear.addEventListener('click', function() {
+            searchInput.value = '';
+            this.style.display = 'none';
+            productCards.forEach(card => card.style.display = '');
+        });
+
+        // Filter chips functionality
+        const filterChips = document.querySelectorAll('.filter-chip');
+        
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', function() {
+                // Remove active class from all chips
+                filterChips.forEach(c => {
+                    c.classList.remove('active');
+                    c.setAttribute('aria-selected', 'false');
+                });
+                
+                // Add active class to clicked chip
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+                
+                const category = this.getAttribute('data-category');
+                
+                productCards.forEach(card => {
+                    if (category === 'all' || card.getAttribute('data-category') === category) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Sort functionality
+        const sortSelect = document.getElementById('productSort');
+        
+        sortSelect.addEventListener('change', function() {
+            const sortValue = this.value;
+            const cardsArray = Array.from(productCards);
+            
+            cardsArray.sort((a, b) => {
+                switch(sortValue) {
+                    case 'name':
+                        const nameA = a.querySelector('.product-name').textContent.toLowerCase();
+                        const nameB = b.querySelector('.product-name').textContent.toLowerCase();
+                        return nameA.localeCompare(nameB);
+                    case 'price_low':
+                        // This would need actual price data from the backend
+                        return 0;
+                    case 'price_high':
+                        // This would need actual price data from the backend
+                        return 0;
+                    case 'newest':
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Re-append sorted cards to the grid
+            cardsArray.forEach(card => productGrid.appendChild(card));
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = 'toast show';
+            
+            if (type === 'error') {
+                toast.classList.add('error');
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Set color swatch backgrounds from data attributes
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorSwatches = document.querySelectorAll('.color-swatch[data-color]');
+            colorSwatches.forEach(swatch => {
+                const color = swatch.getAttribute('data-color');
+                if (color) {
+                    swatch.style.backgroundColor = color;
+                }
+            });
+        });
+
+        // Product card interactions
+        productCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // This would typically navigate to product details
+                const productName = this.querySelector('.product-name').textContent;
+                showToast(`Viewing details for ${productName}`);
+            });
+        });
+    </script>
+
+    
+    <!-- Buy Now Modal -->
+    <div id="buyNowModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="buyNowTitle">
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">
+                <h2 class="modal-title" id="buyNowTitle">
+                    <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                    <span>Complete Your Purchase</span>
+                </h2>
+                <button class="modal-close" onclick="closeBuyNowModal()" aria-label="Close modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            
+            <form id="buyNowForm" class="modal-body">
+                <input type="hidden" id="modalProductId" name="productId">
+                <input type="hidden" id="modalProductName" name="productName">
+                
+                <!-- Product Info -->
+                <div class="form-section">
+                    <h3 class="section-title">Product Details</h3>
+                    <div class="product-info-box">
+                        <div class="product-info-item">
+                            <span class="info-label">
+                                <i class="fas fa-tag" aria-hidden="true"></i>
+                                Product:
+                            </span>
+                            <span class="info-value" id="modalProductDisplay"></span>
+                        </div>
+                        <div class="form-group form-group-inline">
+                            <label for="quantity" class="form-label">
+                                <i class="fas fa-boxes" aria-hidden="true"></i>
+                                Quantity
+                            </label>
+                            <div class="quantity-input-wrapper">
+                                <button type="button" class="quantity-btn quantity-minus" aria-label="Decrease quantity">
+                                    <i class="fas fa-minus" aria-hidden="true"></i>
+                                </button>
+                                <input type="number" id="quantity" name="quantity" class="form-input quantity-input" min="1" value="1" required>
+                                <button type="button" class="quantity-btn quantity-plus" aria-label="Increase quantity">
+                                    <i class="fas fa-plus" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                        Customer Information
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="customerName" class="form-label">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                Full Name
+                            </label>
+                            <input type="text" id="customerName" name="customerName" class="form-input" placeholder="John Doe" required autocomplete="name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customerEmail" class="form-label">
+                                <i class="fas fa-envelope" aria-hidden="true"></i>
+                                Email Address
+                            </label>
+                            <input type="email" id="customerEmail" name="customerEmail" class="form-input" placeholder="john@example.com" required autocomplete="email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customerPhone" class="form-label">
+                                <i class="fas fa-phone" aria-hidden="true"></i>
+                                Phone Number
+                            </label>
+                            <input type="tel" id="customerPhone" name="customerPhone" class="form-input" placeholder="+63 912 345 6789" required autocomplete="tel">
+                        </div>
+                        
+                        <div class="form-group form-group-full">
+                            <label for="customerAddress" class="form-label">
+                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                Delivery Address
+                            </label>
+                            <textarea id="customerAddress" name="customerAddress" class="form-input" rows="3" placeholder="Enter complete delivery address including street, city, and postal code" required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeBuyNowModal()">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                    <span>Cancel</span>
+                </button>
+                <button type="submit" form="buyNowForm" class="btn-primary">
+                    <i class="fas fa-check" aria-hidden="true"></i>
+                    <span>Confirm Purchase</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Convert hex to RGB function
+        function hexToRgb(hex) {
+            // Remove # if present
+            hex = hex.replace('#', '');
+            
+            // Validate hex format
+            if (!/^[0-9A-F]{6}$/i.test(hex)) {
+                console.error('Invalid hex color format:', hex);
+                return { r: 99, g: 102, b: 241 }; // Default to #6366f1
+            }
+            
+            // Parse the hex values
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            
+            return { r, g, b };
+        }
+        
+        // Populate RGB values when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorHex = "{{ character.colorCode|default('#6366f1')|e('js') }}";
+            console.log('Color hex from template:', colorHex);
+            
+            const rgb = hexToRgb(colorHex);
+            console.log('Converted RGB:', rgb);
+            
+            // Update RGB values with error handling
+            const rgbRElement = document.getElementById('rgbR');
+            const rgbGElement = document.getElementById('rgbG');
+            const rgbBElement = document.getElementById('rgbB');
+            
+            if (rgbRElement) rgbRElement.textContent = rgb.r;
+            if (rgbGElement) rgbGElement.textContent = rgb.g;
+            if (rgbBElement) rgbBElement.textContent = rgb.b;
+        });
+    </script>
+    
+    <script src="{{ asset('HomeFolder/view_product.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+</body>
+</html>

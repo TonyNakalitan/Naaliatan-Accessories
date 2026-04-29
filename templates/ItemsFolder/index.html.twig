@@ -1,181 +1,393 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
-{% block title %}Items Management | Naaliatan{% endblock %}
+{% block title %}Items Management{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('ItemsFolder/index.css?v=' ~ random()) }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('ItemsFolder/index.css') }}?v={{ random() }}">
 {% endblock %}
 
 {% block body %}
-    <main class="content-area">
-        <header class="top-nav">
-            <div class="search-global">
-                <i class="fas fa-search"></i>
-                <input type="text" id="globalSearch" placeholder="Search characters...">
+<div id="items-app-wrapper" class="min-h-screen">
+
+    <!-- App Wrapper -->
+    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">
+                    Items Management
+                </span>
             </div>
-            <div class="user-widget">
-                <button class="icon-btn"><i class="fas fa-bell"></i></button>
-                <div class="avatar">
+
+            <!-- Search bar -->
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search characters..." class="bg-transparent outline-none text-sm w-full">
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_profile_edit') : path('app_staff_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0, 2)|upper }}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                </div>
-                <div class="user-info">
-                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
-                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
-                </div>
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                </a>
             </div>
         </header>
 
-        <div class="page-container">
-            <div class="page-intro">
-                <div>
-                    <h1 class="page-title">Items Management</h1>
-                    <p class="page-subtitle">Browse character collections and manage product inventory</p>
-                </div>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card stat-card-blue">
-                    <div class="stat-icon">
-                        <i class="fas fa-box"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Total Products</h3>
-                        <p class="value">{{ products|length }}</p>
-                        <span class="stat-badge">Catalog</span>
-                    </div>
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-hidden">
+            
+            <!-- GRID VIEW (The Carousel) -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+                
+                <!-- Carousel at bottom -->
+                <div id="characterCarousel" class="flex gap-8 items-end h-[500px] mb-6">
+                    <!-- Cards injected by JS -->
                 </div>
 
-                <div class="stat-card stat-card-purple">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-ninja"></i>
+                <!-- Footer Nav -->
+                <div class="flex items-center justify-between pt-4 pb-2">
+                    <div class="flex gap-6 text-sm font-medium text-gray-500">
+                        <span>Total Characters: <span id="totalCount">{{ characters|length }}</span></span>
+                        <span>Good: <span class="text-emerald-600 font-bold">{{ goodCount }}</span></span>
+                        <span>Neutral: <span class="text-blue-600 font-bold">{{ neutralCount }}</span></span>
+                        <span>Evil: <span class="text-red-600 font-bold">{{ evilCount }}</span></span>
                     </div>
-                    <div class="stat-info">
-                        <h3>Characters</h3>
-                        <p class="value">{{ totalCharacters }}</p>
-                        <span class="stat-badge">Collection</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-emerald">
-                    <div class="stat-icon">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Good</h3>
-                        <p class="value">{{ goodCount }}</p>
-                        <span class="stat-badge">Alignment</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-amber">
-                    <div class="stat-icon">
-                        <i class="fas fa-balance-scale"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Neutral</h3>
-                        <p class="value">{{ neutralCount }}</p>
-                        <span class="stat-badge">Alignment</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-pink">
-                    <div class="stat-icon">
-                        <i class="fas fa-skull"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Evil</h3>
-                        <p class="value">{{ evilCount }}</p>
-                        <span class="stat-badge">Alignment</span>
+                    <div class="flex gap-4">
+                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="fa fa-chevron-left text-xs"></i> Prev
+                        </button>
+                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="data-panel">
-                <div class="panel-header">
-                    <div class="panel-title-wrapper">
-                        <div class="panel-icon">
-                            <i class="fas fa-boxes"></i>
+            <!-- DETAIL / HERO VIEW -->
+            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
+                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
+                
+                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
+                    <i class="fa fa-times text-red-500"></i> Close
+                </button>
+
+                <div class="relative z-10 h-full flex items-center px-16">
+                    <!-- Left Side: Large Image with Frame -->
+                    <div class="w-1/2 flex justify-center items-center">
+                        <div class="hero-image-frame">
+                            <img id="heroImage" src="" alt="" class="hero-image">
                         </div>
-                        <span class="panel-title">Character Collection</span>
                     </div>
-                    <div class="badge-group">
-                        <select id="alignmentFilter" class="filter-select">
-                            <option value="all">All Alignments</option>
-                            <option value="good">Good</option>
-                            <option value="neutral">Neutral</option>
-                            <option value="evil">Evil</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="gallery-view">
-                    {% for character in characters %}
-                        <a href="{{ role_path('item_management_show', {'id': character.id}) }}" class="prod-card">
-                            <div class="prod-media">
-                                {% if character.image %}
-                                    <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}" />
-                                {% else %}
-                                    <div class="prod-placeholder">
-                                        <i class="fas fa-user-astronaut"></i>
-                                    </div>
-                                {% endif %}
-                                <div class="prod-overlay">
-                                    <div class="overlay-actions">
-                                        <button class="overlay-btn">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
+                    <!-- Right Side: Content -->
+                    <div class="w-1/2 pl-12 pr-8">
+                        <div class="hero-content-wrapper">
+                            <h2 id="heroName" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
+                            
+                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
+                                <div class="meta-item">
+                                    <i class="fa fa-shield-alt text-purple-500"></i>
+                                    <span class="meta-label">Alignment:</span>
+                                    <span id="heroAlignment" class="alignment-badge-hero"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-user text-blue-500"></i>
+                                    <span class="meta-label">Creator:</span>
+                                    <span id="heroCreator" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-boxes text-green-500"></i>
+                                    <span class="meta-label">Products:</span>
+                                    <span id="heroProductCount" class="meta-value"></span>
                                 </div>
                             </div>
-                            <div class="prod-content">
-                                <div class="prod-header">
-                                    <div class="alignment-badge alignment-{{ character.alignment|lower }}">
-                                        {% if character.alignment == 'Good' %}
-                                            <i class="fas fa-heart"></i>
-                                        {% elseif character.alignment == 'Evil' %}
-                                            <i class="fas fa-skull"></i>
-                                        {% else %}
-                                            <i class="fas fa-balance-scale"></i>
-                                        {% endif %}
-                                        {{ character.alignment|default('Unknown') }}
-                                    </div>
-                                </div>
-                                <h3 class="prod-title">{{ character.name }}</h3>
-                                {% if character.creator %}
-                                    <p class="prod-creator">by {{ character.creator }}</p>
-                                {% endif %}
-                                <div class="prod-footer">
-                                    <div class="prod-stats">
-                                        <div class="stat-item">
-                                            <i class="fas fa-box"></i>
-                                            <span>{{ character.products|length }} Products</span>
-                                        </div>
-                                    </div>
-                                    <div class="prod-action">
-                                        <i class="fas fa-arrow-right"></i>
-                                    </div>
-                                </div>
+                            
+                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
+                                <h3 class="description-title">Description</h3>
+                                <p id="heroDesc" class="description-text"></p>
                             </div>
-                        </a>
-                    {% else %}
-                        <div class="empty-gallery">
-                            <i class="fas fa-user-astronaut"></i>
-                            <h3>No characters found</h3>
-                            <p>Start by adding characters to your collection</p>
+
+                            <div class="hero-actions slide-in" style="animation-delay: 0.4s">
+                                <a id="heroViewBtn" href="#" class="action-btn action-btn-primary">
+                                    <i class="fa fa-eye"></i>
+                                    <span>View Products</span>
+                                </a>
+                            </div>
                         </div>
-                    {% endfor %}
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('ItemsFolder/index.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        // Load characters from Symfony
+        const allCharactersData = [
+            {% for character in characters %}
+            {
+                id: {{ character.id }},
+                name: {{ character.name|json_encode|raw }},
+                alignment: {{ character.alignment|json_encode|raw }},
+                creator: {{ character.creator|json_encode|raw }},
+                image: {{ character.image|json_encode|raw }},
+                description: {{ character.description|json_encode|raw }},
+                productCount: {{ character.products|length }},
+                colorCode: {{ character.colorCode|json_encode|raw }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+        const isStaff = {{ is_granted('ROLE_STAFF') ? 'true' : 'false' }};
+        const baseUrl = '{{ app.request.schemeAndHttpHost }}';
+        const imageBasePath = '{{ asset('images/characters/') }}';
+        
+        console.log('Total characters loaded:', allCharactersData.length);
+        
+        // Transform characters to match the expected format
+        let characters = allCharactersData.map(char => ({
+            id: char.id,
+            name: char.name || 'Unknown Character',
+            alignment: char.alignment || 'Neutral',
+            creator: char.creator || 'Unknown',
+            productCount: char.productCount || 0,
+            colorCode: char.colorCode || '#6c757d',
+            image: char.image ? imageBasePath + char.image : 'https://via.placeholder.com/400x600?text=' + encodeURIComponent(char.name || 'Character'),
+            description: char.description || 'No description available.'
+        }));
+        
+        let filteredCharacters = [...characters];
+        
+        console.log('Processed characters:', characters);
+
+        let currentIndex = 0;
+        function getVisibleCount() {
+            if (window.innerWidth < 768) return 1;
+            if (window.innerWidth < 1024) return 2;
+            return 3;
+        }
+
+        // Helper function to lighten/darken colors
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#",""), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function getAlignmentColor(alignment) {
+            const alignmentLower = alignment.toLowerCase();
+            if (alignmentLower === 'good') return '#10b981';
+            if (alignmentLower === 'evil') return '#ef4444';
+            return '#3b82f6';
+        }
+
+        function getAlignmentIcon(alignment) {
+            const alignmentLower = alignment.toLowerCase();
+            if (alignmentLower === 'good') return 'fa-heart';
+            if (alignmentLower === 'evil') return 'fa-skull';
+            return 'fa-balance-scale';
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('characterCarousel');
+            container.innerHTML = '';
+            
+            if (!filteredCharacters || filteredCharacters.length === 0) {
+                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No characters found.</div>';
+                updateNavigationButtons();
+                return;
+            }
+
+            const displayed = filteredCharacters.slice(currentIndex, currentIndex + getVisibleCount());
+
+            displayed.forEach((char, index) => {
+                const baseColor = char.colorCode || getAlignmentColor(char.alignment);
+                const colorLight = adjustColor(baseColor, 30);
+                const colorDark = adjustColor(baseColor, -30);
+                
+                const card = document.createElement('div');
+                card.className = `character-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
+                card.style.cssText = `--char-color-light: ${colorLight}; --char-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
+                card.setAttribute('data-color', baseColor);
+                
+                card.innerHTML = `
+                    <div class="character-image-wrapper">
+                        <img src="${char.image}" alt="${char.name}" onerror="this.src='https://via.placeholder.com/300x400?text=${encodeURIComponent(char.name)}'">
+                    </div>
+                    <div class="relative z-10 pt-8">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="alignment-indicator alignment-${char.alignment.toLowerCase()}">
+                                <i class="fas ${getAlignmentIcon(char.alignment)}"></i> ${char.alignment}
+                            </span>
+                        </div>
+                        <h3 class="text-4xl font-bold text-white mb-1">${char.name}</h3>
+                        <p class="text-white/70 text-sm mb-2">by ${char.creator}</p>
+                        <p class="text-white/60 text-xs mb-4">${char.productCount} Products</p>
+                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
+                            View Products >
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => openHero(char);
+                container.appendChild(card);
+            });
+            
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex + getVisibleCount() >= filteredCharacters.length;
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex + getVisibleCount() < filteredCharacters.length) {
+                currentIndex++;
+                renderCarousel();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCarousel();
+            }
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filteredCharacters = characters.filter(char => 
+                    char.name.toLowerCase().includes(searchTerm) ||
+                    char.creator.toLowerCase().includes(searchTerm) ||
+                    char.alignment.toLowerCase().includes(searchTerm)
+                );
+                currentIndex = 0;
+                const totalCountEl = document.getElementById('totalCount');
+                if (totalCountEl) {
+                    totalCountEl.textContent = filteredCharacters.length;
+                }
+                renderCarousel();
+            });
+        }
+
+        let currentCharacter = null;
+        
+        function openHero(char) {
+            currentCharacter = char;
+            const app = document.getElementById('app');
+            const heroBg = document.getElementById('heroBg');
+            const heroImage = document.getElementById('heroImage');
+            const heroName = document.getElementById('heroName');
+            const heroAlignment = document.getElementById('heroAlignment');
+            const heroCreator = document.getElementById('heroCreator');
+            const heroProductCount = document.getElementById('heroProductCount');
+            const heroDesc = document.getElementById('heroDesc');
+
+            // Set content
+            const baseColor = char.colorCode || getAlignmentColor(char.alignment);
+            const colorLight = adjustColor(baseColor, 30);
+            const colorDark = adjustColor(baseColor, -30);
+            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
+            
+            heroImage.src = char.image;
+            heroImage.onerror = function() {
+                this.src = 'https://via.placeholder.com/400x600?text=' + encodeURIComponent(char.name);
+            };
+            
+            heroName.innerText = char.name;
+            heroAlignment.innerHTML = `<i class="fas ${getAlignmentIcon(char.alignment)}"></i> ${char.alignment}`;
+            heroAlignment.className = `alignment-badge-hero alignment-${char.alignment.toLowerCase()}`;
+            heroCreator.innerText = char.creator;
+            heroProductCount.innerText = `${char.productCount} products`;
+            heroDesc.innerText = char.description;
+            
+            // Update action button
+            const viewBtn = document.getElementById('heroViewBtn');
+            if (viewBtn) {
+                const viewRoute = isAdmin ? 
+                    `${baseUrl}/admin/items/character/${char.id}` : 
+                    `${baseUrl}/staff/items/character/${char.id}`;
+                viewBtn.href = viewRoute;
+            }
+
+            // Trigger animation
+            app.classList.add('hero-active');
+            
+            // Reset text animations
+            const animatedElements = document.querySelectorAll('.slide-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight; // trigger reflow
+                el.style.animation = null;
+            });
+        }
+
+        function closeHero() {
+            document.getElementById('app').classList.remove('hero-active');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, rendering carousel...');
+            renderCarousel();
+            
+            window.addEventListener('resize', function() { renderCarousel(); });
+            
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+                
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 {% endblock %}

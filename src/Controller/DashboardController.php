@@ -9,6 +9,7 @@ use App\Repository\StockRepository;
 use App\Repository\StockTransactionRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -27,7 +28,7 @@ class DashboardController extends AbstractController
 
     #[Route('/admin/dashboard', name: 'app_admin_dashboard')]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminDashboard(): Response
+    public function adminDashboard(Request $request): Response
     {
         $stats = [
             'totalUsers' => $this->userRepository->count([]),
@@ -40,14 +41,33 @@ class DashboardController extends AbstractController
         ];
 
         $recentActivities = $this->activityLogRepository->findRecentLogs(10);
-        $lowStockProducts = $this->productRepository->findLowStockProducts(5);
         $characterStats = $this->characterRepository->getAlignmentStats();
+
+        // Pagination for low stock products
+        $lowStockPage = max(1, $request->query->getInt('low_stock_page', 1));
+        $lowStockLimit = 5;
+        $totalLowStock = $this->productRepository->getLowStockCount();
+        $totalLowStockPages = ceil($totalLowStock / $lowStockLimit);
+
+        // Only use pagination if there are more than 5 items
+        if ($totalLowStock > 5) {
+            $lowStockProducts = $this->productRepository->findLowStockProductsPaginated($lowStockPage, $lowStockLimit);
+        } else {
+            $lowStockProducts = $this->productRepository->findLowStockProducts(5);
+        }
 
         return $this->render('DashboardFolder/admin_dashboard.html.twig', [
             'stats' => $stats,
             'recentActivities' => $recentActivities,
             'lowStockProducts' => $lowStockProducts,
             'characterStats' => $characterStats,
+            'lowStockPagination' => [
+                'current_page' => $lowStockPage,
+                'total_pages' => $totalLowStockPages,
+                'total_items' => $totalLowStock,
+                'limit' => $lowStockLimit,
+                'show_pagination' => $totalLowStock > 5
+            ]
         ]);
     }
 

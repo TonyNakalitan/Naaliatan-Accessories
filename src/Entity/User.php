@@ -89,6 +89,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $verificationToken = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $resetToken = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $resetTokenExpiresAt = null;
+
     #[ORM\OneToMany(targetEntity: ActivityLog::class, mappedBy: 'user')]
     private Collection $activityLogs;
 
@@ -315,6 +321,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->verificationToken = $verificationToken;
         return $this;
+    }
+
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): static
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
+
+    public function getResetTokenExpiresAt(): ?\DateTime
+    {
+        return $this->resetTokenExpiresAt;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTime $resetTokenExpiresAt): static
+    {
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+        return $this;
+    }
+
+    public function isResetTokenExpired(): bool
+    {
+        return $this->resetTokenExpiresAt && $this->resetTokenExpiresAt < new \DateTime();
     }
 
 }

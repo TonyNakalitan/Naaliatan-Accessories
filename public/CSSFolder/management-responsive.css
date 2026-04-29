@@ -1,0 +1,382 @@
+/* ============================================================
+   Management Pages - Mobile Responsive Overrides
+   Applies to: User, Product, Character, Stock, Order, Items,
+               Activity Logs management index pages
+   ============================================================ */
+
+/* ---- Header ---- */
+@media (max-width: 767px) {
+    /* Reduce header padding */
+    #user-app-wrapper header,
+    #product-app-wrapper header,
+    #character-app-wrapper header,
+    #stock-app-wrapper header,
+    #order-app-wrapper header,
+    #items-app-wrapper header,
+    #activity-app-wrapper header {
+        padding: 0.75rem 1rem !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Shrink title text */
+    #user-app-wrapper header span.text-3xl,
+    #product-app-wrapper header span.text-3xl,
+    #character-app-wrapper header span.text-3xl,
+    #stock-app-wrapper header span.text-3xl,
+    #order-app-wrapper header span.text-3xl,
+    #items-app-wrapper header span.text-3xl,
+    #activity-app-wrapper header span.text-3xl {
+        font-size: 1.1rem !important;
+    }
+
+    /* Compact right-side actions */
+    #user-app-wrapper header > div:last-child,
+    #product-app-wrapper header > div:last-child,
+    #character-app-wrapper header > div:last-child,
+    #stock-app-wrapper header > div:last-child,
+    #order-app-wrapper header > div:last-child,
+    #items-app-wrapper header > div:last-child,
+    #activity-app-wrapper header > div:last-child {
+        gap: 0.5rem !important;
+    }
+
+    /* Hide profile name/role text on mobile */
+    #user-app-wrapper header .flex.flex-col.items-start,
+    #product-app-wrapper header .flex.flex-col.items-start,
+    #character-app-wrapper header .flex.flex-col.items-start,
+    #stock-app-wrapper header .flex.flex-col.items-start,
+    #order-app-wrapper header .flex.flex-col.items-start,
+    #items-app-wrapper header .flex.flex-col.items-start,
+    #activity-app-wrapper header .flex.flex-col.items-start {
+        display: none !important;
+    }
+
+    /* Compact Add/filter buttons */
+    #user-app-wrapper header a.bg-blue-600,
+    #product-app-wrapper header a.bg-blue-600,
+    #character-app-wrapper header a.bg-blue-600,
+    #stock-app-wrapper header a.bg-blue-600 {
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Show mobile search bar inline */
+    #user-app-wrapper header .hidden.md\\:flex,
+    #product-app-wrapper header .hidden.md\\:flex,
+    #character-app-wrapper header .hidden.md\\:flex,
+    #stock-app-wrapper header .hidden.md\\:flex,
+    #order-app-wrapper header .hidden.md\\:flex,
+    #items-app-wrapper header .hidden.md\\:flex,
+    #activity-app-wrapper header .hidden.md\\:flex {
+        display: flex !important;
+        width: 100% !important;
+        order: 3;
+        margin-top: 0.25rem;
+    }
+
+    /* ---- Carousel grid view ---- */
+    #user-app-wrapper #gridView,
+    #product-app-wrapper #gridView,
+    #character-app-wrapper #gridView,
+    #stock-app-wrapper #gridView,
+    #order-app-wrapper #gridView,
+    #items-app-wrapper #gridView,
+    #activity-app-wrapper #gridView {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        padding-bottom: 0.75rem !important;
+    }
+
+    /* Single card visible on mobile, scrollable */
+    #userCarousel,
+    #productCarousel,
+    #characterCarousel,
+    #activityCarousel,
+    #orderCarousel {
+        height: 340px !important;
+        gap: 0.75rem !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-snap-type: x mandatory !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        flex-wrap: nowrap !important;
+    }
+
+    #userCarousel::-webkit-scrollbar,
+    #productCarousel::-webkit-scrollbar,
+    #characterCarousel::-webkit-scrollbar,
+    #activityCarousel::-webkit-scrollbar,
+    #orderCarousel::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    /* Cards take full width on mobile */
+    #userCarousel .user-card,
+    #productCarousel .product-card,
+    #characterCarousel .character-card,
+    #activityCarousel .activity-card,
+    #orderCarousel .order-card {
+        min-width: calc(85vw) !important;
+        width: calc(85vw) !important;
+        flex-shrink: 0 !important;
+        scroll-snap-align: start !important;
+        border-radius: 24px !important;
+        padding: 1.25rem !important;
+    }
+
+    /* Card title font size */
+    #userCarousel h3,
+    #productCarousel h3,
+    #characterCarousel h3,
+    #activityCarousel h3,
+    #orderCarousel h3 {
+        font-size: 1.5rem !important;
+    }
+
+    /* Footer nav stats - wrap and shrink */
+    #user-app-wrapper #gridView > div:last-child,
+    #product-app-wrapper #gridView > div:last-child,
+    #character-app-wrapper #gridView > div:last-child,
+    #stock-app-wrapper #gridView > div:last-child,
+    #order-app-wrapper #gridView > div:last-child,
+    #items-app-wrapper #gridView > div:last-child,
+    #activity-app-wrapper #gridView > div:last-child {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+
+    /* Stats row */
+    #user-app-wrapper #gridView > div:last-child > div:first-child,
+    #product-app-wrapper #gridView > div:last-child > div:first-child,
+    #character-app-wrapper #gridView > div:last-child > div:first-child,
+    #stock-app-wrapper #gridView > div:last-child > div:first-child,
+    #order-app-wrapper #gridView > div:last-child > div:first-child,
+    #items-app-wrapper #gridView > div:last-child > div:first-child,
+    #activity-app-wrapper #gridView > div:last-child > div:first-child {
+        gap: 0.5rem !important;
+        flex-wrap: wrap !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* ---- Hero / Detail View ---- */
+    #user-app-wrapper .hero-view > div.relative.z-10,
+    #product-app-wrapper .hero-view > div.relative.z-10,
+    #character-app-wrapper .hero-view > div.relative.z-10,
+    #stock-app-wrapper .hero-view > div.relative.z-10,
+    #order-app-wrapper .hero-view > div.relative.z-10,
+    #items-app-wrapper .hero-view > div.relative.z-10,
+    #activity-app-wrapper .hero-view > div.relative.z-10 {
+        flex-direction: column !important;
+        padding: 1rem !important;
+        overflow-y: auto !important;
+        align-items: flex-start !important;
+        padding-top: 3.5rem !important;
+    }
+
+    /* Hero left side (image) - compact on mobile */
+    #user-app-wrapper .hero-view .w-1\/2:first-child,
+    #product-app-wrapper .hero-view .w-1\/2:first-child,
+    #character-app-wrapper .hero-view .w-1\/2:first-child,
+    #stock-app-wrapper .hero-view .w-1\/2:first-child,
+    #order-app-wrapper .hero-view .w-1\/2:first-child,
+    #items-app-wrapper .hero-view .w-1\/2:first-child,
+    #activity-app-wrapper .hero-view .w-1\/2:first-child {
+        width: 100% !important;
+        height: 200px !important;
+        min-height: unset !important;
+    }
+
+    /* Hero right side (content) - full width */
+    #user-app-wrapper .hero-view .w-1\/2:last-child,
+    #product-app-wrapper .hero-view .w-1\/2:last-child,
+    #character-app-wrapper .hero-view .w-1\/2:last-child,
+    #stock-app-wrapper .hero-view .w-1\/2:last-child,
+    #order-app-wrapper .hero-view .w-1\/2:last-child,
+    #items-app-wrapper .hero-view .w-1\/2:last-child,
+    #activity-app-wrapper .hero-view .w-1\/2:last-child {
+        width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Hero background - full width on mobile instead of half */
+    #user-app-wrapper #heroBg,
+    #product-app-wrapper #heroBg,
+    #character-app-wrapper #heroBg,
+    #stock-app-wrapper #heroBg,
+    #order-app-wrapper #heroBg,
+    #items-app-wrapper #heroBg,
+    #activity-app-wrapper #heroBg {
+        width: 100% !important;
+        height: 220px !important;
+        border-radius: 0 !important;
+        bottom: auto !important;
+    }
+
+    /* Hero title */
+    .hero-title {
+        font-size: 1.5rem !important;
+    }
+
+    /* Hero image frame - smaller */
+    .hero-image-frame {
+        width: 120px !important;
+        height: 160px !important;
+    }
+
+    /* Hero actions - stack buttons */
+    .hero-actions {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+
+    .action-btn {
+        font-size: 0.8rem !important;
+        padding: 0.5rem 0.875rem !important;
+    }
+
+    /* Close button position */
+    #user-app-wrapper .hero-view > button.absolute,
+    #product-app-wrapper .hero-view > button.absolute,
+    #character-app-wrapper .hero-view > button.absolute,
+    #stock-app-wrapper .hero-view > button.absolute,
+    #order-app-wrapper .hero-view > button.absolute,
+    #items-app-wrapper .hero-view > button.absolute,
+    #activity-app-wrapper .hero-view > button.absolute {
+        top: 0.75rem !important;
+        right: 0.75rem !important;
+    }
+
+    /* Filter dropdowns in header */
+    #stockFilter,
+    #statusFilter,
+    #actionFilter {
+        font-size: 0.75rem !important;
+        padding: 0.35rem 1.75rem 0.35rem 0.5rem !important;
+    }
+
+    /* App wrapper - allow scroll on mobile */
+    #user-app-wrapper #app,
+    #product-app-wrapper #app,
+    #character-app-wrapper #app,
+    #stock-app-wrapper #app,
+    #order-app-wrapper #app,
+    #items-app-wrapper #app,
+    #activity-app-wrapper #app {
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow: visible !important;
+    }
+
+    /* Main area - allow natural height */
+    #user-app-wrapper main,
+    #product-app-wrapper main,
+    #character-app-wrapper main,
+    #stock-app-wrapper main,
+    #order-app-wrapper main,
+    #items-app-wrapper main,
+    #activity-app-wrapper main {
+        overflow: visible !important;
+        min-height: 500px !important;
+    }
+
+    /* Grid view - relative positioning on mobile */
+    #user-app-wrapper #gridView,
+    #product-app-wrapper #gridView,
+    #character-app-wrapper #gridView,
+    #stock-app-wrapper #gridView,
+    #order-app-wrapper #gridView,
+    #items-app-wrapper #gridView,
+    #activity-app-wrapper #gridView {
+        position: relative !important;
+        inset: auto !important;
+        justify-content: flex-end !important;
+    }
+
+    /* Hero view - full screen scroll on mobile */
+    #user-app-wrapper .hero-view,
+    #product-app-wrapper .hero-view,
+    #character-app-wrapper .hero-view,
+    #stock-app-wrapper .hero-view,
+    #order-app-wrapper .hero-view,
+    #items-app-wrapper .hero-view,
+    #activity-app-wrapper .hero-view {
+        overflow-y: auto !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+    }
+
+    /* Order hero card */
+    .hero-order-card {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ---- Tablet (768px - 1023px): 2 cards visible ---- */
+@media (min-width: 768px) and (max-width: 1023px) {
+    #user-app-wrapper header,
+    #product-app-wrapper header,
+    #character-app-wrapper header,
+    #stock-app-wrapper header,
+    #order-app-wrapper header,
+    #items-app-wrapper header,
+    #activity-app-wrapper header {
+        padding: 1rem 1.5rem !important;
+    }
+
+    #user-app-wrapper header span.text-3xl,
+    #product-app-wrapper header span.text-3xl,
+    #character-app-wrapper header span.text-3xl,
+    #stock-app-wrapper header span.text-3xl,
+    #order-app-wrapper header span.text-3xl,
+    #items-app-wrapper header span.text-3xl,
+    #activity-app-wrapper header span.text-3xl {
+        font-size: 1.4rem !important;
+    }
+
+    #userCarousel,
+    #productCarousel,
+    #characterCarousel,
+    #activityCarousel,
+    #orderCarousel {
+        height: 420px !important;
+        gap: 1rem !important;
+    }
+
+    #userCarousel .user-card,
+    #productCarousel .product-card,
+    #characterCarousel .character-card,
+    #activityCarousel .activity-card,
+    #orderCarousel .order-card {
+        width: calc(50% - 0.5rem) !important;
+        min-width: calc(50% - 0.5rem) !important;
+    }
+
+    #user-app-wrapper #gridView,
+    #product-app-wrapper #gridView,
+    #character-app-wrapper #gridView,
+    #stock-app-wrapper #gridView,
+    #order-app-wrapper #gridView,
+    #items-app-wrapper #gridView,
+    #activity-app-wrapper #gridView {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+    }
+
+    /* Hero: stack on tablet too */
+    #user-app-wrapper .hero-view > div.relative.z-10,
+    #product-app-wrapper .hero-view > div.relative.z-10,
+    #character-app-wrapper .hero-view > div.relative.z-10,
+    #stock-app-wrapper .hero-view > div.relative.z-10,
+    #order-app-wrapper .hero-view > div.relative.z-10,
+    #items-app-wrapper .hero-view > div.relative.z-10,
+    #activity-app-wrapper .hero-view > div.relative.z-10 {
+        padding: 2rem !important;
+    }
+}

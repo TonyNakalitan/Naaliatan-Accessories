@@ -140,11 +140,13 @@ class StockManagementController extends AbstractController
         $stocks = $this->stockRepository->findBy([], ['createdAt' => 'DESC']);
         $products = $this->productRepository->findBy([], ['name' => 'ASC']);
         $lowStockProducts = $this->productRepository->findLowStockProducts();
+        $productsInUse = $this->productRepository->findProductsInUse();
         
         return $this->render('StockManagementFolder/index.html.twig', [
             'stocks' => $stocks,
             'products' => $products,
             'lowStockProducts' => $lowStockProducts,
+            'productsInUse' => $productsInUse,
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
             'isStaff' => $this->isGranted('ROLE_STAFF'),
         ]);
@@ -186,11 +188,24 @@ class StockManagementController extends AbstractController
             return $this->redirectToRoute($routeName);
         }
 
-        $products = $this->productRepository->findBy([], ['name' => 'ASC']);
+        // Pagination logic
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 3; // 3 products per page
+        $offset = ($page - 1) * $limit;
+
+        $allProducts = $this->productRepository->findBy([], ['name' => 'ASC']);
+        $totalProducts = count($allProducts);
+        $totalPages = ceil($totalProducts / $limit);
+        
+        // Get products for current page
+        $products = array_slice($allProducts, $offset, $limit);
 
         return $this->render('StockManagementFolder/create.html.twig', [
             'form' => $form->createView(),
             'products' => $products,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalProducts' => $totalProducts,
         ]);
     }
 
@@ -280,41 +295,61 @@ class StockManagementController extends AbstractController
 
     private function store(Product $product, Request $request, string $role): Response
     {
+        // Get available stock entries for this product
+        $availableStocks = $this->stockRepository->findBy(['product' => $product], ['createdAt' => 'ASC']);
+        $totalAvailableStock = array_sum(array_map(fn($stock) => $stock->getQuantity(), $availableStocks));
+
         if ($request->isMethod('POST')) {
             $quantityToStore = (int) $request->request->get('quantity');
             
-            if ($quantityToStore <= 0 || $quantityToStore > $product->getStockQuantity()) {
-                $this->addFlash('error', 'Invalid quantity to store.');
+            if ($quantityToStore <= 0 || $quantityToStore > $totalAvailableStock) {
+                $this->addFlash('error', 'Invalid quantity to store. Available stock: ' . $totalAvailableStock . ' units.');
                 $routeName = $role === 'admin' ? 'app_admin_stock_management_index' : 'app_staff_stock_management_index';
                 return $this->redirectToRoute($routeName);
             }
 
-            $stock = new Stock();
-            $stock->setProduct($product);
-            $stock->setQuantity($quantityToStore);
-            $stock->setNotes($request->request->get('notes', 'Stored from product inventory'));
-            $stock->setCreatedBy($this->getUser());
-            $this->entityManager->persist($stock);
+            // Move stock from stock entries to product inventory
+            $remainingQuantity = $quantityToStore;
+            
+            foreach ($availableStocks as $stock) {
+                if ($remainingQuantity <= 0) break;
+                
+                $stockQuantity = $stock->getQuantity();
+                if ($stockQuantity <= 0) continue;
+                
+                $quantityToTransfer = min($remainingQuantity, $stockQuantity);
+                
+                if ($quantityToTransfer >= $stockQuantity) {
+                    // Remove the entire stock entry
+                    $this->entityManager->remove($stock);
+                } else {
+                    // Reduce the stock entry quantity
+                    $stock->setQuantity($stockQuantity - $quantityToTransfer);
+                }
+                
+                $remainingQuantity -= $quantityToTransfer;
+            }
 
+            // Increase product stock quantity
             $currentStock = $product->getStockQuantity();
-            $newStock = $currentStock - $quantityToStore;
+            $newStock = $currentStock + $quantityToStore;
             $product->setStockQuantity($newStock);
 
             $transaction = new StockTransaction();
             $transaction->setProduct($product);
             $transaction->setUser($this->getUser());
-            $transaction->setType(StockTransaction::TYPE_ADJUSTMENT);
-            $transaction->setQuantity(-$quantityToStore);
-            $transaction->setNotes('Stored back to stock inventory');
+            $transaction->setType(StockTransaction::TYPE_RESTOCK);
+            $transaction->setQuantity($quantityToStore);
+            $transaction->setNotes('Restored from stock inventory');
             $this->entityManager->persist($transaction);
 
             $activityLog = new ActivityLog();
             $activityLog->setUser($this->getUser());
             $activityLog->setUsername($this->getUser()->getUserIdentifier());
             $activityLog->setRole(json_encode($this->getUser()->getRoles()));
-            $activityLog->setAction('ADJUST');
+            $activityLog->setAction('RESTORE');
             $activityLog->setTargetData(sprintf(
-                'Product: %s - Stored: -%d | New Stock: %d',
+                'Product: %s - Restored: +%d | New Stock: %d',
                 $product->getName(),
                 $quantityToStore,
                 $newStock
@@ -324,7 +359,7 @@ class StockManagementController extends AbstractController
             $this->entityManager->flush();
 
             $this->addFlash('success', sprintf(
-                'Successfully stored %d units of %s back to stock inventory.',
+                'Successfully restored %d units of %s from stock inventory to product stock.',
                 $quantityToStore,
                 $product->getName()
             ));
@@ -335,6 +370,8 @@ class StockManagementController extends AbstractController
 
         return $this->render('StockManagementFolder/store.html.twig', [
             'product' => $product,
+            'availableStocks' => $availableStocks,
+            'totalAvailableStock' => $totalAvailableStock,
         ]);
     }
 

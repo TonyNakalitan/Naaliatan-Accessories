@@ -84,4 +84,22 @@ class CharacterRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findPaginatedCharacters(int $page = 1, int $limit = 4): array
+    {
+        return $this->createQueryBuilder('c')
+            ->orderBy('c.name', 'ASC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getCharacterCount(): int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

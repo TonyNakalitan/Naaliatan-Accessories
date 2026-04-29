@@ -131,8 +131,8 @@
                             <span class="checkmark"></span>
                             <span class="checkbox-label">Remember me</span>
                         </label>
-                        <a href="{{ path('app_verify_resend_email') }}" class="forgot-password">
-                            Resend Verification
+                        <a href="{{ path('app_forgot_password') }}" class="forgot-password">
+                            Change Password
                         </a>
                     </div>
 
@@ -159,5 +159,6 @@
     </div>
     
     <script src="{{ asset('LoginFolder/login.js') }}?v={{ random() }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
 </body>
 </html>

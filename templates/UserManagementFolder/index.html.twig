@@ -1,243 +1,456 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}User Management | Naaliatan{% endblock %}
+{% block title %}User Management{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('UserManagementFolder/index.css?v=' ~ random()) }}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
-    <link rel="stylesheet" href="{{ asset('UserManagementFolder/user_management_modals.css?v=' ~ random()) }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('UserManagementFolder/index.css') }}?v={{ random() }}">
 {% endblock %}
 
 {% block body %}
-    <main class="content-area">
-        <header class="top-nav">
-            <div class="search-global">
-                <i class="fas fa-search"></i>
-                <input type="text" id="globalSearch" placeholder="Search users...">
+<div id="user-app-wrapper" class="min-h-screen">
+
+    <!-- App Wrapper -->
+    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">
+                    User Management
+                </span>
             </div>
-            <div class="user-widget">
-                <button class="icon-btn"><i class="fas fa-bell"></i></button>
-                <div class="avatar">
+
+            <!-- Search bar -->
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search users..." class="bg-transparent outline-none text-sm w-full">
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ path('app_admin_user_management_new') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    <i class="fa fa-plus mr-2"></i>Add User
+                </a>
+                <a href="{{ path('app_admin_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0, 2)|upper }}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                </div>
-                <div class="user-info">
-                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
-                    <p class="user-role">Admin</p>
-                </div>
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Admin</span>
+                    </div>
+                </a>
             </div>
         </header>
 
-        <div class="page-container">
-            <div class="page-intro">
-                <div>
-                    <h1 class="page-title">User Management</h1>
-                    <p class="page-subtitle">Manage system users, roles, and permissions</p>
-                </div>
-            </div>
-
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
-
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
-
-            <div class="stats-grid">
-                <div class="stat-card stat-card-blue">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Total Users</h3>
-                        <p class="value">{{ users|length }}</p>
-                        <span class="stat-badge">All</span>
-                    </div>
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-hidden">
+            
+            <!-- GRID VIEW (The Carousel) -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+                
+                <!-- Carousel at bottom -->
+                <div id="userCarousel" class="flex gap-8 items-end h-[500px] mb-6">
+                    <!-- Cards injected by JS -->
                 </div>
 
-                <div class="stat-card stat-card-purple">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-shield"></i>
+                <!-- Footer Nav -->
+                <div class="flex items-center justify-between pt-4 pb-2">
+                    <div class="flex gap-6 text-sm font-medium text-gray-500">
+                        <span>Total Users: <span id="totalCount">{{ allUsers|length }}</span></span>
+                        <span>Active: <span id="activeCount">{{ allUsers|filter(u => u.isActive)|length }}</span></span>
+                        <span>Admins: <span id="adminCount">{{ allUsers|filter(u => 'ROLE_ADMIN' in u.roles)|length }}</span></span>
                     </div>
-                    <div class="stat-info">
-                        <h3>Admins</h3>
-                        <p class="value">{{ users|filter(u => 'ROLE_ADMIN' in u.roles)|length }}</p>
-                        <span class="stat-badge">Role</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-emerald">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Active Users</h3>
-                        <p class="value">{{ users|filter(u => u.isActive)|length }}</p>
-                        <span class="stat-badge">Status</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-amber">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-clock"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Verified</h3>
-                        <p class="value">{{ users|filter(u => u.isVerified)|length }}</p>
-                        <span class="stat-badge">Email</span>
+                    <div class="flex gap-4">
+                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="fa fa-chevron-left text-xs"></i> Prev
+                        </button>
+                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="data-panel">
-                <div class="panel-header">
-                    <div class="panel-title-wrapper">
-                        <div class="panel-icon">
-                            <i class="fas fa-users"></i>
+            <!-- DETAIL / HERO VIEW -->
+            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
+                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
+                
+                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
+                    <i class="fa fa-times text-red-500"></i> Close
+                </button>
+
+                <div class="relative z-10 h-full flex items-center px-16">
+                    <!-- Left Side: Large Avatar with Frame -->
+                    <div class="w-1/2 flex justify-center items-center">
+                        <div class="hero-image-frame">
+                            <div id="heroAvatar" class="hero-avatar"></div>
                         </div>
-                        <span class="panel-title">All Users</span>
                     </div>
-                    <div class="badge-group">
-                        <a href="{{ path('app_admin_user_management_new') }}" class="btn-add-user">
-                            <i class="fas fa-user-plus"></i>
-                            Add New User
-                        </a>
-                        <select id="roleFilter" class="filter-select">
-                            <option value="all roles">All Roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="staff">Staff</option>
-                            <option value="user">User</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="table-container">
-                    <table id="myTable" class="user-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Display Name</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Verified</th>
-                                <th>Created</th>
-                                <th class="action-column">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userTableBody">
-                            {% for user in users %}
-                                <tr>
-                                    <td>{{ user.id }}</td>
-                                    <td>
-                                        <div class="user-cell">
-                                            <div class="user-avatar">
-                                                {% if user.profilePicture %}
-                                                    <img src="{{ asset('images/profiles/' ~ user.profilePicture) }}" alt="{{ user.username }}">
-                                                {% else %}
-                                                    {{ user.username|slice(0,1)|upper }}
-                                                {% endif %}
-                                            </div>
-                                            <span>{{ user.username }}</span>
-                                        </div>
-                                    </td>
-                                    <td>{{ user.email }}</td>
-                                    <td>{{ user.displayName ?: '-' }}</td>
-                                    <td>
-                                        {% if 'ROLE_ADMIN' in user.roles %}
-                                            <span class="badge badge-admin">
-                                                <i class="fas fa-shield-alt"></i>
-                                                Admin
-                                            </span>
-                                        {% elseif 'ROLE_STAFF' in user.roles %}
-                                            <span class="badge badge-staff">
-                                                <i class="fas fa-user-tie"></i>
-                                                Staff
-                                            </span>
-                                        {% else %}
-                                            <span class="badge badge-user">
-                                                <i class="fas fa-user"></i>
-                                                User
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if user.isActive %}
-                                            <span class="status-badge status-active">
-                                                <i class="fas fa-circle"></i>
-                                                Active
-                                            </span>
-                                        {% else %}
-                                            <span class="status-badge status-inactive">
-                                                <i class="fas fa-circle"></i>
-                                                Inactive
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if user.isVerified %}
-                                            <span class="verify-badge verify-yes">
-                                                <i class="fas fa-check-circle"></i>
-                                                Verified
-                                            </span>
-                                        {% else %}
-                                            <span class="verify-badge verify-no">
-                                                <i class="fas fa-times-circle"></i>
-                                                Unverified
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ user.createdAt|date('M d, Y') }}</td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <a href="{{ path('app_admin_user_management_edit', {'id': user.id}) }}" class="btn-action btn-edit" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button type="button" class="btn-action btn-toggle" title="Toggle Status" onclick="openToggleModal('{{ user.id }}', '{{ user.username }}', '{% if user.isActive %}active{% else %}inactive{% endif %}', '{{ csrf_token('toggle' ~ user.id) }}')">
-                                                <i class="fas fa-power-off"></i>
-                                            </button>
-                                            <button type="button" class="btn-action btn-delete" title="Delete" onclick="openDeleteModal('{{ user.id }}', '{{ user.username }}', '{{ csrf_token('delete' ~ user.id) }}')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="9" class="empty-state">
-                                        <i class="fas fa-users"></i>
-                                        <p>No users found</p>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <!-- Right Side: Content -->
+                    <div class="w-1/2 pl-12 pr-8">
+                        <div class="hero-content-wrapper">
+                            <h2 id="heroName" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
+                            
+                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
+                                <div class="meta-item">
+                                    <i class="fa fa-at text-blue-500"></i>
+                                    <span class="meta-label">Username:</span>
+                                    <span id="heroUsername" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-envelope text-purple-500"></i>
+                                    <span class="meta-label">Email:</span>
+                                    <span id="heroEmail" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-shield-alt text-red-500"></i>
+                                    <span class="meta-label">Role:</span>
+                                    <span id="heroRole" class="role-badge"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-circle text-green-500"></i>
+                                    <span class="meta-label">Status:</span>
+                                    <span id="heroStatus" class="status-badge"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
+                                <h3 class="description-title">Account Information</h3>
+                                <div class="description-text">
+                                    <div class="info-row">
+                                        <span class="info-label">User ID:</span>
+                                        <span id="heroId" class="info-value"></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Created:</span>
+                                        <span id="heroCreated" class="info-value"></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Email Verified:</span>
+                                        <span id="heroVerified" class="info-value"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="hero-actions slide-in" style="animation-delay: 0.4s">
+                                <a id="heroEditBtn" href="#" class="action-btn action-btn-primary">
+                                    <i class="fa fa-edit"></i>
+                                    <span>Edit User</span>
+                                </a>
+                                <button id="heroDeleteBtn" onclick="deleteUser()" class="action-btn action-btn-danger">
+                                    <i class="fa fa-trash"></i>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
-    {# Include User Management Modals #}
-    {% include 'UserManagementFolder/user_management_modals.html.twig' %}
+    <!-- Delete Form Template (hidden) -->
+    <form id="deleteForm" method="POST" style="display: none;">
+        <input type="hidden" name="_token" value="">
+    </form>
+</div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
-    <script src="{{ asset('UserManagementFolder/index.js') }}"></script>
     <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
-    <script src="{{ asset('UserManagementFolder/user_management_modals.js') }}"></script>
+    <script>
+        // Load users from Symfony
+        const allUsersData = [
+            {% for user in allUsers %}
+            {
+                id: {{ user.id }},
+                username: {{ user.username|json_encode|raw }},
+                displayName: {{ user.displayName|json_encode|raw }},
+                email: {{ user.email|json_encode|raw }},
+                roles: {{ user.roles|json_encode|raw }},
+                isActive: {{ user.isActive ? 'true' : 'false' }},
+                isVerified: {{ user.isVerified ? 'true' : 'false' }},
+                createdAt: {{ user.createdAt|date('Y-m-d H:i:s')|json_encode|raw }},
+                profilePicture: {{ user.profilePicture|json_encode|raw }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        const baseUrl = '{{ app.request.schemeAndHttpHost }}';
+        const imageBasePath = '{{ asset('images/profiles/') }}';
+        
+        console.log('Total users loaded:', allUsersData.length);
+        
+        // Transform users to match the expected format
+        let users = allUsersData.map(user => ({
+            id: user.id,
+            username: user.username || 'unknown',
+            displayName: user.displayName || user.username || 'Unknown User',
+            email: user.email || 'no-email@example.com',
+            roles: user.roles || ['ROLE_USER'],
+            isActive: user.isActive,
+            isVerified: user.isVerified,
+            createdAt: user.createdAt,
+            profilePicture: user.profilePicture,
+            colorCode: getUserColor(user.roles),
+            avatar: user.profilePicture ? imageBasePath + user.profilePicture : null
+        }));
+        
+        let filteredUsers = [...users];
+        
+        console.log('Processed users:', users);
+
+        let currentIndex = 0;
+        function getVisibleCount() {
+            if (window.innerWidth < 768) return 1;
+            if (window.innerWidth < 1024) return 2;
+            return 3;
+        }
+
+        // Helper function to get user color based on role
+        function getUserColor(roles) {
+            if (roles.includes('ROLE_ADMIN')) return '#ef4444'; // Red
+            if (roles.includes('ROLE_STAFF')) return '#8b5cf6'; // Purple
+            return '#3b82f6'; // Blue
+        }
+
+        // Helper function to get role display name
+        function getRoleDisplay(roles) {
+            if (roles.includes('ROLE_ADMIN')) return 'Administrator';
+            if (roles.includes('ROLE_STAFF')) return 'Staff';
+            return 'User';
+        }
+
+        // Helper function to lighten/darken colors
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#",""), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('userCarousel');
+            container.innerHTML = '';
+            
+            if (!filteredUsers || filteredUsers.length === 0) {
+                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No users found. <a href="' + baseUrl + '/admin/users/new" class="text-blue-600 hover:underline">Add one now!</a></div>';
+                updateNavigationButtons();
+                return;
+            }
+
+            const displayed = filteredUsers.slice(currentIndex, currentIndex + getVisibleCount());
+
+            displayed.forEach((user, index) => {
+                const colorLight = adjustColor(user.colorCode, 30);
+                const colorDark = adjustColor(user.colorCode, -30);
+                
+                const card = document.createElement('div');
+                card.className = `user-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
+                card.style.cssText = `--user-color-light: ${colorLight}; --user-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
+                card.setAttribute('data-color', user.colorCode);
+                
+                // Create avatar HTML
+                let avatarHTML = '';
+                if (user.avatar) {
+                    avatarHTML = `<img src="${user.avatar}" alt="${user.displayName}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                  <div class="avatar-fallback" style="display:none;">${user.displayName.substring(0, 2).toUpperCase()}</div>`;
+                } else {
+                    avatarHTML = `<div class="avatar-fallback">${user.displayName.substring(0, 2).toUpperCase()}</div>`;
+                }
+                
+                card.innerHTML = `
+                    <div class="user-avatar-wrapper">
+                        ${avatarHTML}
+                    </div>
+                    <div class="relative z-10 pt-8">
+                        <h3 class="text-4xl font-bold text-white mb-1">${user.displayName}</h3>
+                        <p class="text-white/70 text-sm mb-2">@${user.username}</p>
+                        <p class="text-white/60 text-xs mb-4">${getRoleDisplay(user.roles)}</p>
+                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
+                            View Details >
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => openHero(user);
+                container.appendChild(card);
+            });
+            
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex + getVisibleCount() >= filteredUsers.length;
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex + getVisibleCount() < filteredUsers.length) {
+                currentIndex++;
+                renderCarousel();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCarousel();
+            }
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filteredUsers = users.filter(user => 
+                    user.displayName.toLowerCase().includes(searchTerm) ||
+                    user.username.toLowerCase().includes(searchTerm) ||
+                    user.email.toLowerCase().includes(searchTerm) ||
+                    getRoleDisplay(user.roles).toLowerCase().includes(searchTerm)
+                );
+                currentIndex = 0;
+                const totalCountEl = document.getElementById('totalCount');
+                if (totalCountEl) {
+                    totalCountEl.textContent = filteredUsers.length;
+                }
+                renderCarousel();
+            });
+        }
+
+        let currentUser = null;
+        
+        function openHero(user) {
+            currentUser = user;
+            const app = document.getElementById('app');
+            const heroBg = document.getElementById('heroBg');
+            const heroAvatar = document.getElementById('heroAvatar');
+            const heroName = document.getElementById('heroName');
+            const heroUsername = document.getElementById('heroUsername');
+            const heroEmail = document.getElementById('heroEmail');
+            const heroRole = document.getElementById('heroRole');
+            const heroStatus = document.getElementById('heroStatus');
+            const heroId = document.getElementById('heroId');
+            const heroCreated = document.getElementById('heroCreated');
+            const heroVerified = document.getElementById('heroVerified');
+
+            // Set content
+            const colorLight = adjustColor(user.colorCode, 30);
+            const colorDark = adjustColor(user.colorCode, -30);
+            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
+            
+            // Set avatar
+            if (user.avatar) {
+                heroAvatar.innerHTML = `<img src="${user.avatar}" alt="${user.displayName}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'hero-avatar-text\\'>${user.displayName.substring(0, 2).toUpperCase()}</div>';">`;
+            } else {
+                heroAvatar.innerHTML = `<div class="hero-avatar-text">${user.displayName.substring(0, 2).toUpperCase()}</div>`;
+            }
+            
+            heroName.innerText = user.displayName;
+            heroUsername.innerText = '@' + user.username;
+            heroEmail.innerText = user.email;
+            heroRole.innerText = getRoleDisplay(user.roles);
+            heroRole.style.backgroundColor = user.colorCode;
+            heroStatus.innerText = user.isActive ? 'Active' : 'Inactive';
+            heroStatus.style.backgroundColor = user.isActive ? '#10b981' : '#ef4444';
+            heroId.innerText = '#' + user.id;
+            heroCreated.innerText = new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            heroVerified.innerText = user.isVerified ? 'Yes' : 'No';
+            heroVerified.style.color = user.isVerified ? '#10b981' : '#ef4444';
+            
+            // Update action buttons
+            const editBtn = document.getElementById('heroEditBtn');
+            if (editBtn) {
+                editBtn.href = `${baseUrl}/admin/users/${user.id}/edit`;
+            }
+
+            // Trigger animation
+            app.classList.add('hero-active');
+            
+            // Reset text animations
+            const animatedElements = document.querySelectorAll('.slide-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight; // trigger reflow
+                el.style.animation = null;
+            });
+        }
+        
+        function deleteUser() {
+            if (!currentUser) return;
+            
+            if (confirm(`Are you sure you want to delete "${currentUser.displayName}"?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `${baseUrl}/admin/users/${currentUser.id}`;
+                
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token("delete") }}';
+                
+                form.appendChild(csrfToken);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function closeHero() {
+            document.getElementById('app').classList.remove('hero-active');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, rendering carousel...');
+            renderCarousel();
+            
+            // Re-render on resize for responsive card count
+            window.addEventListener('resize', function() {
+                renderCarousel();
+            });
+            
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+                
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 {% endblock %}

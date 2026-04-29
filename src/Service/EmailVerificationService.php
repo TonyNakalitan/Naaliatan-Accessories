@@ -62,6 +62,24 @@ class EmailVerificationService
     }
 
     /**
+     * Send password reset email to user
+     */
+    public function sendResetEmail(User $user, string $resetUrl): void
+    {
+        $email = (new TemplatedEmail())
+            ->from(new Address('naaliatananthony98@gmail.com', 'Naaliatan\'s Accessories'))
+            ->to(new Address($user->getEmail()))
+            ->subject('Password Reset Request')
+            ->htmlTemplate('emails/password_reset.html.twig')
+            ->context([
+                'user' => $user,
+                'resetUrl' => $resetUrl,
+            ]);
+
+        $this->mailer->send($email);
+    }
+
+    /**
      * Check if a user needs verification
      */
     public function needsVerification(User $user): bool

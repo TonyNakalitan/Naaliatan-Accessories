@@ -42,6 +42,31 @@ class ActivityLogsController extends AbstractController
         ]);
     }
 
+    // Staff routes
+    #[Route('/staff/activity-logs', name: 'app_staff_activity_logs_index')]
+    #[IsGranted('ROLE_STAFF')]
+    public function staffIndex(Request $request): Response
+    {
+        // Fetch all logs for DataTables to handle pagination
+        $logs = $this->activityLogRepository->findBy([], ['createdAt' => 'DESC']);
+        
+        // Calculate today's stats
+        $today = new \DateTimeImmutable('today');
+        $todayEnd = new \DateTimeImmutable('tomorrow');
+        $todayLogs = $this->activityLogRepository->findByDateRange($today, $todayEnd);
+        
+        $todayCount = count($todayLogs);
+        $loginCount = count(array_filter($todayLogs, fn($log) => $log->getAction() === 'LOGIN'));
+        $updateCount = count(array_filter($todayLogs, fn($log) => $log->getAction() === 'UPDATE'));
+        
+        return $this->render('ActivityLogsFolder/index.html.twig', [
+            'logs' => $logs,
+            'todayCount' => $todayCount,
+            'loginCount' => $loginCount,
+            'updateCount' => $updateCount,
+        ]);
+    }
+
     #[Route('/filter', name: 'app_admin_activity_logs_filter')]
     #[IsGranted('ROLE_ADMIN')]
     public function filter(Request $request): Response

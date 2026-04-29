@@ -1,48 +1,78 @@
 let currentStep = 1;
-const totalSteps = 4;
-
-// Get initial product data from DOM on page load
-let initialProductData = {};
+const totalSteps = 5;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Store initial product data from preview elements
-    initialProductData = {
-        name: document.getElementById('previewName')?.textContent || '',
-        code: document.getElementById('previewCode')?.textContent || '',
-        description: document.getElementById('previewDesc')?.textContent || '',
-        price: document.getElementById('previewPrice')?.textContent || ''
-    };
-
     // Initialize file upload handlers
     initializeFileUpload();
+    
+    // Initialize character search if exists
+    const searchInput = document.getElementById('characterSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterCharacters);
+    }
+
+    // Initialize color picker
+    initializeColorPicker();
+
+    // Initialize selected character on page load
+    initializeSelectedCharacter();
 });
 
 function moveStep(delta) {
     const nextStep = currentStep + delta;
-    if (nextStep < 1 || nextStep > totalSteps) return;
+    console.log(`moveStep called: currentStep=${currentStep}, delta=${delta}, nextStep=${nextStep}`);
+    
+    if (nextStep < 1 || nextStep > totalSteps) {
+        console.log('Invalid step, returning');
+        return;
+    }
 
-    document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
-    document.querySelector(`[data-step="${nextStep}"]`).classList.add('active');
+    const currentStepEl = document.querySelector(`[data-step="${currentStep}"]`);
+    const nextStepEl = document.querySelector(`[data-step="${nextStep}"]`);
+
+    if (!currentStepEl || !nextStepEl) {
+        console.log('Step elements not found, returning');
+        return;
+    }
+
+    currentStepEl.classList.remove('active');
+    nextStepEl.classList.add('active');
+
+    // Initialize color picker when moving to step 4
+    if (nextStep === 4) {
+        initializeColorPicker();
+    }
+
+    // Update confirmation data when moving to step 5
+    if (nextStep === 5) {
+        console.log('Moving to step 5 - updating confirmation summary');
+        updateConfirmationSummary();
+    }
 
     updateStepIndicators(currentStep, nextStep);
     currentStep = nextStep;
+    console.log(`Successfully moved to step ${currentStep}`);
     
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const submitBtn = document.getElementById('submitBtn');
 
     if (currentStep > 1) {
-        prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+        if (prevBtn) {
+            prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+        }
     } else {
-        prevBtn.classList.add('opacity-0', 'pointer-events-none');
+        if (prevBtn) {
+            prevBtn.classList.add('opacity-0', 'pointer-events-none');
+        }
     }
 
     if (currentStep === totalSteps) {
-        nextBtn.classList.add('hidden');
-        submitBtn.classList.remove('hidden');
+        if (nextBtn) nextBtn.classList.add('hidden');
+        if (submitBtn) submitBtn.classList.remove('hidden');
     } else {
-        nextBtn.classList.remove('hidden');
-        submitBtn.classList.add('hidden');
+        if (nextBtn) nextBtn.classList.remove('hidden');
+        if (submitBtn) submitBtn.classList.add('hidden');
     }
 }
 
@@ -50,47 +80,29 @@ function updateStepIndicators(oldStep, newStep) {
     const oldPill = document.getElementById(`pill-${oldStep}`);
     const newPill = document.getElementById(`pill-${newStep}`);
 
+    if (!oldPill || !newPill) return;
+
     if (newStep > oldStep) {
         oldPill.classList.remove('active');
         oldPill.classList.add('completed');
-        oldPill.querySelector('span').classList.replace('text-indigo-600', 'text-emerald-600');
+        const oldSpan = oldPill.querySelector('span');
+        if (oldSpan) {
+            oldSpan.classList.replace('text-indigo-600', 'text-emerald-600');
+        }
     } else {
         newPill.classList.remove('completed');
-        newPill.querySelector('span').classList.replace('text-emerald-600', 'text-indigo-600');
+        const newSpan = newPill.querySelector('span');
+        if (newSpan) {
+            newSpan.classList.replace('text-emerald-600', 'text-indigo-600');
+        }
     }
     
     newPill.classList.add('active');
 }
 
-function syncPreview(type, val) {
-    const elements = {
-        name: 'previewName',
-        code: 'previewCode',
-        description: 'previewDesc',
-        price: 'previewPrice'
-    };
-
-    const target = document.getElementById(elements[type]);
-    if (!target) return;
-
-    if (!val || val.trim() === '') {
-        // Use initial data from DOM
-        target.innerText = initialProductData[type] || '';
-    } else {
-        if (type === 'price') {
-            const numVal = parseFloat(val);
-            if (!isNaN(numVal)) {
-                target.innerText = `₱${numVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            }
-        } else if (type === 'code') {
-            target.innerText = `#${val.toUpperCase()}`;
-        } else {
-            target.innerText = val;
-        }
-    }
-}
-
 function selectChar(el, id, name) {
+    if (!el || !id || !name) return;
+
     // Remove selected class from all cards
     document.querySelectorAll('.character-card').forEach(c => c.classList.remove('selected'));
     // Add selected class to clicked card
@@ -104,27 +116,152 @@ function selectChar(el, id, name) {
     } else {
         console.error('Character select element not found');
     }
-    
-    // Update the preview badge
-    const charBadge = document.getElementById('previewChar');
-    if (charBadge) {
-        charBadge.textContent = name;
-        charBadge.setAttribute('class', 'px-2 py-0.5 backdrop-blur-md rounded-full text-white text-[9px] sm:text-[10px] font-semibold border border-indigo-400 bg-indigo-600');
+
+    // Update confirmation if visible
+    updateConfirmationIfVisible();
+}
+
+function updateConfirmationIfVisible() {
+    // Only update confirmation if we're on step 5
+    if (currentStep === 5) {
+        updateConfirmationSummary();
+    }
+}
+
+function updateColorPreview(hex) {
+    const colorPreview = document.getElementById('colorPreview');
+    const hexDisplay = document.getElementById('hexDisplay');
+    const colorPicker = document.getElementById('colorPicker');
+
+    if (!hex) return;
+
+    // Remove # if present and ensure uppercase
+    hex = hex.replace('#', '').toUpperCase();
+
+    // Validate hex format
+    if (/^[0-9A-F]{6}$/i.test(hex)) {
+        const color = '#' + hex;
+        if (colorPreview) colorPreview.style.backgroundColor = color;
+        if (hexDisplay) hexDisplay.textContent = color;
+        if (colorPicker) colorPicker.value = color;
+
+        // Update form field
+        const hexInput = document.querySelector('input[name*="colorHex"]');
+        if (hexInput) hexInput.value = hex;
+    }
+}
+
+function updateHexFromPicker(color) {
+    const hex = color.replace('#', '').toUpperCase();
+    updateColorPreview(hex);
+
+    // Update form field
+    const hexInput = document.querySelector('input[name*="colorHex"]');
+    if (hexInput) hexInput.value = hex;
+}
+
+function selectPresetColor(hex) {
+    updateColorPreview(hex);
+
+    // Update form field
+    const hexInput = document.querySelector('input[name*="colorHex"]');
+    if (hexInput) hexInput.value = hex;
+
+    // Update confirmation if visible
+    updateConfirmationIfVisible();
+}
+
+function initializeColorPicker() {
+    const hexInput = document.querySelector('input[name*="colorHex"]');
+    const colorPicker = document.getElementById('colorPicker');
+
+    if (hexInput && hexInput.value) {
+        // If there's already a value, update the preview
+        updateColorPreview(hexInput.value);
+    } else if (hexInput && colorPicker) {
+        // Set default color if no value exists
+        const defaultColor = 'FF6B6B';
+        hexInput.value = defaultColor;
+        colorPicker.value = '#' + defaultColor;
+        updateColorPreview(defaultColor);
+    }
+}
+
+function updateConfirmationSummary() {
+    // Get form values
+    const nameInput = document.querySelector('input[name*="name"]');
+    const codeInput = document.querySelector('input[name*="productCode"]');
+    const priceInput = document.querySelector('input[name*="price"]');
+    const descriptionInput = document.querySelector('textarea[name*="description"]');
+    const characterSelect = document.querySelector('select[name*="character"]');
+    const colorHexInput = document.querySelector('input[name*="colorHex"]');
+
+    // Update confirmation elements
+    const confirmName = document.getElementById('confirmName');
+    const confirmCode = document.getElementById('confirmCode');
+    const confirmPrice = document.getElementById('confirmPrice');
+    const confirmDescription = document.getElementById('confirmDescription');
+    const confirmCharacter = document.getElementById('confirmCharacter');
+    const confirmColor = document.getElementById('confirmColor');
+
+    if (confirmName && nameInput) {
+        confirmName.textContent = nameInput.value || 'Not specified';
+    }
+
+    if (confirmCode && codeInput) {
+        confirmCode.textContent = codeInput.value ? `#${codeInput.value.toUpperCase()}` : 'Not specified';
+    }
+
+    if (confirmPrice && priceInput) {
+        const priceValue = parseFloat(priceInput.value);
+        if (!isNaN(priceValue)) {
+            confirmPrice.textContent = `${priceValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        } else {
+            confirmPrice.textContent = '0.00';
+        }
+    }
+
+    if (confirmDescription && descriptionInput) {
+        confirmDescription.textContent = descriptionInput.value || 'No description provided';
+    }
+
+    if (confirmCharacter && characterSelect) {
+        const selectedOption = characterSelect.options[characterSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            confirmCharacter.textContent = selectedOption.text;
+        } else {
+            confirmCharacter.textContent = 'None selected';
+        }
+    }
+
+    if (confirmColor && colorHexInput) {
+        confirmColor.textContent = colorHexInput.value ? `#${colorHexInput.value.toUpperCase()}` : 'Not specified';
     }
 }
 
 function filterCharacters() {
-    const searchTerm = document.getElementById('characterSearch').value.toLowerCase();
+    const searchInput = document.getElementById('characterSearch');
+    if (!searchInput) return;
+
+    const searchTerm = searchInput.value.toLowerCase().trim();
     const characters = document.querySelectorAll('.character-item');
     
     characters.forEach(char => {
         const name = char.getAttribute('data-character-name');
         if (name && name.includes(searchTerm)) {
             char.style.display = '';
+            char.classList.remove('filtered-out');
         } else {
             char.style.display = 'none';
+            char.classList.add('filtered-out');
         }
     });
+}
+
+function loadCharacterPage(page) {
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.set('char_page', page);
+    window.location.href = currentUrl.toString();
 }
 
 function initializeFileUpload() {
@@ -215,6 +352,12 @@ function handleFile(input) {
         if (dropZoneUI) dropZoneUI.classList.add('hidden');
         if (previewContainer) previewContainer.classList.remove('hidden');
     };
+    
+    reader.onerror = () => {
+        alert('Error reading file. Please try again.');
+        input.value = '';
+    };
+    
     reader.readAsDataURL(file);
 }
 
@@ -240,4 +383,26 @@ function resetFile(event) {
     if (previewMainImg && originalSrc) previewMainImg.src = originalSrc;
     if (dropZoneUI) dropZoneUI.classList.remove('hidden');
     if (previewContainer) previewContainer.classList.add('hidden');
+}
+
+function initializeSelectedCharacter() {
+    // Get the hidden select element
+    const characterSelect = document.querySelector('select[name*="character"]');
+    if (!characterSelect || !characterSelect.value) {
+        console.log('No character selected or select element not found');
+        return;
+    }
+
+    const selectedCharacterId = characterSelect.value;
+    console.log('Initializing selected character:', selectedCharacterId);
+
+    // Find and mark the corresponding character card as selected
+    const characterCards = document.querySelectorAll('.character-card');
+    characterCards.forEach(card => {
+        const cardCharacterId = card.getAttribute('data-character-id');
+        if (cardCharacterId === selectedCharacterId) {
+            card.classList.add('selected');
+            console.log('Character card marked as selected:', cardCharacterId);
+        }
+    });
 }

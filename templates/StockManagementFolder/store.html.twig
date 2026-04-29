@@ -2,282 +2,257 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{ product.name }} | Naaliatan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="{{ asset('JSFolder/disable-zoom.js') }}"></script>
-    <link rel="stylesheet" href="{{ asset('StockManagementFolderCSS&JS/stock.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/sidebar-tooltips.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store {{ product.name }} | Naaliatan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('StockManagementFolder/store.css?v=' ~ random()) }}">
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
 </head>
-<body>
-    {# Sidebar - Hidden by default #}
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="{{ asset('images/Naaliatan\'s Accessories.png') }}" alt="Naaliatan's Accessories">
-        </div>
+<body class="min-h-screen">
 
-        <nav class="nav-menu">
-            <a href="{{ role_path('dashboard') }}" class="nav-item" data-tooltip="Dashboard">
-                <i class="fas fa-th-large"></i>
-                <span>Dashboard</span>
-            </a>
-            {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ role_path('user_management_index') }}" class="nav-item" data-tooltip="Users">
-                <i class="fas fa-users"></i>
-                <span>Users</span>
-            </a>
-            {% endif %}
-            <a href="{{ role_path('product_management_index') }}" class="nav-item" data-tooltip="Products">
-                <i class="fas fa-box"></i>
-                <span>Products</span>
-            </a>
-            <a href="{{ role_path('item_management_index') }}" class="nav-item" data-tooltip="Items">
-                <i class="fas fa-cubes"></i>
-                <span>Items</span>
-            </a>
-            <a href="{{ role_path('order_index') }}" class="nav-item" data-tooltip="Orders">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Orders</span>
-            </a>
-            <a href="{{ role_path('cart_index') }}" class="nav-item" data-tooltip="Cart">
-                <i class="fas fa-shopping-bag"></i>
-                <span>Cart</span>
-            </a>
-            <a href="{{ role_path('character_management_index') }}" class="nav-item" data-tooltip="Characters">
-                <i class="fas fa-user-ninja"></i>
-                <span>Characters</span>
-            </a>
-            <a href="{{ role_path('stock_management_index') }}" class="nav-item active">
-                <i class="fas fa-warehouse"></i>
-                <span>Stock</span>
-            </a>
-            {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ role_path('activity_logs_index') }}" class="nav-item" data-tooltip="Reports">
-                <i class="fas fa-history"></i>
-                <span>Reports</span>
-            </a>
-            {% endif %}
-            <a href="{{ role_path('profile_show') }}" class="nav-item" data-tooltip="Profile">
-                <i class="fas fa-user-circle"></i>
-                <span>Profile</span>
-            </a>
-            <a href="{{ role_path('settings_index') }}" class="nav-item" data-tooltip="Settings">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </a>
-        </nav>
+    <div class="flex h-screen">
+        <main class="flex-grow flex flex-col overflow-y-auto w-full bg-slate-50">
+            <div class="w-full p-4 sm:p-6 lg:p-8">
 
-        <a href="{{ path('app_logout') }}" class="logout-btn" data-tooltip="Log out">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Log out</span>
-        </a>
-    </aside>
-
-    {# Main Content #}
-    <main class="main-content">
-        {# Top Bar #}
-        <header class="top-bar">
-            <a href="{{ role_path('stock_management_index') }}" class="back-btn">
-                <i class="fas fa-arrow-left"></i>
-                Back to Stock Management
-            </a>
-
-            <div class="top-bar-right">
-                <button class="notification-btn">
-                    <i class="fas fa-bell"></i>
-                </button>
-                <div class="user-profile">
-                    <div class="user-info">
-                        <span class="user-name">{{ app.user.displayName ?: app.user.username }}</span>
-                        <span class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                {% if app.flashes('success') %}
+                    <div class="mb-4 sm:mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 shadow-sm">
+                        {% for message in app.flashes('success') %}
+                            <p class="text-sm sm:text-base"><i class="fas fa-check-circle mr-2"></i>{{ message }}</p>
+                        {% endfor %}
                     </div>
-                    {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.username }}" class="user-avatar">
-                    {% else %}
-                        <img src="https://ui-avatars.com/api/?name={{ app.user.username|url_encode }}&background=667eea&color=fff" alt="{{ app.user.username }}" class="user-avatar">
-                    {% endif %}
-                </div>
-            </div>
-        </header>
+                {% endif %}
 
-        {# Page Header #}
-        <div class="page-header">
-            <h1><i class="fas fa-archive"></i> Store Stock</h1>
-            <p>Move product stock back to inventory</p>
-        </div>
-
-        {# Wizard Container #}
-        <div class="wizard-container">
-            <div class="wizard-header">
-                <div class="wizard-header-left">
-                    <div class="wizard-icon">
-                        <i class="fas fa-archive"></i>
+                {% if app.flashes('error') %}
+                    <div class="mb-4 sm:mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 shadow-sm">
+                        {% for message in app.flashes('error') %}
+                            <p class="text-sm sm:text-base"><i class="fas fa-exclamation-circle mr-2"></i>{{ message }}</p>
+                        {% endfor %}
                     </div>
-                    <div class="wizard-title">
-                        <h2>Store: {{ product.name }}</h2>
-                        <p>Product Code: {{ product.productCode }}</p>
-                    </div>
-                </div>
-                <div class="wizard-actions">
-                    <a href="{{ role_path('stock_management_index') }}" class="action-btn action-btn-secondary">
-                        <i class="fas fa-times"></i> Cancel
-                    </a>
-                </div>
-            </div>
+                {% endif %}
 
-            <div class="product-display-grid">
-                {# Left: Product Image Section #}
-                <div class="product-image-section">
-                    {% if product.image %}
-                        <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="product-image-large">
-                    {% else %}
-                        <div class="product-image-placeholder">
-                            <i class="fas fa-box"></i>
-                        </div>
-                    {% endif %}
-
-                    <p class="product-image-name">{{ product.name }}</p>
-                    <p class="product-image-code"><i class="fas fa-barcode"></i> {{ product.productCode }}</p>
-
-                    <div class="product-image-badges">
-                        <span class="badge badge-price">
-                            <i class="fas fa-tag"></i>
-                            {{ product.formattedPrice }}
-                        </span>
-                        
-                        {% if product.isOutOfStock %}
-                            <span class="badge badge-out-stock">
-                                <i class="fas fa-times-circle"></i>
-                                Out of Stock
-                            </span>
-                        {% elseif product.isLowStock %}
-                            <span class="badge badge-low-stock">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                Low Stock
-                            </span>
-                        {% else %}
-                            <span class="badge badge-stock">
-                                <i class="fas fa-check-circle"></i>
-                                In Stock
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                {# Right: Store Form and Info Sections #}
-                <div class="info-sections">
-                    {# Warning Box #}
-                    <div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <i class="fas fa-exclamation-triangle" style="color: #f39c12; font-size: 24px;"></i>
-                            <div>
-                                <strong style="color: #856404; display: block; margin-bottom: 4px;">Warning</strong>
-                                <span style="color: #856404; font-size: 14px;">This will remove stock from the product and store it back in the stock inventory.</span>
+                <!-- Main Container -->
+                <div class="main-container fade-in">
+                    
+                    <!-- Header with Back Button -->
+                    <div class="header-section">
+                        <div class="header-content">
+                            <div class="header-title">
+                                <div class="header-icon">
+                                    <i class="fas fa-archive"></i>
+                                </div>
+                                <h1>Store Stock</h1>
                             </div>
+                            <p class="header-subtitle">Restore stock from inventory to {{ product.name }}</p>
                         </div>
+                        <a href="{{ role_path('stock_management_index') }}" class="back-btn">
+                            <i class="fas fa-arrow-left"></i>
+                            <span class="hidden sm:inline">Back to Stock Management</span>
+                            <span class="sm:hidden">Back</span>
+                        </a>
                     </div>
 
-                    {# Current Stock Information #}
-                    <div class="info-section">
-                        <div class="info-section-header">
-                            <div class="info-section-icon"><i class="fas fa-warehouse"></i></div>
-                            <h3>Current Stock Status</h3>
-                        </div>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-item-label"><i class="fas fa-boxes"></i> Current Stock</div>
-                                <div class="info-item-value">{{ product.stockQuantity }} units</div>
+                <!-- Content Grid -->
+                <div class="content-grid">
+                    
+                    <!-- Left Column: Product Info -->
+                    <div class="product-info-panel">
+                        <div class="glass-panel">
+                            <div class="product-panel-header">
+                                <div class="product-panel-title">
+                                    <div class="status-indicator
+                                        {% if product.isOutOfStock %}out-stock
+                                        {% elseif product.isLowStock %}low-stock
+                                        {% else %}in-stock{% endif %}"></div>
+                                    <span class="panel-title-text">Product Info</span>
+                                </div>
+                                <span class="status-badge
+                                    {% if product.isOutOfStock %}out-stock
+                                    {% elseif product.isLowStock %}low-stock
+                                    {% else %}in-stock{% endif %}">
+                                    {% if product.isOutOfStock %}Out of Stock
+                                    {% elseif product.isLowStock %}Low Stock
+                                    {% else %}In Stock{% endif %}
+                                </span>
                             </div>
-                            <div class="info-item">
-                                <div class="info-item-label"><i class="fas fa-info-circle"></i> Stock Status</div>
-                                {% if product.isOutOfStock %}
-                                    <div class="info-item-value" style="color: #721c24;">Out of Stock</div>
-                                {% elseif product.isLowStock %}
-                                    <div class="info-item-value" style="color: #856404;">Low Stock</div>
+                            
+                            <div class="product-image-section">
+                                {% if product.image %}
+                                <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}">
                                 {% else %}
-                                    <div class="info-item-value" style="color: #155724;">In Stock</div>
+                                <div class="product-image-placeholder">
+                                    <i class="fas fa-box"></i>
+                                </div>
                                 {% endif %}
+                                
+                                <div class="product-image-overlay"></div>
+                                
+                                <div class="product-image-info">
+                                    <p class="product-code">#{{ product.productCode }}</p>
+                                    <h2 class="product-name">{{ product.name }}</h2>
+                                    <div class="product-character">{{ product.character.name }}</div>
+                                </div>
+                            </div>
+
+                            <div class="product-details">
+                                <h4 class="flex items-center gap-2">
+                                    <i class="fas fa-warehouse text-emerald-500"></i>
+                                    Current Stock
+                                </h4>
+                                <div class="stock-quantity">
+                                    <p class="value">{{ product.stockQuantity }}</p>
+                                    <span class="unit">units</span>
+                                </div>
+                                
+                                <div class="product-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-label">Price</span>
+                                        <span class="meta-value">{{ product.formattedPrice }}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {# Store Stock Form #}
-                    <div class="info-section">
-                        <div class="info-section-header">
-                            <div class="info-section-icon"><i class="fas fa-archive"></i></div>
-                            <h3>Store Stock Details</h3>
+                    <!-- Right Column: Store Form -->
+                    <div class="store-form-panel glass-panel">
+                        
+                        <div class="form-header">
+                            <div class="form-icon">
+                                <i class="fas fa-archive"></i>
+                            </div>
+                            <h3 class="form-title">Restore Stock Details</h3>
                         </div>
                         
-                        <form method="post" style="display: flex; flex-direction: column; gap: 20px;">
-                            <div>
-                                <label style="display: block; font-size: 11px; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-                                    <i class="fas fa-sort-numeric-down"></i> Quantity to Store
+                        <!-- Info Box -->
+                        <div class="info-box">
+                            <div class="info-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="info-content">
+                                <h4>Stock Information</h4>
+                                <p>This will restore stock from the stock inventory back to the main product inventory. Available stock: {{ totalAvailableStock }} units.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Store Form -->
+                        <form method="post" class="store-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('store_stock') }}">
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-sort-numeric-down"></i> Quantity to Restore
                                 </label>
                                 <input type="number" name="quantity" 
-                                       style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; color: #2d3748; transition: all 0.2s; font-family: 'Inter', sans-serif; outline: none;"
+                                       class="form-input"
                                        placeholder="Enter quantity" 
                                        min="1" 
-                                       max="{{ product.stockQuantity }}" 
+                                       max="{{ totalAvailableStock }}" 
                                        required>
-                                <small style="display: block; margin-top: 8px; font-size: 12px; color: #a0aec0;">
-                                    <i class="fas fa-info-circle"></i> Maximum: {{ product.stockQuantity }} units available
+                                <small class="form-hint">
+                                    <i class="fas fa-info-circle"></i> Maximum: {{ totalAvailableStock }} units available from stock inventory
                                 </small>
                             </div>
 
-                            <div>
-                                <label style="display: block; font-size: 11px; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                            <div class="form-group">
+                                <label class="form-label">
                                     <i class="fas fa-sticky-note"></i> Notes (Optional)
                                 </label>
                                 <textarea name="notes" 
-                                          style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; color: #2d3748; transition: all 0.2s; font-family: 'Inter', sans-serif; outline: none; resize: vertical; min-height: 100px;"
-                                          placeholder="Add any notes about storing this stock..."></textarea>
-                                <small style="display: block; margin-top: 8px; font-size: 12px; color: #a0aec0;">
-                                    <i class="fas fa-info-circle"></i> Provide any additional information about this stock storage
+                                          class="form-textarea"
+                                          placeholder="Add any notes about restoring this stock..."></textarea>
+                                <small class="form-hint">
+                                    <i class="fas fa-info-circle"></i> Provide any additional information about this stock restoration
                                 </small>
                             </div>
 
-                            <div style="display: flex; gap: 12px; padding-top: 12px; border-top: 2px solid #f7fafc;">
-                                <button type="submit" class="action-btn action-btn-danger" style="flex: 1;" onclick="return confirm('Are you sure you want to store this stock?')">
-                                    <i class="fas fa-archive"></i> Store Stock
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to restore this stock?')">
+                                    <i class="fas fa-undo"></i> Restore Stock
                                 </button>
-                                <a href="{{ role_path('stock_management_index') }}" class="action-btn action-btn-secondary">
+                                <a href="{{ role_path('stock_management_index') }}" class="btn btn-secondary">
                                     <i class="fas fa-times"></i> Cancel
                                 </a>
                             </div>
                         </form>
-                    </div>
 
-                    {# Product Information #}
-                    <div class="info-section">
-                        <div class="info-section-header">
-                            <div class="info-section-icon"><i class="fas fa-info-circle"></i></div>
-                            <h3>Product Information</h3>
+                        <!-- Available Stock Information -->
+                        <div class="info-section">
+                            <div class="info-section-header">
+                                <div class="info-section-icon">
+                                    <i class="fas fa-warehouse"></i>
+                                </div>
+                                <h3>Available Stock Entries</h3>
+                            </div>
+                            {% if availableStocks|length > 0 %}
+                                <div class="stock-entries-list">
+                                    {% for stock in availableStocks %}
+                                        <div class="stock-entry-item">
+                                            <div class="stock-entry-info">
+                                                <span class="stock-id">#{{ stock.id }}</span>
+                                                <span class="stock-quantity">{{ stock.quantity }} units</span>
+                                            </div>
+                                            <div class="stock-entry-details">
+                                                <span class="stock-date">{{ stock.createdAt|date('M d, Y') }}</span>
+                                                {% if stock.notes %}
+                                                    <span class="stock-notes">{{ stock.notes }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="no-stock-entries">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>No stock entries available for this product</p>
+                                </div>
+                            {% endif %}
                         </div>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-item-label"><i class="fas fa-tag"></i> Product Name</div>
-                                <div class="info-item-value">{{ product.name }}</div>
+                        
+                        <!-- Product Information -->
+                        <div class="info-section">
+                            <div class="info-section-header">
+                                <div class="info-section-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h3>Product Information</h3>
                             </div>
-                            <div class="info-item">
-                                <div class="info-item-label"><i class="fas fa-barcode"></i> Product Code</div>
-                                <div class="info-item-value">{{ product.productCode }}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-item-label"><i class="fas fa-dollar-sign"></i> Price</div>
-                                <div class="info-item-value">{{ product.formattedPrice }}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-item-label"><i class="fas fa-user-ninja"></i> Character</div>
-                                <div class="info-item-value">{{ product.character.name }}</div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-item-label">
+                                        <i class="fas fa-tag"></i> Product Name
+                                    </div>
+                                    <div class="info-item-value">{{ product.name }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-item-label">
+                                        <i class="fas fa-barcode"></i> Product Code
+                                    </div>
+                                    <div class="info-item-value">{{ product.productCode }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-item-label">
+                                        <i class="fas fa-dollar-sign"></i> Price
+                                    </div>
+                                    <div class="info-item-value">{{ product.formattedPrice }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-item-label">
+                                        <i class="fas fa-user-ninja"></i> Character
+                                    </div>
+                                    <div class="info-item-value">{{ product.character.name }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                </div>
+                <!-- End Main Container -->
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
-    <script src="{{ asset('StockManagementFolderCSS&JS/stock.js') }}"></script>
+ <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
 </body>
 </html>

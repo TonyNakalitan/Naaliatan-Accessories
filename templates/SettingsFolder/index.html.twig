@@ -4,277 +4,437 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('SettingsFolder/index.css?v=' ~ random()) }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('SettingsFolder/index.css') }}?v={{ random() }}">
 {% endblock %}
 
 {% block body %}
-    <main class="content-area">
-        <header class="top-nav">
-            <div class="search-global">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search settings...">
+<div id="settings-app-wrapper" class="min-h-screen">
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_admin_dashboard' : 'app_staff_dashboard') }}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_admin_user_management_index') }}" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>User Management</span>
+            </a>
+            {% endif %}
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_admin_product_management_index' : 'app_staff_product_management_index') }}" class="nav-item">
+                <i class="fas fa-box-open"></i>
+                <span>Products</span>
+            </a>
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_admin_stock_management_index' : 'app_staff_stock_management_index') }}" class="nav-item">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock Control</span>
+            </a>
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_admin_order_index' : 'app_staff_order_index') }}" class="nav-item">
+                <i class="fas fa-shopping-bag"></i>
+                <span>Orders</span>
+            </a>
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_admin_item_management_index' : 'app_staff_item_management_index') }}" class="nav-item">
+                <i class="fas fa-boxes"></i>
+                <span>Items</span>
+            </a>
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_admin_cart_index' : 'app_staff_cart_index') }}" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Cart</span>
+            </a>
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_admin_character_management_index' : 'app_staff_character_management_index') }}" class="nav-item">
+                <i class="fas fa-id-badge"></i>
+                <span>Characters</span>
+            </a>
+            <a href="{{ path(is_granted('ROLE_ADMIN') ? 'app_admin_activity_logs_index' : 'app_staff_activity_logs_index') }}" class="nav-item">
+                <i class="fas fa-history"></i>
+                <span>Activity Logs</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ role_path('profile_edit') }}" class="nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- App Wrapper -->
+    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">
+                    Settings
+                </span>
             </div>
-            <div class="user-widget">
-                <button class="icon-btn"><i class="fas fa-bell"></i></button>
-                <div class="avatar">
+
+            <!-- Search bar -->
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search settings..." class="bg-transparent outline-none text-sm w-full">
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ role_path('profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0, 2)|upper }}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                </div>
-                <div class="user-info">
-                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
-                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
-                </div>
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                </a>
             </div>
         </header>
 
-        <div class="page-container">
-            <div class="page-intro">
-                <div>
-                    <h1 class="page-title">Settings</h1>
-                    <p class="page-subtitle">Manage your account preferences and application settings</p>
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-hidden">
+            
+            <!-- GRID VIEW (The Carousel) -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+                
+                <!-- Carousel at bottom -->
+                <div id="settingsCarousel" class="flex gap-8 items-end h-[500px] mb-6">
+                    <!-- Cards injected by JS -->
+                </div>
+
+                <!-- Footer Nav -->
+                <div class="flex items-center justify-between pt-4 pb-2">
+                    <div class="flex gap-6 text-sm font-medium text-gray-500">
+                        <span>Account: <span class="text-gray-800">{{ app.user.email }}</span></span>
+                        <span>Role: <span class="text-gray-800">{{ is_granted('ROLE_ADMIN') ? 'Administrator' : 'Staff Member' }}</span></span>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="fa fa-chevron-left text-xs"></i> Prev
+                        </button>
+                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
+            <!-- DETAIL / HERO VIEW -->
+            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
+                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
+                
+                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
+                    <i class="fa fa-times text-red-500"></i> Close
+                </button>
 
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
+                <div class="relative z-10 h-full flex items-center px-16">
+                    <!-- Left Side: Large Icon -->
+                    <div class="w-1/2 flex justify-center items-center">
+                        <div class="hero-icon-frame">
+                            <div id="heroIcon" class="hero-icon-wrapper"></div>
+                        </div>
+                    </div>
 
-            <div class="settings-grid">
-                <!-- Account Settings -->
-                <div class="info-panel">
-                    <div class="panel-header">
-                        <div class="panel-title-wrapper">
-                            <div class="panel-icon">
-                                <i class="fas fa-user-cog"></i>
-                            </div>
-                            <span class="panel-title">Account Settings</span>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-envelope"></i>
-                                <div>
-                                    <h4>Email Address</h4>
-                                    <p>{{ app.user.email }}</p>
+                    <!-- Right Side: Content -->
+                    <div class="w-1/2 pl-12 pr-8">
+                        <div class="hero-content-wrapper">
+                            <h2 id="heroTitle" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
+                            
+                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
+                                <div class="meta-item">
+                                    <i id="heroMetaIcon1" class="text-blue-500"></i>
+                                    <span class="meta-label" id="heroMetaLabel1"></span>
+                                    <span id="heroMetaValue1" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i id="heroMetaIcon2" class="text-purple-500"></i>
+                                    <span class="meta-label" id="heroMetaLabel2"></span>
+                                    <span id="heroMetaValue2" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i id="heroMetaIcon3" class="text-green-500"></i>
+                                    <span class="meta-label" id="heroMetaLabel3"></span>
+                                    <span id="heroMetaValue3" class="meta-value"></span>
                                 </div>
                             </div>
-                            <a href="{{ role_path('profile_edit') }}" class="btn-action-link">Change</a>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-signature"></i>
-                                <div>
-                                    <h4>Display Name</h4>
-                                    <p>{{ app.user.displayName ?: 'Not set' }}</p>
-                                </div>
+                            
+                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
+                                <h3 class="description-title">Details</h3>
+                                <div id="heroDescription" class="description-text"></div>
                             </div>
-                            <a href="{{ role_path('profile_edit') }}" class="btn-action-link">Edit</a>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-key"></i>
-                                <div>
-                                    <h4>Password</h4>
-                                    <p>Last changed: Recently</p>
-                                </div>
-                            </div>
-                            <a href="{{ role_path('profile_edit') }}" class="btn-action-link">Update</a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Notification Settings -->
-                <div class="info-panel">
-                    <div class="panel-header">
-                        <div class="panel-title-wrapper">
-                            <div class="panel-icon">
-                                <i class="fas fa-bell"></i>
+                            <div class="hero-actions slide-in" style="animation-delay: 0.4s" id="heroActions">
+                                <!-- Actions injected by JS -->
                             </div>
-                            <span class="panel-title">Notifications</span>
                         </div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-envelope-open"></i>
-                                <div>
-                                    <h4>Email Notifications</h4>
-                                    <p>Receive email updates about your account</p>
-                                </div>
-                            </div>
-                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-shopping-bag"></i>
-                                <div>
-                                    <h4>Order Updates</h4>
-                                    <p>Get notified when orders are placed or updated</p>
-                                </div>
-                            </div>
-                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-warehouse"></i>
-                                <div>
-                                    <h4>Stock Alerts</h4>
-                                    <p>Receive alerts when stock levels are low</p>
-                                </div>
-                            </div>
-                            <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Security Settings -->
-                <div class="info-panel">
-                    <div class="panel-header">
-                        <div class="panel-title-wrapper">
-                            <div class="panel-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <span class="panel-title">Security</span>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-lock"></i>
-                                <div>
-                                    <h4>Two-Factor Authentication</h4>
-                                    <p>Add an extra layer of security to your account</p>
-                                </div>
-                            </div>
-                            <button class="btn-action-primary">Enable</button>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-desktop"></i>
-                                <div>
-                                    <h4>Active Sessions</h4>
-                                    <p>Manage devices where you're logged in</p>
-                                </div>
-                            </div>
-                            <button class="btn-action-link">View</button>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-history"></i>
-                                <div>
-                                    <h4>Login History</h4>
-                                    <p>Review recent login activity</p>
-                                </div>
-                            </div>
-                            <button class="btn-action-link">View</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Appearance Settings -->
-                <div class="info-panel">
-                    <div class="panel-header">
-                        <div class="panel-title-wrapper">
-                            <div class="panel-icon">
-                                <i class="fas fa-palette"></i>
-                            </div>
-                            <span class="panel-title">Appearance</span>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-moon"></i>
-                                <div>
-                                    <h4>Theme</h4>
-                                    <p>Choose your preferred color scheme</p>
-                                </div>
-                            </div>
-                            <select class="select-styled">
-                                <option>Light</option>
-                                <option>Dark</option>
-                                <option>Auto</option>
-                            </select>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-compress"></i>
-                                <div>
-                                    <h4>Compact Mode</h4>
-                                    <p>Show more content on screen</p>
-                                </div>
-                            </div>
-                            <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Danger Zone -->
-                {% if is_granted('ROLE_ADMIN') %}
-                <div class="info-panel danger-panel">
-                    <div class="panel-header danger-header">
-                        <div class="panel-title-wrapper">
-                            <div class="panel-icon danger-icon">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                            <span class="panel-title danger-title">Danger Zone</span>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-trash-restore"></i>
-                                <div>
-                                    <h4>Clear All Cache</h4>
-                                    <p>Remove all cached data from the system</p>
-                                </div>
-                            </div>
-                            <button class="btn-action-danger">Clear Cache</button>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">
-                                <i class="fas fa-undo"></i>
-                                <div>
-                                    <h4>Reset Settings</h4>
-                                    <p>Restore all settings to default values</p>
-                                </div>
-                            </div>
-                            <button class="btn-action-danger">Reset</button>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Info Box -->
-                <div class="info-box">
-                    <div class="info-box-icon">
-                        <i class="fas fa-info-circle"></i>
-                    </div>
-                    <div class="info-box-content">
-                        <h4>Need Help?</h4>
-                        <p>If you have any questions about these settings, please contact your system administrator or check the documentation.</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        const settingsData = [
+            {
+                id: 'account',
+                title: 'Account Settings',
+                value: 'Profile',
+                badge: 'Personal',
+                icon: 'fa-user-cog',
+                colorCode: '#3b82f6',
+                description: 'Manage your account information, email address, display name, and password settings.',
+                meta: [
+                    { icon: 'fa-envelope', label: 'Email', value: '{{ app.user.email }}' },
+                    { icon: 'fa-signature', label: 'Display Name', value: '{{ app.user.displayName ?: "Not set" }}' },
+                    { icon: 'fa-calendar', label: 'Member Since', value: '{{ app.user.createdAt|date("M Y") }}' }
+                ],
+                actions: [
+                    { label: 'Edit Profile', url: '{{ role_path('profile_edit') }}', class: 'primary' }
+                ]
+            },
+            {
+                id: 'notifications',
+                title: 'Notifications',
+                value: 'Alerts',
+                badge: 'Communication',
+                icon: 'fa-bell',
+                colorCode: '#8b5cf6',
+                description: 'Configure how you receive notifications about orders, stock alerts, and system updates.',
+                meta: [
+                    { icon: 'fa-envelope-open', label: 'Email Alerts', value: 'Enabled' },
+                    { icon: 'fa-shopping-bag', label: 'Order Updates', value: 'Enabled' },
+                    { icon: 'fa-warehouse', label: 'Stock Alerts', value: 'Disabled' }
+                ],
+                actions: [
+                    { label: 'Configure Notifications', url: '#', class: 'primary' }
+                ]
+            },
+            {
+                id: 'security',
+                title: 'Security',
+                value: 'Protected',
+                badge: 'Safety',
+                icon: 'fa-shield-alt',
+                colorCode: '#10b981',
+                description: 'Enhance your account security with two-factor authentication and monitor active sessions.',
+                meta: [
+                    { icon: 'fa-lock', label: '2FA Status', value: 'Disabled' },
+                    { icon: 'fa-desktop', label: 'Active Sessions', value: '1 Device' },
+                    { icon: 'fa-history', label: 'Last Login', value: '{{ "now"|date("M j, g:i A") }}' }
+                ],
+                actions: [
+                    { label: 'Enable 2FA', url: '#', class: 'primary' },
+                    { label: 'View Sessions', url: '#', class: 'secondary' }
+                ]
+            },
+            {
+                id: 'appearance',
+                title: 'Appearance',
+                value: 'Theme',
+                badge: 'Display',
+                icon: 'fa-palette',
+                colorCode: '#ec4899',
+                description: 'Customize the look and feel of your interface with theme options and display preferences.',
+                meta: [
+                    { icon: 'fa-moon', label: 'Theme', value: 'Light Mode' },
+                    { icon: 'fa-compress', label: 'Compact Mode', value: 'Disabled' },
+                    { icon: 'fa-desktop', label: 'Display', value: 'Standard' }
+                ],
+                actions: [
+                    { label: 'Customize Theme', url: '#', class: 'primary' }
+                ]
+            },
+            {% if is_granted('ROLE_ADMIN') %}
+            {
+                id: 'system',
+                title: 'System Settings',
+                value: 'Admin',
+                badge: 'Advanced',
+                icon: 'fa-cogs',
+                colorCode: '#f59e0b',
+                description: 'Advanced system configuration options including cache management and system maintenance.',
+                meta: [
+                    { icon: 'fa-database', label: 'Cache Status', value: 'Active' },
+                    { icon: 'fa-server', label: 'System Health', value: 'Optimal' },
+                    { icon: 'fa-shield-alt', label: 'Security Level', value: 'High' }
+                ],
+                actions: [
+                    { label: 'Clear Cache', url: '#', class: 'danger' },
+                    { label: 'System Info', url: '#', class: 'secondary' }
+                ]
+            }
+            {% endif %}
+        ];
+
+        let currentIndex = 0;
+        const visibleCount = 3;
+
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#",""), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('settingsCarousel');
+            container.innerHTML = '';
+            
+            const displayed = settingsData.slice(currentIndex, currentIndex + visibleCount);
+
+            displayed.forEach((setting) => {
+                const colorLight = adjustColor(setting.colorCode, 30);
+                const colorDark = adjustColor(setting.colorCode, -30);
+                
+                const card = document.createElement('div');
+                card.className = `stat-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
+                card.style.cssText = `background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
+                card.setAttribute('data-color', setting.colorCode);
+                
+                card.innerHTML = `
+                    <div class="stat-icon-wrapper">
+                        <i class="fas ${setting.icon}"></i>
+                    </div>
+                    <div class="relative z-10 pt-8">
+                        <h3 class="text-4xl font-bold text-white mb-1">${setting.title}</h3>
+                        <p class="text-white/70 text-sm mb-2">${setting.badge}</p>
+                        <p class="text-6xl font-extrabold text-white mb-4">${setting.value}</p>
+                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
+                            View Details >
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => openHero(setting);
+                container.appendChild(card);
+            });
+            
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex + visibleCount >= settingsData.length;
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex + visibleCount < settingsData.length) {
+                currentIndex++;
+                renderCarousel();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCarousel();
+            }
+        }
+
+        let currentSetting = null;
+        
+        function openHero(setting) {
+            currentSetting = setting;
+            const app = document.getElementById('app');
+            const heroBg = document.getElementById('heroBg');
+            const heroIcon = document.getElementById('heroIcon');
+            const heroTitle = document.getElementById('heroTitle');
+            const heroDescription = document.getElementById('heroDescription');
+
+            const colorLight = adjustColor(setting.colorCode, 30);
+            const colorDark = adjustColor(setting.colorCode, -30);
+            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
+            
+            heroIcon.innerHTML = `<i class="fas ${setting.icon}"></i>`;
+            heroTitle.innerText = setting.title;
+            heroDescription.innerText = setting.description;
+            
+            // Set meta items
+            setting.meta.forEach((meta, index) => {
+                document.getElementById(`heroMetaIcon${index + 1}`).className = `fas ${meta.icon} text-blue-500`;
+                document.getElementById(`heroMetaLabel${index + 1}`).innerText = meta.label + ':';
+                document.getElementById(`heroMetaValue${index + 1}`).innerText = meta.value;
+            });
+            
+            // Set actions
+            const actionsContainer = document.getElementById('heroActions');
+            actionsContainer.innerHTML = '';
+            setting.actions.forEach(action => {
+                const btn = document.createElement('a');
+                btn.href = action.url;
+                btn.className = `action-btn action-btn-${action.class}`;
+                btn.innerHTML = `<i class="fa fa-arrow-right"></i><span>${action.label}</span>`;
+                actionsContainer.appendChild(btn);
+            });
+
+            app.classList.add('hero-active');
+            
+            const animatedElements = document.querySelectorAll('.slide-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function closeHero() {
+            document.getElementById('app').classList.remove('hero-active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCarousel();
+            
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+                
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 {% endblock %}

@@ -1,230 +1,467 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Activity Logs | Naaliatan{% endblock %}
+{% block title %}Activity Logs{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('ActivityLogsFolder/index.css?v=' ~ random()) }}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('ActivityLogsFolder/index.css') }}?v={{ random() }}">
 {% endblock %}
 
 {% block body %}
-    <main class="content-area">
-        <header class="top-nav">
-            <div class="search-global">
-                <i class="fas fa-search"></i>
-                <input type="text" id="globalSearch" placeholder="Search activities...">
+<div id="activity-app-wrapper" class="min-h-screen">
+
+    <!-- App Wrapper -->
+    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">
+                    Activity Logs
+                </span>
             </div>
-            <div class="user-widget">
-                <button class="icon-btn"><i class="fas fa-bell"></i></button>
-                <div class="avatar">
+
+            <!-- Search bar -->
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search activities..." class="bg-transparent outline-none text-sm w-full">
+            </div>
+
+            <div class="flex items-center gap-6">
+                <!-- Action Filter Dropdown -->
+                <div class="relative">
+                    <select id="actionFilter" class="bg-white border border-gray-200 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-gray-700 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer appearance-none">
+                        <option value="all">All Actions</option>
+                        <option value="CREATE">Create</option>
+                        <option value="UPDATE">Update</option>
+                        <option value="DELETE">Delete</option>
+                        <option value="LOGIN">Login</option>
+                        <option value="LOGOUT">Logout</option>
+                        <option value="RESTOCK">Restock</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                </div>
+                <a href="{{ path('app_admin_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0, 2)|upper }}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                </div>
-                <div class="user-info">
-                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
-                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
-                </div>
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Admin</span>
+                    </div>
+                </a>
             </div>
         </header>
 
-        <div class="page-container">
-            <div class="page-intro">
-                <div>
-                    <h1 class="page-title">Activity Logs</h1>
-                    <p class="page-subtitle">Track all system activities and user actions in one place</p>
-                </div>
-            </div>
-
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
-
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
-
-            <div class="stats-grid">
-                <div class="stat-card stat-card-blue">
-                    <div class="stat-icon">
-                        <i class="fas fa-clipboard-list"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Total Logs</h3>
-                        <p class="value">{{ logs|length }}</p>
-                        <span class="stat-badge">All Actions</span>
-                    </div>
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-hidden">
+            
+            <!-- GRID VIEW (The Carousel) -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+                
+                <!-- Carousel at bottom -->
+                <div id="activityCarousel" class="flex gap-8 items-end h-[500px] mb-6">
+                    <!-- Cards injected by JS -->
                 </div>
 
-                <div class="stat-card stat-card-emerald">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-day"></i>
+                <!-- Footer Nav -->
+                <div class="flex items-center justify-between pt-4 pb-2">
+                    <div class="flex gap-6 text-sm font-medium text-gray-500">
+                        <span>Total Logs: <span id="totalCount">{{ logs|length }}</span></span>
+                        <span>Today: <span id="todayCount">{{ todayCount|default(0) }}</span></span>
+                        <span>This Week: <span id="weekCount">{{ weekCount|default(0) }}</span></span>
                     </div>
-                    <div class="stat-info">
-                        <h3>Today's Activities</h3>
-                        <p class="value">{{ todayCount|default(0) }}</p>
-                        <span class="stat-badge">Recent</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-amber">
-                    <div class="stat-icon">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Updates Today</h3>
-                        <p class="value">{{ updateCount|default(0) }}</p>
-                        <span class="stat-badge">Modified</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-purple">
-                    <div class="stat-icon">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Logins Today</h3>
-                        <p class="value">{{ loginCount|default(0) }}</p>
-                        <span class="stat-badge">Sessions</span>
+                    <div class="flex gap-4">
+                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="fa fa-chevron-left text-xs"></i> Prev
+                        </button>
+                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="data-panel">
-                <div class="panel-header">
-                    <div class="panel-title-wrapper">
-                        <div class="panel-icon">
-                            <i class="fas fa-history"></i>
+            <!-- DETAIL / HERO VIEW -->
+            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
+                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
+                
+                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
+                    <i class="fa fa-times text-red-500"></i> Close
+                </button>
+
+                <div class="relative z-10 h-full flex items-center px-16">
+                    <!-- Left Side: Large Icon with Frame -->
+                    <div class="w-1/2 flex justify-center items-center">
+                        <div class="hero-image-frame">
+                            <div id="heroIcon" class="hero-icon"></div>
                         </div>
-                        <span class="panel-title">Activity Feed</span>
                     </div>
-                    <div class="badge-group">
-                        <select id="actionFilter" class="filter-select">
-                            <option value="all">All Actions</option>
-                            <option value="create">CREATE</option>
-                            <option value="update">UPDATE</option>
-                            <option value="delete">DELETE</option>
-                            <option value="login">LOGIN</option>
-                            <option value="logout">LOGOUT</option>
-                            <option value="restock">RESTOCK</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="table-container">
-                    <table id="myTable" class="activity-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>User</th>
-                                <th>Action</th>
-                                <th>Description</th>
-                                <th>Role</th>
-                                <th>Date & Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="activityTableBody">
-                            {% for log in logs %}
-                                <tr>
-                                    <td>{{ log.id }}</td>
-                                    <td>
-                                        <div class="user-cell">
-                                            <div class="user-avatar">
-                                                {% if log.user and log.user.profilePicture %}
-                                                    <img src="{{ asset('images/profiles/' ~ log.user.profilePicture) }}" alt="{{ log.username }}">
-                                                {% else %}
-                                                    {{ log.username|default('U')|slice(0,1)|upper }}
-                                                {% endif %}
-                                            </div>
-                                            <div class="user-details">
-                                                <span class="user-name-text">{{ log.username|default('Unknown') }}</span>
-                                                <span class="user-email-text">{{ log.username|default('unknown') }}@naaliatan.local</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {% set actionType = log.action|default('UNKNOWN')|upper %}
-                                        {% if actionType == 'CREATE' %}
-                                            <span class="action-badge action-create">
-                                                <i class="fas fa-plus-circle"></i>
-                                                CREATE
-                                            </span>
-                                        {% elseif actionType == 'UPDATE' %}
-                                            <span class="action-badge action-update">
-                                                <i class="fas fa-edit"></i>
-                                                UPDATE
-                                            </span>
-                                        {% elseif actionType == 'DELETE' %}
-                                            <span class="action-badge action-delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                                DELETE
-                                            </span>
-                                        {% elseif actionType == 'LOGIN' %}
-                                            <span class="action-badge action-login">
-                                                <i class="fas fa-sign-in-alt"></i>
-                                                LOGIN
-                                            </span>
-                                        {% elseif actionType == 'LOGOUT' %}
-                                            <span class="action-badge action-logout">
-                                                <i class="fas fa-sign-out-alt"></i>
-                                                LOGOUT
-                                            </span>
-                                        {% elseif actionType == 'RESTOCK' %}
-                                            <span class="action-badge action-restock">
-                                                <i class="fas fa-boxes"></i>
-                                                RESTOCK
-                                            </span>
-                                        {% else %}
-                                            <span class="action-badge action-other">
-                                                <i class="fas fa-info-circle"></i>
-                                                {{ actionType }}
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td><span class="description-text">{{ log.targetData|default('No details provided') }}</span></td>
-                                    <td>
-                                        {% set roleString = log.role|default('"ROLE_USER"')|replace({'"': '', '[': '', ']': ''})|trim %}
-                                        {% set roles = roleString|split(',') %}
-                                        <div class="role-badges">
-                                            {% for role in roles %}
-                                                {% set cleanRole = role|trim %}
-                                                <span class="badge {{ cleanRole == 'ROLE_ADMIN' ? 'badge-admin' : cleanRole == 'ROLE_STAFF' ? 'badge-staff' : 'badge-user' }}">
-                                                    {{ cleanRole|replace({'ROLE_': ''}) }}
-                                                </span>
-                                            {% endfor %}
-                                        </div>
-                                    </td>
-                                    <td><span class="date-text">{{ log.createdAt ? log.createdAt|date('M j, Y H:i') : '—' }}</span></td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="empty-state">
-                                        <i class="fas fa-history"></i>
-                                        <p>No activity logs found</p>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <!-- Right Side: Content -->
+                    <div class="w-1/2 pl-12 pr-8">
+                        <div class="hero-content-wrapper">
+                            <h2 id="heroAction" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
+                            
+                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
+                                <div class="meta-item">
+                                    <i class="fa fa-user text-blue-500"></i>
+                                    <span class="meta-label">User:</span>
+                                    <span id="heroUsername" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-clock text-purple-500"></i>
+                                    <span class="meta-label">Timestamp:</span>
+                                    <span id="heroTimestamp" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-tag text-red-500"></i>
+                                    <span class="meta-label">Action Type:</span>
+                                    <span id="heroActionType" class="action-type-badge"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-shield-alt text-green-500"></i>
+                                    <span class="meta-label">Role:</span>
+                                    <span id="heroRole" class="role-badge"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
+                                <h3 class="description-title">Activity Details</h3>
+                                <div class="description-text">
+                                    <div class="info-row">
+                                        <span class="info-label">Log ID:</span>
+                                        <span id="heroId" class="info-value"></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Description:</span>
+                                        <span id="heroDescription" class="info-value"></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Date:</span>
+                                        <span id="heroDate" class="info-value"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
+</div>
 
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
-    <script src="{{ asset('ActivityLogsFolder/index.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        // Load activity logs from Symfony
+        const allLogsData = [
+            {% for log in logs %}
+            {
+                id: {{ log.id }},
+                username: {{ log.username|default('Unknown')|json_encode|raw }},
+                action: {{ log.action|default('UNKNOWN')|json_encode|raw }},
+                targetData: {{ log.targetData|default('No details provided')|json_encode|raw }},
+                role: {{ log.role|default('ROLE_USER')|json_encode|raw }},
+                createdAt: {{ log.createdAt ? log.createdAt|date('Y-m-d H:i:s')|json_encode|raw : 'null' }},
+                profilePicture: {{ (log.user and log.user.profilePicture) ? log.user.profilePicture|json_encode|raw : 'null' }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        const baseUrl = '{{ app.request.schemeAndHttpHost }}';
+        const imageBasePath = '{{ asset('images/profiles/') }}';
+        
+        console.log('Total logs loaded:', allLogsData.length);
+        
+        // Transform logs to match the expected format
+        let activities = allLogsData.map(log => ({
+            id: log.id,
+            username: log.username || 'Unknown',
+            action: log.action ? log.action.toUpperCase() : 'UNKNOWN',
+            targetData: log.targetData || 'No details provided',
+            role: log.role || 'ROLE_USER',
+            createdAt: log.createdAt,
+            profilePicture: log.profilePicture,
+            colorCode: getActionColor(log.action),
+            avatar: log.profilePicture ? imageBasePath + log.profilePicture : null
+        }));
+        
+        let filteredActivities = [...activities];
+        
+        console.log('Processed activities:', activities);
+
+        let currentIndex = 0;
+        function getVisibleCount() {
+            if (window.innerWidth < 768) return 1;
+            if (window.innerWidth < 1024) return 2;
+            return 3;
+        }
+
+        // Helper function to get action color
+        function getActionColor(action) {
+            const actionType = action ? action.toUpperCase() : 'UNKNOWN';
+            switch(actionType) {
+                case 'CREATE': return '#10b981'; // Green
+                case 'UPDATE': return '#f59e0b'; // Amber
+                case 'DELETE': return '#ef4444'; // Red
+                case 'LOGIN': return '#3b82f6'; // Blue
+                case 'LOGOUT': return '#8b5cf6'; // Purple
+                case 'RESTOCK': return '#14b8a6'; // Teal
+                default: return '#64748b'; // Gray
+            }
+        }
+
+        // Helper function to get action icon
+        function getActionIcon(action) {
+            const actionType = action ? action.toUpperCase() : 'UNKNOWN';
+            switch(actionType) {
+                case 'CREATE': return 'fa-plus-circle';
+                case 'UPDATE': return 'fa-edit';
+                case 'DELETE': return 'fa-trash-alt';
+                case 'LOGIN': return 'fa-sign-in-alt';
+                case 'LOGOUT': return 'fa-sign-out-alt';
+                case 'RESTOCK': return 'fa-boxes';
+                default: return 'fa-info-circle';
+            }
+        }
+
+        // Helper function to get role display name
+        function getRoleDisplay(role) {
+            const roleStr = role.replace(/[\[\]"]/g, '').trim();
+            if (roleStr.includes('ROLE_ADMIN')) return 'Administrator';
+            if (roleStr.includes('ROLE_STAFF')) return 'Staff';
+            return 'User';
+        }
+
+        // Helper function to lighten/darken colors
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#",""), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('activityCarousel');
+            container.innerHTML = '';
+            
+            if (!filteredActivities || filteredActivities.length === 0) {
+                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No activity logs found.</div>';
+                updateNavigationButtons();
+                return;
+            }
+
+            const displayed = filteredActivities.slice(currentIndex, currentIndex + getVisibleCount());
+
+            displayed.forEach((activity, index) => {
+                const colorLight = adjustColor(activity.colorCode, 30);
+                const colorDark = adjustColor(activity.colorCode, -30);
+                
+                const card = document.createElement('div');
+                card.className = `activity-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
+                card.style.cssText = `--activity-color-light: ${colorLight}; --activity-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
+                card.setAttribute('data-color', activity.colorCode);
+                
+                // Create icon HTML
+                const iconClass = getActionIcon(activity.action);
+                
+                card.innerHTML = `
+                    <div class="activity-icon-wrapper">
+                        <i class="fas ${iconClass}"></i>
+                    </div>
+                    <div class="relative z-10 pt-8">
+                        <h3 class="text-4xl font-bold text-white mb-1">${activity.action}</h3>
+                        <p class="text-white/70 text-sm mb-2">by ${activity.username}</p>
+                        <p class="text-white/60 text-xs mb-4">${new Date(activity.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
+                            View Details >
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => openHero(activity);
+                container.appendChild(card);
+            });
+            
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex + getVisibleCount() >= filteredActivities.length;
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex + getVisibleCount() < filteredActivities.length) {
+                currentIndex++;
+                renderCarousel();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCarousel();
+            }
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filteredActivities = activities.filter(activity => 
+                    activity.username.toLowerCase().includes(searchTerm) ||
+                    activity.action.toLowerCase().includes(searchTerm) ||
+                    activity.targetData.toLowerCase().includes(searchTerm) ||
+                    getRoleDisplay(activity.role).toLowerCase().includes(searchTerm)
+                );
+                currentIndex = 0;
+                const totalCountEl = document.getElementById('totalCount');
+                if (totalCountEl) {
+                    totalCountEl.textContent = filteredActivities.length;
+                }
+                renderCarousel();
+            });
+        }
+
+        // Action filter functionality
+        const actionFilter = document.getElementById('actionFilter');
+        if (actionFilter) {
+            actionFilter.addEventListener('change', function(e) {
+                const selectedAction = e.target.value;
+                
+                if (selectedAction === 'all') {
+                    filteredActivities = [...activities];
+                } else {
+                    filteredActivities = activities.filter(activity => 
+                        activity.action.toUpperCase() === selectedAction.toUpperCase()
+                    );
+                }
+                
+                currentIndex = 0;
+                const totalCountEl = document.getElementById('totalCount');
+                if (totalCountEl) {
+                    totalCountEl.textContent = filteredActivities.length;
+                }
+                renderCarousel();
+            });
+        }
+
+        let currentActivity = null;
+        
+        function openHero(activity) {
+            currentActivity = activity;
+            const app = document.getElementById('app');
+            const heroBg = document.getElementById('heroBg');
+            const heroIcon = document.getElementById('heroIcon');
+            const heroAction = document.getElementById('heroAction');
+            const heroUsername = document.getElementById('heroUsername');
+            const heroTimestamp = document.getElementById('heroTimestamp');
+            const heroActionType = document.getElementById('heroActionType');
+            const heroRole = document.getElementById('heroRole');
+            const heroId = document.getElementById('heroId');
+            const heroDescription = document.getElementById('heroDescription');
+            const heroDate = document.getElementById('heroDate');
+
+            // Set content
+            const colorLight = adjustColor(activity.colorCode, 30);
+            const colorDark = adjustColor(activity.colorCode, -30);
+            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
+            
+            // Set icon
+            const iconClass = getActionIcon(activity.action);
+            heroIcon.innerHTML = `<i class="fas ${iconClass}"></i>`;
+            heroIcon.style.background = `linear-gradient(135deg, ${activity.colorCode}, ${colorDark})`;
+            
+            heroAction.innerText = activity.action + ' Action';
+            heroUsername.innerText = activity.username;
+            heroTimestamp.innerText = new Date(activity.createdAt).toLocaleString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            heroActionType.innerText = activity.action;
+            heroActionType.style.backgroundColor = activity.colorCode;
+            heroRole.innerText = getRoleDisplay(activity.role);
+            heroRole.style.backgroundColor = activity.role.includes('ADMIN') ? '#ef4444' : activity.role.includes('STAFF') ? '#8b5cf6' : '#3b82f6';
+            heroId.innerText = '#' + activity.id;
+            heroDescription.innerText = activity.targetData;
+            heroDate.innerText = new Date(activity.createdAt).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            // Trigger animation
+            app.classList.add('hero-active');
+            
+            // Reset text animations
+            const animatedElements = document.querySelectorAll('.slide-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight; // trigger reflow
+                el.style.animation = null;
+            });
+        }
+
+        function closeHero() {
+            document.getElementById('app').classList.remove('hero-active');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, rendering carousel...');
+            renderCarousel();
+            
+            window.addEventListener('resize', function() { renderCarousel(); });
+            
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+                
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 {% endblock %}

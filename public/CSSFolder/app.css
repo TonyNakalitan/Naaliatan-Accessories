@@ -1,5 +1,97 @@
 /* App-wide styles */
 
+/* Sidebar Overlay Styles - More specific to avoid conflicts */
+aside + .sidebar-overlay,
+.sidebar-overlay#sidebarOverlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 9998 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: opacity 0.3s ease, visibility 0.3s ease !important;
+}
+
+.sidebar-overlay#sidebarOverlay.show,
+.sidebar-overlay#sidebarOverlay.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Sidebar Overlay Positioning */
+aside.sidebar.sidebar-overlay#sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 280px !important;
+    height: 100% !important;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+    color: white !important;
+    z-index: 1001 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+aside.sidebar.sidebar-overlay#sidebar.active {
+    transform: translateX(0) !important;
+}
+
+/* Override all conflicting sidebar styles from individual CSS files */
+aside.sidebar.sidebar-overlay#sidebar,
+.sidebar.sidebar-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 280px !important;
+    height: 100% !important;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+    color: white !important;
+    z-index: 9999 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Override any sidebar positioning that might be set by other styles */
+.sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: translateX(-100%) !important;
+}
+
+.sidebar.active {
+    transform: translateX(0) !important;
+}
+
+/* Remove margin adjustments for content area since sidebar is now overlay */
+.content-area {
+    margin-left: 0 !important;
+    transition: none !important;
+}
+
+/* Override any content-area sidebar-open styles */
+.content-area.sidebar-open {
+    margin-left: 0 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar.sidebar-overlay {
+        width: 100%;
+        max-width: 320px;
+    }
+}
+
 /* Sidebar Logo */
 .sidebar-logo {
     height: 32px;

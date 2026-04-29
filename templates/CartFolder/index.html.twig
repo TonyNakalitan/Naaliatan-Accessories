@@ -1,161 +1,412 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Shopping Cart | Naaliatan{% endblock %}
+{% block title %}Shopping Cart{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('CartFolder/index.css?v=' ~ random()) }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('CartFolder/index.css') }}?v={{ random() }}">
 {% endblock %}
 
 {% block body %}
-    <main class="content-area">
-        <header class="top-nav">
-            <div class="search-global">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search cart items...">
+<div id="cart-app-wrapper" class="min-h-screen">
+
+    <!-- App Wrapper -->
+    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">
+                    Shopping Cart
+                </span>
             </div>
-            <div class="user-widget">
-                <button class="icon-btn"><i class="fas fa-bell"></i></button>
-                <div class="avatar">
+
+            <!-- Search bar -->
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search cart items..." class="bg-transparent outline-none text-sm w-full">
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_profile_edit') : path('app_staff_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0, 2)|upper }}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                </div>
-                <div class="user-info">
-                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
-                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
-                </div>
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                </a>
             </div>
         </header>
 
-        <div class="page-container">
-            <div class="page-intro">
-                <div>
-                    <h1 class="page-title">Shopping Cart</h1>
-                    <p class="page-subtitle">Review and manage items before checkout</p>
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-hidden">
+            
+            <!-- GRID VIEW (The Carousel) -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+                
+                <!-- Carousel at bottom -->
+                <div id="cartCarousel" class="flex gap-8 items-end h-[500px] mb-6">
+                    <!-- Cards injected by JS -->
+                </div>
+
+                <!-- Footer Nav -->
+                <div class="flex items-center justify-between pt-4 pb-2">
+                    <div class="flex gap-6 text-sm font-medium text-gray-500">
+                        <span>Total Items: <span id="totalCount">{{ cart.cartItems|length }}</span></span>
+                        <span>Subtotal: <span class="text-blue-600 font-bold">₱{{ cart.totalPrice|number_format(2, '.', ',') }}</span></span>
+                        {% if cart.cartItems|length > 0 %}
+                        <form action="{{ role_path('cart_clear') }}" method="POST" onsubmit="return confirm('Clear all items from cart?');" class="inline">
+                            <button type="submit" class="text-red-600 hover:text-red-700 font-bold">
+                                <i class="fa fa-trash"></i> Clear Cart
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="fa fa-chevron-left text-xs"></i> Prev
+                        </button>
+                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {% if cart.cartItems|length > 0 %}
-                <div class="cart-layout">
-                    <div class="cart-items-section">
-                        <div class="data-panel">
-                            <div class="panel-header">
-                                <div class="panel-title-wrapper">
-                                    <div class="panel-icon">
-                                        <i class="fas fa-shopping-cart"></i>
-                                    </div>
-                                    <span class="panel-title">Cart Items ({{ cart.cartItems|length }})</span>
+            <!-- DETAIL / HERO VIEW -->
+            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
+                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
+                
+                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
+                    <i class="fa fa-times text-red-500"></i> Close
+                </button>
+
+                <div class="relative z-10 h-full flex items-center px-16">
+                    <!-- Left Side: Item Card -->
+                    <div class="w-1/2 flex justify-center items-center">
+                        <div class="hero-cart-card">
+                            <div class="cart-card-header">
+                                <div class="cart-card-image" id="heroItemImage">
+                                    <i class="fas fa-box text-6xl"></i>
                                 </div>
-                                <form action="{{ role_path('cart_clear') }}" method="POST" onsubmit="return confirm('Clear all items from cart?');">
-                                    <button type="submit" class="btn-clear-cart">
-                                        <i class="fas fa-trash"></i>
-                                        Clear Cart
+                                <h3 id="heroItemName" class="text-3xl font-bold mb-2"></h3>
+                                <span id="heroItemCategory" class="category-badge-hero"></span>
+                            </div>
+                            <div class="cart-card-body">
+                                <div class="price-info-hero">
+                                    <div class="price-label">Unit Price</div>
+                                    <div id="heroItemPrice" class="price-value"></div>
+                                </div>
+                                <div class="stock-info-hero">
+                                    <i class="fas fa-box"></i>
+                                    <span id="heroItemStock"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Content -->
+                    <div class="w-1/2 pl-12 pr-8">
+                        <div class="hero-content-wrapper">
+                            <h2 class="hero-title slide-in" style="animation-delay: 0.1s">Item Details</h2>
+                            
+                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
+                                <div class="meta-item">
+                                    <i class="fa fa-shopping-cart text-blue-500"></i>
+                                    <span class="meta-label">Quantity:</span>
+                                    <span id="heroQuantity" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-coins text-emerald-500"></i>
+                                    <span class="meta-label">Unit Price:</span>
+                                    <span id="heroUnitPrice" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-calculator text-purple-500"></i>
+                                    <span class="meta-label">Subtotal:</span>
+                                    <span id="heroSubtotal" class="meta-value"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
+                                <h3 class="description-title">Product Information</h3>
+                                <p id="heroDescription" class="description-text"></p>
+                            </div>
+
+                            <div class="hero-actions slide-in" style="animation-delay: 0.4s">
+                                <form id="heroUpdateForm" method="POST" class="flex items-center gap-3 mb-4">
+                                    <button type="button" class="qty-btn-hero" onclick="decrementHeroQty()">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" name="quantity" id="heroQtyInput" min="1" class="qty-input-hero" readonly>
+                                    <button type="button" class="qty-btn-hero" onclick="incrementHeroQty()">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button type="submit" class="action-btn action-btn-primary">
+                                        <i class="fa fa-check"></i>
+                                        <span>Update Quantity</span>
                                     </button>
                                 </form>
-                            </div>
-
-                            <div class="cart-items-list">
-                                {% for item in cart.cartItems %}
-                                    <div class="cart-item">
-                                        <div class="item-image">
-                                            {% if item.product.image %}
-                                                <img src="{{ asset('images/products/' ~ item.product.image) }}" alt="{{ item.product.name }}">
-                                            {% else %}
-                                                <i class="fas fa-box"></i>
-                                            {% endif %}
-                                        </div>
-                                        <div class="item-details">
-                                            <h3 class="item-name">{{ item.product.name }}</h3>
-                                            <p class="item-category">{{ item.product.character ? item.product.character.name : 'Uncategorized' }}</p>
-                                            <p class="item-price">₱{{ item.product.price|number_format(2, '.', ',') }}</p>
-                                        </div>
-                                        <div class="item-actions">
-                                            <form action="{{ role_path('cart_update', {'id': item.id}) }}" method="POST" class="qty-control">
-                                                <button type="button" class="qty-btn" onclick="decrementQty(this)">
-                                                    <i class="fas fa-minus"></i>
-                                                </button>
-                                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stockQuantity }}" class="qty-input" readonly>
-                                                <button type="button" class="qty-btn" onclick="incrementQty(this, {{ item.product.stockQuantity }})">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
-                                                <button type="submit" class="btn-update" title="Update">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            </form>
-                                            <div class="item-subtotal">
-                                                <span class="subtotal-label">Subtotal:</span>
-                                                <span class="subtotal-value">₱{{ (item.product.price * item.quantity)|number_format(2, '.', ',') }}</span>
-                                            </div>
-                                            <form action="{{ role_path('cart_remove', {'id': item.id}) }}" method="POST" onsubmit="return confirm('Remove this item from cart?');">
-                                                <button type="submit" class="btn-remove" title="Remove">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="cart-summary-section">
-                        <div class="summary-card">
-                            <h3 class="summary-title">Order Summary</h3>
-                            
-                            <div class="summary-details">
-                                <div class="summary-row">
-                                    <span>Items</span>
-                                    <span>{{ cart.cartItems|length }}</span>
-                                </div>
-                                
-                                <div class="summary-row">
-                                    <span>Subtotal</span>
-                                    <span>₱{{ cart.totalPrice|number_format(2, '.', ',') }}</span>
-                                </div>
-                                
-                                <div class="summary-row">
-                                    <span>Tax (0%)</span>
-                                    <span>₱0.00</span>
-                                </div>
-                                
-                                <div class="summary-divider"></div>
-                                
-                                <div class="summary-row summary-total">
-                                    <span>Total</span>
-                                    <span>₱{{ cart.totalPrice|number_format(2, '.', ',') }}</span>
-                                </div>
-                            </div>
-
-                            <div class="summary-actions">
-                                <button class="btn-checkout">
-                                    <i class="fas fa-credit-card"></i>
-                                    Proceed to Checkout
+                                <button id="heroDeleteBtn" class="action-btn action-btn-danger">
+                                    <i class="fa fa-trash"></i>
+                                    <span>Remove from Cart</span>
                                 </button>
-                                <a href="{{ role_path('item_management_index') }}" class="btn-continue">
-                                    <i class="fas fa-arrow-left"></i>
-                                    Continue Shopping
-                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
-            {% else %}
-                <div class="data-panel">
-                    <div class="empty-cart">
-                        <i class="fas fa-shopping-cart"></i>
-                        <h3>Your Cart is Empty</h3>
-                        <p>Add some items to get started!</p>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-    </main>
+            </div>
+        </main>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('CartFolder/index.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        // Load cart items from Symfony
+        const allCartData = [
+            {% for item in cart.cartItems %}
+            {
+                id: {{ item.id }},
+                productId: {{ item.product.id }},
+                productName: {{ item.product.name|json_encode|raw }},
+                productImage: {{ item.product.image ? ('/images/products/' ~ item.product.image)|json_encode|raw : 'null' }},
+                productPrice: {{ item.product.price }},
+                productCategory: {{ item.product.character ? item.product.character.name|json_encode|raw : '"Uncategorized"'|raw }},
+                quantity: {{ item.quantity }},
+                stockQuantity: {{ item.product.stockQuantity }},
+                subtotal: {{ item.product.price * item.quantity }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+        const baseUrl = '{{ app.request.schemeAndHttpHost }}';
+        
+        let cartItems = allCartData.map(item => ({
+            ...item,
+            colorCode: '#3b82f6'
+        }));
+        
+        let filteredItems = [...cartItems];
+        let currentIndex = 0;
+        const visibleCount = 3;
+
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#",""), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('cartCarousel');
+            container.innerHTML = '';
+            
+            if (!filteredItems || filteredItems.length === 0) {
+                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">Your cart is empty. <a href="{{ role_path('item_management_index') }}" class="text-blue-600 hover:underline">Start shopping!</a></div>';
+                updateNavigationButtons();
+                return;
+            }
+
+            const displayed = filteredItems.slice(currentIndex, currentIndex + visibleCount);
+
+            displayed.forEach((item) => {
+                const colorLight = adjustColor(item.colorCode, 30);
+                const colorDark = adjustColor(item.colorCode, -30);
+                
+                const card = document.createElement('div');
+                card.className = `cart-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
+                card.style.cssText = `--item-color-light: ${colorLight}; --item-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
+                card.setAttribute('data-color', item.colorCode);
+                
+                card.innerHTML = `
+                    <div class="cart-icon-wrapper">
+                        ${item.productImage ? 
+                            `<img src="${item.productImage}" alt="${item.productName}" class="w-full h-full object-cover rounded-2xl">` :
+                            '<i class="fas fa-box"></i>'
+                        }
+                    </div>
+                    <div class="relative z-10 pt-8">
+                        <h3 class="text-2xl font-bold text-white mb-1">${item.productName}</h3>
+                        <p class="text-white/70 text-sm mb-1">${item.productCategory}</p>
+                        <p class="text-white/90 text-lg font-semibold mb-2">₱${parseFloat(item.productPrice).toFixed(2)} × ${item.quantity}</p>
+                        <p class="text-white/60 text-xs mb-4">Subtotal: ₱${parseFloat(item.subtotal).toFixed(2)}</p>
+                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
+                            View Details >
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => openHero(item);
+                container.appendChild(card);
+            });
+            
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex + visibleCount >= filteredItems.length;
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex + visibleCount < filteredItems.length) {
+                currentIndex++;
+                renderCarousel();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCarousel();
+            }
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                filteredItems = cartItems.filter(item => 
+                    item.productName.toLowerCase().includes(searchTerm) ||
+                    item.productCategory.toLowerCase().includes(searchTerm)
+                );
+                currentIndex = 0;
+                document.getElementById('totalCount').textContent = filteredItems.length;
+                renderCarousel();
+            });
+        }
+
+        let currentItem = null;
+        let currentMaxQty = 1;
+        
+        function openHero(item) {
+            currentItem = item;
+            currentMaxQty = item.stockQuantity;
+            const app = document.getElementById('app');
+            const heroBg = document.getElementById('heroBg');
+
+            const colorLight = adjustColor(item.colorCode, 30);
+            const colorDark = adjustColor(item.colorCode, -30);
+            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
+            
+            // Set image
+            const heroImage = document.getElementById('heroItemImage');
+            if (item.productImage) {
+                heroImage.innerHTML = `<img src="${item.productImage}" alt="${item.productName}">`;
+            } else {
+                heroImage.innerHTML = '<i class="fas fa-box text-6xl"></i>';
+            }
+            
+            document.getElementById('heroItemName').innerText = item.productName;
+            document.getElementById('heroItemCategory').innerText = item.productCategory;
+            document.getElementById('heroItemPrice').innerText = '₱' + parseFloat(item.productPrice).toFixed(2);
+            document.getElementById('heroItemStock').innerText = `Stock: ${item.stockQuantity} units`;
+            document.getElementById('heroQuantity').innerText = item.quantity;
+            document.getElementById('heroUnitPrice').innerText = '₱' + parseFloat(item.productPrice).toFixed(2);
+            document.getElementById('heroSubtotal').innerText = '₱' + parseFloat(item.subtotal).toFixed(2);
+            document.getElementById('heroDescription').innerText = `${item.productName} from ${item.productCategory}. Available stock: ${item.stockQuantity} units.`;
+            
+            // Update form
+            const updateForm = document.getElementById('heroUpdateForm');
+            const qtyInput = document.getElementById('heroQtyInput');
+            qtyInput.value = item.quantity;
+            qtyInput.max = item.stockQuantity;
+            updateForm.action = isAdmin ? 
+                `${baseUrl}/admin/cart/${item.id}/update` : 
+                `${baseUrl}/staff/cart/${item.id}/update`;
+            
+            // Update delete button
+            const deleteBtn = document.getElementById('heroDeleteBtn');
+            deleteBtn.onclick = function() {
+                if (confirm('Remove this item from cart?')) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = isAdmin ? 
+                        `${baseUrl}/admin/cart/${item.id}/remove` : 
+                        `${baseUrl}/staff/cart/${item.id}/remove`;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            };
+
+            app.classList.add('hero-active');
+            
+            // Reset text animations
+            const animatedElements = document.querySelectorAll('.slide-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight; // trigger reflow
+                el.style.animation = null;
+            });
+        }
+
+        function closeHero() {
+            document.getElementById('app').classList.remove('hero-active');
+        }
+        
+        function decrementHeroQty() {
+            const input = document.getElementById('heroQtyInput');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+        
+        function incrementHeroQty() {
+            const input = document.getElementById('heroQtyInput');
+            if (parseInt(input.value) < currentMaxQty) {
+                input.value = parseInt(input.value) + 1;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCarousel();
+            
+            // Sidebar toggle
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+                
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 {% endblock %}

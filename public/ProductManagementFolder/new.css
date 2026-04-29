@@ -182,13 +182,15 @@ body,
 
 /* Character Cards */
 .character-card {
-    aspect-ratio: 3/4;
+    width: 192px; /* w-48 = 12rem = 192px */
+    height: 256px; /* 4:3 aspect ratio */
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     border: 3px solid transparent;
+    flex-shrink: 0;
 }
 
 .character-card::after {

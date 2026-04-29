@@ -10,6 +10,7 @@
 controllers:
     resource: routing.controllers
 
-api_login:
-    path: /api/login
-    methods: ['POST']
+# api_login route is now defined in ApiLoginController.php
+# api_login:
+#     path: /api/login
+#     methods: ['POST']

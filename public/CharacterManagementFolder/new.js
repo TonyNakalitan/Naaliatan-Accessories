@@ -1,32 +1,49 @@
 let currentStep = 1;
-const totalSteps = 4;
+const totalSteps = 5;
 let selectedAlignment = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize file upload handlers
     initializeFileUpload();
     
-    // Initialize form submission handler
-    initializeFormSubmission();
-    
-    // Initialize color input handler
-    initializeColorInput();
+    // Initialize color picker
+    initializeColorPicker();
 });
 
 function moveStep(delta) {
     const nextStep = currentStep + delta;
-    if (nextStep < 1 || nextStep > totalSteps) return;
+    console.log(`moveStep called: currentStep=${currentStep}, delta=${delta}, nextStep=${nextStep}`);
+    
+    if (nextStep < 1 || nextStep > totalSteps) {
+        console.log('Invalid step, returning');
+        return;
+    }
 
     const currentStepEl = document.querySelector(`[data-step="${currentStep}"]`);
     const nextStepEl = document.querySelector(`[data-step="${nextStep}"]`);
 
-    if (!currentStepEl || !nextStepEl) return;
+    if (!currentStepEl || !nextStepEl) {
+        console.log('Step elements not found, returning');
+        return;
+    }
 
     currentStepEl.classList.remove('active');
     nextStepEl.classList.add('active');
 
+    // Initialize color picker when moving to step 4
+    if (nextStep === 4) {
+        initializeColorPicker();
+    }
+
+    // Update confirmation data when moving to step 5
+    if (nextStep === 5) {
+        console.log('Moving to step 5 - updating confirmation summary');
+        updateConfirmationSummary();
+    }
+
     updateStepIndicators(currentStep, nextStep);
     currentStep = nextStep;
+    console.log(`Successfully moved to step ${currentStep}`);
     
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -75,44 +92,6 @@ function updateStepIndicators(oldStep, newStep) {
     newPill.classList.add('active');
 }
 
-function syncPreview(type, val) {
-    const elements = {
-        name: 'previewName',
-        creator: 'previewCreator',
-        description: 'previewDesc',
-        color: 'previewColorBox'
-    };
-
-    const target = document.getElementById(elements[type]);
-    if (!target) return;
-
-    if (!val || val.trim() === '') {
-        const defaults = {
-            name: 'Untitled Character',
-            creator: 'Unknown Creator',
-            description: 'Start entering character details to see them update here in real-time...',
-            color: '#6366f1'
-        };
-        
-        if (type === 'color') {
-            target.style.backgroundColor = defaults[type];
-        } else {
-            target.innerText = defaults[type];
-        }
-    } else {
-        if (type === 'color') {
-            target.style.backgroundColor = val;
-            // Also update the alignment badge color if one is selected
-            const previewAlignment = document.getElementById('previewAlignment');
-            if (previewAlignment && selectedAlignment) {
-                updateAlignmentBadgeColor(previewAlignment, val);
-            }
-        } else {
-            target.innerText = val;
-        }
-    }
-}
-
 function selectAlignment(alignment, element) {
     selectedAlignment = alignment;
     
@@ -126,33 +105,164 @@ function selectAlignment(alignment, element) {
         element.classList.add('selected');
     }
     
-    // Update hidden select input
-    const alignmentInput = document.querySelector('select[name*="alignment"]');
-    if (alignmentInput) {
-        alignmentInput.value = alignment;
+    // Set the hidden select value
+    let selectElement = document.querySelector('select[name*="alignment"]');
+    if (selectElement) {
+        selectElement.value = alignment;
+        console.log('Alignment selected:', alignment);
+    } else {
+        console.error('Alignment select element not found');
     }
-    
-    // Update preview badge
-    const previewAlignment = document.getElementById('previewAlignment');
-    if (previewAlignment) {
-        previewAlignment.textContent = alignment;
-        
-        // Get current color
-        const colorInput = document.querySelector('input[type="color"]');
-        const currentColor = colorInput ? colorInput.value : '#6366f1';
-        updateAlignmentBadgeColor(previewAlignment, currentColor);
+
+    // Update confirmation if visible
+    updateConfirmationIfVisible();
+}
+
+function updateConfirmationIfVisible() {
+    // Only update confirmation if we're on step 5
+    if (currentStep === 5) {
+        updateConfirmationSummary();
     }
 }
 
-function updateAlignmentBadgeColor(badge, color) {
-    // Set the badge background to use the character color
-    badge.style.backgroundColor = color;
-    badge.style.borderColor = color;
+function updateColorPreview(hex) {
+    const colorPreview = document.getElementById('colorPreview');
+    const hexDisplay = document.getElementById('hexDisplay');
+    const colorPicker = document.getElementById('colorPicker');
+
+    if (!hex) return;
+
+    // Remove # if present and ensure uppercase
+    hex = hex.replace('#', '').toUpperCase();
+
+    // Validate hex format
+    if (/^[0-9A-F]{6}$/i.test(hex)) {
+        const color = '#' + hex;
+        if (colorPreview) colorPreview.style.backgroundColor = color;
+        if (hexDisplay) hexDisplay.textContent = color;
+        if (colorPicker) colorPicker.value = color;
+
+        // Store value WITHOUT # (# is shown as visual prefix in the input)
+        const hexInput = document.querySelector('input[name*="colorCode"]');
+        if (hexInput) hexInput.value = hex;
+    }
+}
+
+function updateHexFromPicker(color) {
+    const hex = color.replace('#', '').toUpperCase();
+    updateColorPreview(hex);
+}
+
+function selectPresetColor(hex) {
+    hex = hex.replace('#', '').toUpperCase();
+    updateColorPreview(hex);
+
+    // Update confirmation if visible
+    updateConfirmationIfVisible();
+}
+
+function initializeColorPicker() {
+    const hexInput = document.querySelector('input[name*="colorCode"]');
+    const colorPicker = document.getElementById('colorPicker');
+
+    if (hexInput && hexInput.value) {
+        // If there's already a value, update the preview
+        updateColorPreview(hexInput.value);
+    } else if (hexInput && colorPicker) {
+        // Set default color without # prefix
+        const defaultHex = 'FF6B6B';
+        hexInput.value = defaultHex;
+        colorPicker.value = '#' + defaultHex;
+        updateColorPreview(defaultHex);
+    }
+}
+
+function updateConfirmationSummary() {
+    // Get form values
+    const nameInput = document.querySelector('input[name*="name"]');
+    const creatorInput = document.querySelector('input[name*="creator"]');
+    const descriptionInput = document.querySelector('textarea[name*="description"]');
+    const alignmentSelect = document.querySelector('select[name*="alignment"]');
+    const colorHexInput = document.querySelector('input[name*="colorCode"]');
+
+    // Update confirmation elements
+    const confirmName = document.getElementById('confirmName');
+    const confirmCreator = document.getElementById('confirmCreator');
+    const confirmAlignment = document.getElementById('confirmAlignment');
+    const confirmColor = document.getElementById('confirmColor');
+    const confirmDescription = document.getElementById('confirmDescription');
+
+    if (confirmName && nameInput) {
+        confirmName.textContent = nameInput.value || 'Not specified';
+    }
+
+    if (confirmCreator && creatorInput) {
+        confirmCreator.textContent = creatorInput.value || 'Not specified';
+    }
+
+    if (confirmAlignment && alignmentSelect) {
+        const selectedOption = alignmentSelect.options[alignmentSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            confirmAlignment.textContent = selectedOption.text;
+        } else {
+            confirmAlignment.textContent = 'None selected';
+        }
+    }
+
+    if (confirmColor && colorHexInput) {
+        const rawVal = colorHexInput.value ? colorHexInput.value.replace('#', '').toUpperCase() : null;
+        confirmColor.textContent = rawVal ? '#' + rawVal : 'Not specified';
+    }
+
+    if (confirmDescription && descriptionInput) {
+        confirmDescription.textContent = descriptionInput.value || 'No description provided';
+    }
 }
 
 function initializeFileUpload() {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.querySelector('input[type="file"]');
+    const characterForm = document.getElementById('characterForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Form submission handler
+    if (characterForm && submitBtn) {
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Submit button clicked');
+            
+            // Validate required fields
+            const nameInput = document.querySelector('input[name*="name"]');
+            const alignmentSelect = document.querySelector('select[name*="alignment"]');
+            
+            if (!nameInput || !nameInput.value.trim()) {
+                alert('Please enter a character name');
+                moveStep(-4); // Go back to step 1
+                return;
+            }
+            
+            if (!alignmentSelect || !alignmentSelect.value) {
+                alert('Please select a character alignment');
+                moveStep(-3); // Go back to step 2
+                return;
+            }
+            
+            // Show loading state
+            const btnText = document.getElementById('submitBtnText');
+            const btnLoading = document.getElementById('submitBtnLoading');
+            
+            if (btnText && btnLoading) {
+                btnText.classList.add('hidden');
+                btnLoading.classList.remove('hidden');
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            }
+            
+            // Submit the form
+            console.log('Submitting form...');
+            characterForm.submit();
+        });
+    }
 
     if (dropZone && fileInput) {
         // Click handler for drop zone
@@ -200,10 +310,10 @@ function handleFile(input) {
         return;
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
     if (file.size > maxSize) {
-        alert('File size must be less than 10MB');
+        alert('File size must be less than 5MB');
         input.value = '';
         return;
     }
@@ -220,6 +330,12 @@ function handleFile(input) {
         if (dropZoneUI) dropZoneUI.classList.add('hidden');
         if (previewContainer) previewContainer.classList.remove('hidden');
     };
+    
+    reader.onerror = () => {
+        alert('Error reading file. Please try again.');
+        input.value = '';
+    };
+    
     reader.readAsDataURL(file);
 }
 
@@ -240,83 +356,8 @@ function resetFile(event) {
 
     if (imgResult) imgResult.src = '';
     if (previewMainImg) {
-        // Reset to placeholder
         previewMainImg.src = 'https://placehold.co/400x500/f1f5f9/94a3b8?text=Character+Image';
     }
     if (dropZoneUI) dropZoneUI.classList.remove('hidden');
     if (previewContainer) previewContainer.classList.add('hidden');
-}
-
-function initializeFormSubmission() {
-    const characterForm = document.getElementById('characterForm');
-    const submitBtn = document.getElementById('submitBtn');
-
-    if (characterForm && submitBtn) {
-        characterForm.addEventListener('submit', function(e) {
-            // Show loading state
-            const btnText = document.getElementById('submitBtnText');
-            const btnLoading = document.getElementById('submitBtnLoading');
-            
-            if (btnText && btnLoading) {
-                btnText.classList.add('hidden');
-                btnLoading.classList.remove('hidden');
-                submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
-            }
-        });
-    }
-}
-
-function initializeColorInput() {
-    const colorPicker = document.getElementById('colorPicker');
-    const colorHexInput = document.querySelector('input[name*="colorCode"]');
-    
-    // Initialize color picker with hex input value if exists
-    if (colorPicker && colorHexInput && colorHexInput.value) {
-        colorPicker.value = colorHexInput.value;
-    }
-    
-    // Sync preview when either input changes
-    if (colorPicker) {
-        colorPicker.addEventListener('input', function() {
-            syncPreview('color', this.value);
-        });
-    }
-    
-    if (colorHexInput) {
-        colorHexInput.addEventListener('input', function() {
-            syncPreview('color', this.value);
-        });
-    }
-}
-
-// Update color hex input when color picker changes
-function updateColorHex(colorValue) {
-    const colorHexInput = document.querySelector('input[name*="colorCode"]');
-    if (colorHexInput) {
-        colorHexInput.value = colorValue.toUpperCase();
-    }
-    syncPreview('color', colorValue);
-}
-
-// Update color picker when hex input changes
-function syncColorFromHex(hexValue) {
-    const colorPicker = document.getElementById('colorPicker');
-    
-    // Validate hex format
-    if (/^#[0-9A-F]{6}$/i.test(hexValue)) {
-        if (colorPicker) {
-            colorPicker.value = hexValue;
-        }
-        syncPreview('color', hexValue);
-    } else if (hexValue.length === 7) {
-        // Invalid hex format - show visual feedback
-        const colorHexInput = document.querySelector('input[name*="colorCode"]');
-        if (colorHexInput) {
-            colorHexInput.style.borderColor = '#ef4444';
-            setTimeout(() => {
-                colorHexInput.style.borderColor = '';
-            }, 1000);
-        }
-    }
 }

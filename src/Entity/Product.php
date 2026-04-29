@@ -59,6 +59,10 @@ class Product
     #[Groups(['product:read', 'product:write'])]
     private ?Character $character = null;
 
+    #[ORM\Column(length: 6, nullable: true)]
+    #[Groups(['product:read', 'product:write'])]
+    private ?string $colorHex = null;
+
     #[ORM\Column]
     #[Groups(['product:read', 'product:write'])]
     private ?int $stockQuantity = 0;
@@ -153,6 +157,17 @@ class Product
     public function setCharacter(?Character $character): static
     {
         $this->character = $character;
+        return $this;
+    }
+
+    public function getColorHex(): ?string
+    {
+        return $this->colorHex;
+    }
+
+    public function setColorHex(?string $colorHex): static
+    {
+        $this->colorHex = $colorHex;
         return $this;
     }
 

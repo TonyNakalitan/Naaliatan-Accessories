@@ -26,9 +26,9 @@ class ProductManagementController extends AbstractController
     // Admin routes
     #[Route('/admin/product-management', name: 'app_admin_product_management_index')]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminIndex(): Response
+    public function adminIndex(Request $request): Response
     {
-        return $this->index();
+        return $this->index($request);
     }
 
     #[Route('/admin/product-management/new', name: 'app_admin_product_management_new')]
@@ -59,12 +59,27 @@ class ProductManagementController extends AbstractController
         return $this->show($product);
     }
 
+    // Alternative routes for /admin/products (used by templates)
+    #[Route('/admin/products/{id}/edit', name: 'app_admin_products_edit')]
+    #[IsGranted('ROLE_ADMIN')]
+    public function adminProductsEdit(Request $request, Product $product, EntityManagerInterface $entityManager): Response
+    {
+        return $this->edit($request, $product, $entityManager, 'admin');
+    }
+
+    #[Route('/admin/products/{id}', name: 'app_admin_products_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function adminProductsDelete(Request $request, Product $product, EntityManagerInterface $entityManager): Response
+    {
+        return $this->delete($request, $product, $entityManager, 'admin');
+    }
+
     // Staff routes
     #[Route('/staff/product-management', name: 'app_staff_product_management_index')]
     #[IsGranted('ROLE_STAFF')]
-    public function staffIndex(): Response
+    public function staffIndex(Request $request): Response
     {
-        return $this->index();
+        return $this->index($request);
     }
 
     #[Route('/staff/product-management/new', name: 'app_staff_product_management_new')]
@@ -89,14 +104,34 @@ class ProductManagementController extends AbstractController
     }
 
     // Shared implementation methods
-    private function index(): Response
+    private function index(Request $request): Response
     {
-        $products = $this->productRepository->findBy([], ['createdAt' => 'DESC']);
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 5; // Show 5 products per page as requested
+        $search = $request->query->get('search');
+        $status = $request->query->get('status');
+        
+        // Get paginated products
+        $products = $this->productRepository->findPaginatedProducts($page, $limit, $search, $status);
+        
+        // Get total count for pagination
+        $totalProducts = $this->productRepository->getFilteredProductsCount($search, $status);
+        $totalPages = ceil($totalProducts / $limit);
+        
+        // Get out of stock count (for all products, not just filtered)
+        $outOfStockCount = $this->productRepository->getOutOfStockCount();
         
         return $this->render('ProductManagementFolder/index.html.twig', [
             'products' => $products,
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
             'isStaff' => $this->isGranted('ROLE_STAFF'),
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalProducts' => $totalProducts,
+            'outOfStockCount' => $outOfStockCount,
+            'limit' => $limit,
+            'search' => $search,
+            'status' => $status,
         ]);
     }
 
@@ -112,7 +147,9 @@ class ProductManagementController extends AbstractController
             if ($existingProduct) {
                 $this->addFlash('error', 'A product with code "' . $product->getProductCode() . '" already exists. Please use a different product code.');
                 
+                // Get all characters for horizontal scroll layout
                 $characters = $this->characterRepository->findAll();
+                
                 return $this->render('ProductManagementFolder/new.html.twig', [
                     'product' => $product,
                     'form' => $form->createView(),
@@ -158,6 +195,7 @@ class ProductManagementController extends AbstractController
             return $this->redirectToRoute($routeName);
         }
 
+        // Get all characters for horizontal scroll layout
         $characters = $this->characterRepository->findAll();
 
         return $this->render('ProductManagementFolder/new.html.twig', [
@@ -243,16 +281,19 @@ class ProductManagementController extends AbstractController
             return $this->redirectToRoute($routeName);
         }
 
+        // Get all characters for horizontal scroll layout
+        $characters = $this->characterRepository->findAll();
+
         return $this->render('ProductManagementFolder/edit.html.twig', [
             'product' => $product,
             'form' => $form->createView(),
-            'characters' => $this->characterRepository->findAll(),
+            'characters' => $characters,
         ]);
     }
 
     private function delete(Request $request, Product $product, EntityManagerInterface $entityManager, string $role): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_product', $request->request->get('_token'))) {
             $productName = $product->getName();
             $productId = $product->getId();
 

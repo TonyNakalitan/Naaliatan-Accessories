@@ -27,6 +27,7 @@
         initModals();
         initQuantityInputs();
         initSortFunctionality();
+        initPagination();
         initAccessibility();
     });
 
@@ -618,6 +619,142 @@
         const priceText = priceElement.textContent;
         const priceMatch = priceText.match(/[\d,]+\.?\d*/);
         return priceMatch ? parseFloat(priceMatch[0].replace(',', '')) : 0;
+    }
+
+    // ============================================
+    // Pagination Functionality
+    // ============================================
+    function initPagination() {
+        const paginationLinks = document.querySelectorAll('.pagination-link:not(.disabled)');
+        
+        paginationLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Only handle client-side navigation for search/filter scenarios
+                const hasActiveFilters = document.querySelector('.filter-chip.active:not([data-category="all"])') ||
+                                     document.getElementById('productSearch').value.trim();
+                
+                if (hasActiveFilters) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page') || 
+                                this.textContent.trim();
+                    handleClientSidePagination(page);
+                }
+            });
+        });
+    }
+
+    function handleClientSidePagination(page) {
+        const productGrid = document.getElementById('productGrid');
+        const productCards = Array.from(productGrid.querySelectorAll('.product-card'));
+        const itemsPerPage = 4;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        
+        // Hide all cards first
+        productCards.forEach(card => {
+            card.style.display = 'none';
+        });
+        
+        // Show only cards for current page
+        const visibleCards = productCards.filter((card, index) => {
+            const cardDisplay = card.style.display !== 'none';
+            if (cardDisplay) {
+                card.style.display = 'none'; // Hide temporarily for pagination
+            }
+            return cardDisplay;
+        });
+        
+        const pageCards = visibleCards.slice(startIndex, endIndex);
+        pageCards.forEach(card => {
+            card.style.display = '';
+        });
+        
+        // Update pagination info
+        updatePaginationInfo(page, visibleCards.length, itemsPerPage);
+        
+        // Update pagination links
+        updatePaginationLinks(page, Math.ceil(visibleCards.length / itemsPerPage));
+        
+        // Scroll to top of products
+        productGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function updatePaginationInfo(currentPage, totalItems, itemsPerPage) {
+        const paginationText = document.querySelector('.pagination-text');
+        if (paginationText) {
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+            paginationText.textContent = `Showing ${startItem}-${endItem} of ${totalItems} products`;
+        }
+    }
+
+    function updatePaginationLinks(currentPage, totalPages) {
+        const pagination = document.querySelector('.pagination');
+        if (!pagination) return;
+        
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasFilters = urlParams.toString();
+        
+        // Update or create pagination links
+        const paginationItems = pagination.querySelectorAll('.pagination-item');
+        
+        paginationItems.forEach((item, index) => {
+            const link = item.querySelector('.pagination-link');
+            if (!link) return;
+            
+            // Skip prev/next buttons for now
+            if (link.classList.contains('pagination-prev') || link.classList.contains('pagination-next')) {
+                return;
+            }
+            
+            const pageNum = parseInt(link.textContent.trim());
+            if (!isNaN(pageNum)) {
+                // Update active state
+                if (pageNum === currentPage) {
+                    link.classList.add('active');
+                    link.setAttribute('aria-current', 'page');
+                } else {
+                    link.classList.remove('active');
+                    link.removeAttribute('aria-current');
+                }
+                
+                // Update href for client-side navigation
+                if (hasFilters) {
+                    link.setAttribute('data-page', pageNum);
+                }
+            }
+        });
+        
+        // Update prev/next buttons
+        const prevBtn = pagination.querySelector('.pagination-prev');
+        const nextBtn = pagination.querySelector('.pagination-next');
+        
+        if (prevBtn) {
+            if (currentPage === 1) {
+                prevBtn.classList.add('disabled');
+                prevBtn.setAttribute('aria-disabled', 'true');
+            } else {
+                prevBtn.classList.remove('disabled');
+                prevBtn.removeAttribute('aria-disabled');
+                if (hasFilters) {
+                    prevBtn.setAttribute('data-page', currentPage - 1);
+                }
+            }
+        }
+        
+        if (nextBtn) {
+            if (currentPage === totalPages) {
+                nextBtn.classList.add('disabled');
+                nextBtn.setAttribute('aria-disabled', 'true');
+            } else {
+                nextBtn.classList.remove('disabled');
+                nextBtn.removeAttribute('aria-disabled');
+                if (hasFilters) {
+                    nextBtn.setAttribute('data-page', currentPage + 1);
+                }
+            }
+        }
     }
 
     // ============================================

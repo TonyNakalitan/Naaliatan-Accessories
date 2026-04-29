@@ -1,5 +1,5 @@
 let currentStep = 1;
-const totalSteps = 4;
+const totalSteps = 5;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize file upload handlers
@@ -10,22 +10,45 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) {
         searchInput.addEventListener('input', filterCharacters);
     }
+
+    // Initialize color picker
+    initializeColorPicker();
 });
 
 function moveStep(delta) {
     const nextStep = currentStep + delta;
-    if (nextStep < 1 || nextStep > totalSteps) return;
+    console.log(`moveStep called: currentStep=${currentStep}, delta=${delta}, nextStep=${nextStep}`);
+    
+    if (nextStep < 1 || nextStep > totalSteps) {
+        console.log('Invalid step, returning');
+        return;
+    }
 
     const currentStepEl = document.querySelector(`[data-step="${currentStep}"]`);
     const nextStepEl = document.querySelector(`[data-step="${nextStep}"]`);
 
-    if (!currentStepEl || !nextStepEl) return;
+    if (!currentStepEl || !nextStepEl) {
+        console.log('Step elements not found, returning');
+        return;
+    }
 
     currentStepEl.classList.remove('active');
     nextStepEl.classList.add('active');
 
+    // Initialize color picker when moving to step 4
+    if (nextStep === 4) {
+        initializeColorPicker();
+    }
+
+    // Update confirmation data when moving to step 5
+    if (nextStep === 5) {
+        console.log('Moving to step 5 - updating confirmation summary');
+        updateConfirmationSummary();
+    }
+
     updateStepIndicators(currentStep, nextStep);
     currentStep = nextStep;
+    console.log(`Successfully moved to step ${currentStep}`);
     
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -74,39 +97,6 @@ function updateStepIndicators(oldStep, newStep) {
     newPill.classList.add('active');
 }
 
-function syncPreview(type, val) {
-    const elements = {
-        name: 'previewName',
-        code: 'previewCode',
-        description: 'previewDesc',
-        price: 'previewPrice'
-    };
-
-    const target = document.getElementById(elements[type]);
-    if (!target) return;
-
-    if (!val || val.trim() === '') {
-        const defaults = {
-            name: 'Product Name',
-            code: '#PRODUCT-CODE',
-            description: 'Product description will appear here...',
-            price: '₱0.00'
-        };
-        target.innerText = defaults[type];
-    } else {
-        if (type === 'price') {
-            const numVal = parseFloat(val);
-            if (!isNaN(numVal)) {
-                target.innerText = `₱${numVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            }
-        } else if (type === 'code') {
-            target.innerText = `#${val.toUpperCase()}`;
-        } else {
-            target.innerText = val;
-        }
-    }
-}
-
 function selectChar(el, id, name) {
     if (!el || !id || !name) return;
 
@@ -123,12 +113,126 @@ function selectChar(el, id, name) {
     } else {
         console.error('Character select element not found');
     }
-    
-    // Update the preview badge
-    const charBadge = document.getElementById('previewChar');
-    if (charBadge) {
-        charBadge.textContent = name;
-        charBadge.setAttribute('class', 'px-2 py-0.5 backdrop-blur-md rounded-full text-white text-[9px] sm:text-[10px] font-semibold border border-indigo-400 bg-indigo-600');
+
+    // Update confirmation if visible
+    updateConfirmationIfVisible();
+}
+
+function updateConfirmationIfVisible() {
+    // Only update confirmation if we're on step 5
+    if (currentStep === 5) {
+        updateConfirmationSummary();
+    }
+}
+
+function updateColorPreview(hex) {
+    const colorPreview = document.getElementById('colorPreview');
+    const hexDisplay = document.getElementById('hexDisplay');
+    const colorPicker = document.getElementById('colorPicker');
+
+    if (!hex) return;
+
+    // Remove # if present and ensure uppercase
+    hex = hex.replace('#', '').toUpperCase();
+
+    // Validate hex format
+    if (/^[0-9A-F]{6}$/i.test(hex)) {
+        const color = '#' + hex;
+        if (colorPreview) colorPreview.style.backgroundColor = color;
+        if (hexDisplay) hexDisplay.textContent = color;
+        if (colorPicker) colorPicker.value = color;
+
+        // Update form field
+        const hexInput = document.querySelector('input[name*="colorHex"]');
+        if (hexInput) hexInput.value = hex;
+    }
+}
+
+function updateHexFromPicker(color) {
+    const hex = color.replace('#', '').toUpperCase();
+    updateColorPreview(hex);
+
+    // Update form field
+    const hexInput = document.querySelector('input[name*="colorHex"]');
+    if (hexInput) hexInput.value = hex;
+}
+
+function selectPresetColor(hex) {
+    updateColorPreview(hex);
+
+    // Update form field
+    const hexInput = document.querySelector('input[name*="colorHex"]');
+    if (hexInput) hexInput.value = hex;
+
+    // Update confirmation if visible
+    updateConfirmationIfVisible();
+}
+
+function initializeColorPicker() {
+    const hexInput = document.querySelector('input[name*="colorHex"]');
+    const colorPicker = document.getElementById('colorPicker');
+
+    if (hexInput && hexInput.value) {
+        // If there's already a value, update the preview
+        updateColorPreview(hexInput.value);
+    } else if (hexInput && colorPicker) {
+        // Set default color if no value exists
+        const defaultColor = 'FF6B6B';
+        hexInput.value = defaultColor;
+        colorPicker.value = '#' + defaultColor;
+        updateColorPreview(defaultColor);
+    }
+}
+
+function updateConfirmationSummary() {
+    // Get form values
+    const nameInput = document.querySelector('input[name*="name"]');
+    const codeInput = document.querySelector('input[name*="productCode"]');
+    const priceInput = document.querySelector('input[name*="price"]');
+    const descriptionInput = document.querySelector('textarea[name*="description"]');
+    const characterSelect = document.querySelector('select[name*="character"]');
+    const colorHexInput = document.querySelector('input[name*="colorHex"]');
+
+    // Update confirmation elements
+    const confirmName = document.getElementById('confirmName');
+    const confirmCode = document.getElementById('confirmCode');
+    const confirmPrice = document.getElementById('confirmPrice');
+    const confirmDescription = document.getElementById('confirmDescription');
+    const confirmCharacter = document.getElementById('confirmCharacter');
+    const confirmColor = document.getElementById('confirmColor');
+
+    if (confirmName && nameInput) {
+        confirmName.textContent = nameInput.value || 'Not specified';
+    }
+
+    if (confirmCode && codeInput) {
+        confirmCode.textContent = codeInput.value ? `#${codeInput.value.toUpperCase()}` : 'Not specified';
+    }
+
+    if (confirmPrice && priceInput) {
+        const priceValue = parseFloat(priceInput.value);
+        if (!isNaN(priceValue)) {
+            confirmPrice.textContent = `${priceValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        } else {
+            confirmPrice.textContent = '0.00';
+        }
+    }
+
+    if (confirmDescription && descriptionInput) {
+        confirmDescription.textContent = descriptionInput.value || 'No description provided';
+    }
+
+    if (confirmCharacter && characterSelect) {
+        const selectedOption = characterSelect.options[characterSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            confirmCharacter.textContent = selectedOption.text;
+        } else {
+            confirmCharacter.textContent = 'None selected';
+        }
+    }
+
+    if (confirmColor && colorHexInput) {
+        confirmColor.textContent = colorHexInput.value ? `#${colorHexInput.value.toUpperCase()}` : 'Not specified';
     }
 }
 
@@ -147,6 +251,12 @@ function filterCharacters() {
             char.style.display = 'none';
         }
     });
+}
+
+function loadCharacterPage(page) {
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.set('char_page', page);
+    window.location.href = currentUrl.toString();
 }
 
 function initializeFileUpload() {

@@ -1,0 +1,575 @@
+/* ============================================
+   PRODUCTS PAGE - Character Cards & Gallery
+   ============================================ */
+
+/* Products Section */
+.products-section {
+    margin-bottom: 3rem;
+}
+
+.products-container {
+    width: 100%;
+}
+
+/* Gallery Grid */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    width: 100%;
+}
+
+/* ============================================
+   GAME CARD DESIGN - New Character Cards
+   ============================================ */
+.character-card {
+    background: #1a1a1a;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    animation: cardEntrance 0.5s ease-out forwards;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.character-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4), 0 6px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Game Card Container */
+.game-card-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+/* Game Card Image */
+.game-card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    flex-shrink: 0;
+}
+
+.game-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: block;
+}
+
+.character-card:hover .game-cover {
+    transform: scale(1.05);
+}
+
+/* Game Card Info */
+.game-card-info {
+    padding: 1rem;
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(10px);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.game-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.game-creator {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Game Card Actions */
+.game-card-actions {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 2;
+}
+
+.download-btn,
+.view-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.download-btn {
+    background: rgba(34, 197, 94, 0.9);
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.download-btn:hover {
+    background: rgba(34, 197, 94, 1);
+    transform: translateY(-2px) scale(1.1);
+    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
+.view-btn {
+    background: rgba(59, 130, 246, 0.9);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.view-btn:hover {
+    background: rgba(59, 130, 246, 1);
+    transform: translateY(-2px) scale(1.1);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.download-btn i,
+.view-btn i {
+    font-size: 0.875rem;
+}
+
+.download-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================
+   NO PRODUCTS STATE
+   ============================================ */
+.no-products {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 4rem 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.no-products-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2.5rem;
+    color: var(--text-muted);
+}
+
+.no-products h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.75rem;
+}
+
+.no-products p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 1024px) {
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.25rem;
+    }
+    
+    .game-card-image {
+        aspect-ratio: 3/4;
+    }
+    
+    .game-card-info {
+        padding: 0.875rem;
+    }
+    
+    .game-title {
+        font-size: 0.85rem;
+    }
+    
+    .game-creator {
+        font-size: 0.7rem;
+    }
+    
+    .download-btn,
+    .view-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .download-btn i,
+    .view-btn i {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .game-card-image {
+        aspect-ratio: 3/4;
+    }
+    
+    .game-card-info {
+        padding: 0.75rem;
+    }
+    
+    .game-title {
+        font-size: 0.8rem;
+    }
+    
+    .game-creator {
+        font-size: 0.65rem;
+    }
+    
+    .download-btn,
+    .view-btn {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .download-btn i,
+    .view-btn i {
+        font-size: 0.7rem;
+    }
+    
+    .download-count {
+        font-size: 0.55rem;
+        padding: 1px 4px;
+        min-width: 16px;
+    }
+}
+
+/* ============================================
+   ANIMATIONS & EFFECTS
+   ============================================ */
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.character-card {
+    animation: cardEntrance 0.5s ease-out forwards;
+}
+
+/* Stagger animation for cards */
+.gallery-grid .character-card:nth-child(1) { animation-delay: 0.05s; }
+.gallery-grid .character-card:nth-child(2) { animation-delay: 0.1s; }
+.gallery-grid .character-card:nth-child(3) { animation-delay: 0.15s; }
+.gallery-grid .character-card:nth-child(4) { animation-delay: 0.2s; }
+.gallery-grid .character-card:nth-child(5) { animation-delay: 0.25s; }
+.gallery-grid .character-card:nth-child(6) { animation-delay: 0.3s; }
+.gallery-grid .character-card:nth-child(7) { animation-delay: 0.35s; }
+.gallery-grid .character-card:nth-child(8) { animation-delay: 0.4s; }
+.gallery-grid .character-card:nth-child(9) { animation-delay: 0.45s; }
+.gallery-grid .character-card:nth-child(10) { animation-delay: 0.5s; }
+
+/* Shimmer effect on hover */
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transition: left 0.5s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.character-card:hover::before {
+    left: 100%;
+}
+
+/* Badge for new/featured characters */
+.character-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 20px;
+    z-index: 2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* Loading skeleton for cards */
+.character-card-skeleton {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.skeleton-image {
+    height: 280px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-content {
+    padding: 1.5rem;
+}
+
+.skeleton-line {
+    height: 16px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-line.short {
+    width: 60%;
+}
+
+.skeleton-line.medium {
+    width: 80%;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   PAGINATION CONTROLS
+   ============================================ */
+.pagination-controls {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.pagination-info {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    min-width: 44px;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.pagination-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.pagination-btn-active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    cursor: default;
+    pointer-events: none;
+}
+
+.pagination-btn-prev,
+.pagination-btn-next {
+    padding: 0.625rem 1.25rem;
+}
+
+.pagination-btn i {
+    font-size: 0.75rem;
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+    .pagination-controls {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .pagination-buttons {
+        justify-content: center;
+    }
+    
+    .pagination-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: 40px;
+    }
+    
+    .pagination-btn-prev,
+    .pagination-btn-next {
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-controls {
+        padding: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+    
+    .pagination-buttons {
+        gap: 0.25rem;
+    }
+    
+    .pagination-btn {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.75rem;
+        min-width: 36px;
+    }
+    
+    .pagination-btn-prev,
+    .pagination-btn-next {
+        padding: 0.375rem 0.875rem;
+    }
+    
+    .pagination-btn i {
+        font-size: 0.7rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================ */
+.character-card:focus-within {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.character-image {
+    /* Ensure images are accessible */
+    min-height: 100%;
+    min-width: 100%;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .character-card,
+    .game-cover,
+    .download-btn,
+    .view-btn {
+        transition: none;
+    }
+    
+    .character-card:hover .game-cover {
+        transform: none;
+    }
+    
+    .character-card {
+        animation: none;
+    }
+    
+    .download-btn:hover,
+    .view-btn:hover {
+        transform: none;
+    }
+}

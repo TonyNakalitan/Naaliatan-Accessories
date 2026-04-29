@@ -24,12 +24,29 @@ class UserManagementController extends AbstractController
     }
 
     #[Route('/', name: 'app_admin_user_management_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $users = $this->userRepository->findBy([], ['createdAt' => 'DESC']);
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 4;
+        
+        // Get all users for stats
+        $allUsers = $this->userRepository->findBy([], ['createdAt' => 'DESC']);
+        
+        // Calculate pagination
+        $totalUsers = count($allUsers);
+        $totalPages = ceil($totalUsers / $limit);
+        $offset = ($page - 1) * $limit;
+        
+        // Get paginated users
+        $users = array_slice($allUsers, $offset, $limit);
         
         return $this->render('UserManagementFolder/index.html.twig', [
             'users' => $users,
+            'allUsers' => $allUsers,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalUsers' => $totalUsers,
+            'limit' => $limit,
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
         ]);
     }

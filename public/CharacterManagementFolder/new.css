@@ -237,30 +237,6 @@ body,
     50% { transform: scale(1.1); }
 }
 
-/* Color Input */
-input[type="color"] {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-color: transparent;
-    cursor: pointer;
-}
-
-input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-    border-radius: 12px;
-}
-
-input[type="color"]::-webkit-color-swatch {
-    border: none;
-    border-radius: 12px;
-}
-
-input[type="color"]::-moz-color-swatch {
-    border: none;
-    border-radius: 12px;
-}
-
 /* Drop Zone */
 .drop-zone {
     border: 3px dashed #cbd5e1;
@@ -303,10 +279,28 @@ input[type="color"]::-moz-color-swatch {
     opacity: 0.1;
 }
 
-/* Preview Card */
-.preview-card {
-    position: sticky;
-    top: 2rem;
+/* Color Input */
+input[type="color"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 12px;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 12px;
+}
+
+input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 12px;
 }
 
 /* Animations */
@@ -386,8 +380,50 @@ button:hover::before, .btn:hover::before {
 .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Review Section */
+.review-item {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.review-item:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.1);
+    transform: translateX(4px);
+}
+
+.review-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.review-label::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+.review-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
 }
 
 /* Responsive */

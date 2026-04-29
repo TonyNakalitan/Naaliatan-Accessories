@@ -1,57 +1,79 @@
 $(document).ready(function() {
-    // Check if table has data rows (not just empty state)
-    const tableBody = document.getElementById('productTableBody');
-    const hasData = tableBody && tableBody.querySelectorAll('tr').length > 0 && 
-                    !tableBody.querySelector('td[colspan]');
-    
-    if (hasData) {
-        // Count actual columns in the table
-        const headerCols = $('#myTable thead tr th').length;
-        const firstRowCols = $('#myTable tbody tr:first td').length;
-        
-        // Only initialize if column counts match
-        if (headerCols === firstRowCols) {
-            $('#myTable').DataTable({
-                "pageLength": 10,
-                "ordering": true,
-                "searching": false, // Disable built-in search, we use custom
-                "info": true,
-                "lengthChange": true,
-                "order": [[0, 'desc']], // Sort by ID descending
-                "columnDefs": [
-                    { "orderable": false, "targets": 7 } // Disable sorting on Actions column
-                ]
-            });
-        }
-    }
+    // Initialize product cards functionality
+    initializeProductCards();
 });
 
-// Real-time search filter
-const globalSearch = document.getElementById('globalSearch');
-if (globalSearch) {
-    globalSearch.addEventListener('keyup', function() {
-        const table = $('#myTable').DataTable();
-        if (table) {
-            table.search(this.value).draw();
+function initializeProductCards() {
+    const productsGrid = document.getElementById('productsGrid');
+    if (!productsGrid) return;
+    
+    // Real-time search filter - now triggers server-side pagination
+    const globalSearch = document.getElementById('globalSearch');
+    if (globalSearch) {
+        globalSearch.addEventListener('input', debounce(function() {
+            navigateWithFilters(1);
+        }, 500));
+    }
+    
+    // Status Filter Logic - now triggers server-side pagination
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            navigateWithFilters(1);
+        });
+    }
+    
+    // Handle pagination clicks
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.pagination-btn') && !e.target.closest('.pagination-btn').classList.contains('active')) {
+            e.preventDefault();
+            const page = e.target.closest('.pagination-btn').getAttribute('href').match(/page=(\d+)/);
+            if (page) {
+                navigateWithFilters(parseInt(page[1]));
+            }
         }
     });
 }
 
-// Status Filter Logic
-const statusFilter = document.getElementById('statusFilter');
-if (statusFilter) {
-    statusFilter.addEventListener('change', function() {
-        const selectedStatus = this.value.toLowerCase();
-        const table = $('#myTable').DataTable();
-        
-        if (table) {
-            if (selectedStatus === 'all') {
-                table.column(5).search('').draw();
-            } else {
-                table.column(5).search(selectedStatus).draw();
-            }
-        }
-    });
+function navigateWithFilters(page) {
+    const globalSearch = document.getElementById('globalSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    
+    // Get current URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Update parameters
+    urlParams.set('page', page);
+    
+    // Add search parameter if exists
+    if (globalSearch && globalSearch.value.trim()) {
+        urlParams.set('search', globalSearch.value.trim());
+    } else {
+        urlParams.delete('search');
+    }
+    
+    // Add status parameter if not 'all'
+    if (statusFilter && statusFilter.value !== 'all') {
+        urlParams.set('status', statusFilter.value);
+    } else {
+        urlParams.delete('status');
+    }
+    
+    // Navigate to new URL
+    window.location.href = window.location.pathname + '?' + urlParams.toString();
+}
+
+// Debounce function to limit how often a function can be called
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
 // Delete product function

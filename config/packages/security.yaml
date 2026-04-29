@@ -63,12 +63,15 @@ security:
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/verify-email, roles: PUBLIC_ACCESS }
         - { path: ^/connect/google, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/about, roles: PUBLIC_ACCESS }
         - { path: ^/products, roles: PUBLIC_ACCESS }
         - { path: ^/view-products, roles: PUBLIC_ACCESS }
+        - { path: ^/character, roles: PUBLIC_ACCESS }
         - { path: ^/contact, roles: PUBLIC_ACCESS }
         
         # Admin-only routes (security through obscurity)

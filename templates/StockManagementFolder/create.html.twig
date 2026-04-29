@@ -108,6 +108,38 @@
                                     {% endfor %}
                                 </div>
                                 
+                                <!-- Pagination Controls -->
+                                {% if totalPages > 1 %}
+                                <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <div class="text-sm text-slate-600">
+                                        Showing <span class="font-semibold">{{ products|length }}</span> of <span class="font-semibold">{{ totalProducts }}</span> products
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        {% if currentPage > 1 %}
+                                            <a href="?page={{ currentPage - 1 }}" class="px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% for page in 1..totalPages %}
+                                            {% if page == currentPage %}
+                                                <span class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">{{ page }}</span>
+                                            {% elseif page <= 3 or page >= totalPages - 2 or (page >= currentPage - 1 and page <= currentPage + 1) %}
+                                                <a href="?page={{ page }}" class="px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">{{ page }}</a>
+                                            {% elseif page == 4 or page == totalPages - 3 %}
+                                                <span class="px-2 text-slate-400">...</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if currentPage < totalPages %}
+                                            <a href="?page={{ currentPage + 1 }}" class="px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
                                 <!-- PRO TIP for Step 1 -->
                                 <div class="mt-6 p-3 sm:p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3 sm:gap-4">
                                     <div class="text-amber-500 mt-1 text-sm sm:text-base"><i class="fas fa-lightbulb"></i></div>

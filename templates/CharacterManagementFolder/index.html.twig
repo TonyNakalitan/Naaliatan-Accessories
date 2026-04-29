@@ -1,216 +1,419 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Character Management | Naaliatan{% endblock %}
+{% block title %}Character Management{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('CharacterManagementFolder/index.css?v=' ~ random()) }}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('CharacterManagementFolder/index.css') }}?v={{ random() }}">
 {% endblock %}
 
 {% block body %}
-    <main class="content-area">
-        <header class="top-nav">
-            <div class="search-global">
-                <i class="fas fa-search"></i>
-                <input type="text" id="globalSearch" placeholder="Search characters...">
+<div id="character-app-wrapper" class="min-h-screen">
+
+    <!-- App Wrapper -->
+    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">
+                    Character Management
+                </span>
             </div>
-            <div class="user-widget">
-                <button class="icon-btn"><i class="fas fa-bell"></i></button>
-                <div class="avatar">
+
+            <!-- Search bar -->
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search characters..." class="bg-transparent outline-none text-sm w-full">
+            </div>
+
+            <div class="flex items-center gap-6">
+                {% if isAdmin %}
+                    <a href="{{ path('app_admin_character_management_new') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fa fa-plus mr-2"></i>Add Character
+                    </a>
+                {% elseif isStaff %}
+                    <a href="{{ path('app_staff_character_management_new') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fa fa-plus mr-2"></i>Add Character
+                    </a>
+                {% endif %}
+                <a href="{{ isAdmin ? path('app_admin_profile_edit') : path('app_staff_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        {{ (app.user.displayName ?: app.user.username)|default('A')|slice(0,1)|upper }}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0, 2)|upper }}
+                            {% endif %}
+                        </div>
                     {% endif %}
-                </div>
-                <div class="user-info">
-                    <p class="user-name">{{ app.user.displayName ?: app.user.username }}</p>
-                    <p class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</p>
-                </div>
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ isAdmin ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                </a>
             </div>
         </header>
 
-        <div class="page-container">
-            <div class="page-intro">
-                <div>
-                    <h1 class="page-title">Character Management</h1>
-                    <p class="page-subtitle">Manage hero characters, alignments, and product associations</p>
-                </div>
-            </div>
-
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
-
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endfor %}
-
-            <div class="stats-grid">
-                <div class="stat-card stat-card-blue">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-ninja"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Total Characters</h3>
-                        <p class="value">{{ characters|length }}</p>
-                        <span class="stat-badge">Collection</span>
-                    </div>
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-hidden">
+            
+            <!-- GRID VIEW (The Carousel) -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+                
+                <!-- Carousel at bottom -->
+                <div id="characterCarousel" class="flex gap-8 items-end h-[500px] mb-6">
+                    <!-- Cards injected by JS -->
                 </div>
 
-                <div class="stat-card stat-card-emerald">
-                    <div class="stat-icon">
-                        <i class="fas fa-heart"></i>
+                <!-- Footer Nav -->
+                <div class="flex items-center justify-between pt-4 pb-2">
+                    <div class="flex gap-6 text-sm font-medium text-gray-500">
+                        <span>Total Characters: <span id="totalCount">{{ totalCharacters }}</span></span>
                     </div>
-                    <div class="stat-info">
-                        <h3>Good</h3>
-                        <p class="value">{{ characters|filter(c => c.alignment == 'Good')|length }}</p>
-                        <span class="stat-badge">Alignment</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-purple">
-                    <div class="stat-icon">
-                        <i class="fas fa-balance-scale"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Neutral</h3>
-                        <p class="value">{{ characters|filter(c => c.alignment == 'Neutral')|length }}</p>
-                        <span class="stat-badge">Alignment</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-amber">
-                    <div class="stat-icon">
-                        <i class="fas fa-skull"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Evil</h3>
-                        <p class="value">{{ characters|filter(c => c.alignment == 'Evil')|length }}</p>
-                        <span class="stat-badge">Alignment</span>
+                    <div class="flex gap-4">
+                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="fa fa-chevron-left text-xs"></i> Prev
+                        </button>
+                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="data-panel">
-                <div class="panel-header">
-                    <div class="panel-title-wrapper">
-                        <div class="panel-icon">
-                            <i class="fas fa-id-badge"></i>
+            <!-- DETAIL / HERO VIEW -->
+            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
+                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
+                
+                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
+                    <i class="fa fa-times text-red-500"></i> Close
+                </button>
+
+                <div class="relative z-10 h-full flex items-center px-16">
+                    <!-- Left Side: Large Image with Frame -->
+                    <div class="w-1/2 flex justify-center items-center">
+                        <div class="hero-image-frame">
+                            <img id="heroImage" src="" alt="" class="hero-image">
                         </div>
-                        <span class="panel-title">All Characters</span>
                     </div>
-                    <div class="badge-group">
-                        {% if is_granted('ROLE_ADMIN') %}
-                            <a href="{{ role_path('character_management_new') }}" class="btn-add-character">
-                                <i class="fas fa-plus"></i>
-                                Add Character
-                            </a>
-                        {% endif %}
-                        <select id="alignmentFilter" class="filter-select">
-                            <option value="all">All Alignments</option>
-                            <option value="good">Good</option>
-                            <option value="neutral">Neutral</option>
-                            <option value="evil">Evil</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="table-container">
-                    <table id="myTable" class="character-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Character</th>
-                                <th>Creator</th>
-                                <th>Alignment</th>
-                                <th>Products</th>
-                                <th>Created</th>
-                                <th class="action-column">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="characterTableBody">
-                            {% for character in characters %}
-                                <tr>
-                                    <td>{{ character.id }}</td>
-                                    <td>
-                                        <div class="character-cell">
-                                            <div class="character-image">
-                                                {% if character.image %}
-                                                    <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
-                                                {% else %}
-                                                    <i class="fas fa-user-astronaut"></i>
-                                                {% endif %}
-                                            </div>
-                                            <span class="character-name">{{ character.name }}</span>
-                                        </div>
-                                    </td>
-                                    <td><span class="creator-text">{{ character.creator ?: 'Unknown' }}</span></td>
-                                    <td>
-                                        {% if character.alignment == 'Good' %}
-                                            <span class="alignment-badge alignment-good">
-                                                <i class="fas fa-heart"></i>
-                                                Good
-                                            </span>
-                                        {% elseif character.alignment == 'Evil' %}
-                                            <span class="alignment-badge alignment-evil">
-                                                <i class="fas fa-skull"></i>
-                                                Evil
-                                            </span>
-                                        {% else %}
-                                            <span class="alignment-badge alignment-neutral">
-                                                <i class="fas fa-balance-scale"></i>
-                                                Neutral
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td><span class="product-count">{{ character.products|length }} products</span></td>
-                                    <td>{{ character.createdAt|date('M d, Y') }}</td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <a href="{{ role_path('character_management_show', {'id': character.id}) }}" class="btn-action btn-view" title="View">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            {% if is_granted('ROLE_ADMIN') %}
-                                                <a href="{{ role_path('character_management_edit', {'id': character.id}) }}" class="btn-action btn-edit" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <form method="post" action="{{ role_path('character_management_delete', {'id': character.id}) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this character?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ character.id) }}">
-                                                    <button type="submit" class="btn-action btn-delete" title="Delete">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="7" class="empty-state">
-                                        <i class="fas fa-user-astronaut"></i>
-                                        <p>No characters found</p>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <!-- Right Side: Content -->
+                    <div class="w-1/2 pl-12 pr-8">
+                        <div class="hero-content-wrapper">
+                            <h2 id="heroName" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
+                            
+                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
+                                <div class="meta-item">
+                                    <i class="fa fa-user-circle text-blue-500"></i>
+                                    <span class="meta-label">Creator:</span>
+                                    <span id="heroCreator" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-balance-scale text-purple-500"></i>
+                                    <span class="meta-label">Alignment:</span>
+                                    <span id="heroAlignment" class="alignment-badge"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
+                                <h3 class="description-title">About</h3>
+                                <p id="heroDesc" class="description-text"></p>
+                            </div>
+
+                            <div class="hero-actions slide-in" style="animation-delay: 0.4s">
+                                {% if isAdmin %}
+                                    <a id="heroViewBtn" href="#" class="action-btn action-btn-view">
+                                        <i class="fa fa-eye"></i>
+                                        <span>View Character</span>
+                                    </a>
+                                    <a id="heroEditBtn" href="#" class="action-btn action-btn-primary">
+                                        <i class="fa fa-edit"></i>
+                                        <span>Edit Character</span>
+                                    </a>
+                                    <button id="heroDeleteBtn" onclick="deleteCharacter()" class="action-btn action-btn-danger">
+                                        <i class="fa fa-trash"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                {% elseif isStaff %}
+                                    <a id="heroViewBtn" href="#" class="action-btn action-btn-view">
+                                        <i class="fa fa-eye"></i>
+                                        <span>View Character</span>
+                                    </a>
+                                    <a id="heroEditBtn" href="#" class="action-btn action-btn-primary">
+                                        <i class="fa fa-edit"></i>
+                                        <span>Edit Character</span>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
+
+    <!-- Delete Form Template (hidden) -->
+    <form id="deleteForm" method="POST" style="display: none;">
+        <input type="hidden" name="_token" value="">
+    </form>
+</div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
-    <script src="{{ asset('CharacterManagementFolder/index.js') }}"></script>
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        // Load characters from Symfony - serialize manually to ensure all fields are available
+        const allCharactersData = [
+            {% for char in allCharacters %}
+            {
+                id: {{ char.id }},
+                name: {{ char.name|json_encode|raw }},
+                creator: {{ char.creator|json_encode|raw }},
+                alignment: {{ char.alignment|json_encode|raw }},
+                colorCode: {{ char.colorCode|json_encode|raw }},
+                image: {{ char.image|json_encode|raw }},
+                description: {{ char.description|json_encode|raw }},
+                csrfToken: {{ csrf_token('delete' ~ char.id)|json_encode|raw }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        const isAdmin = {{ isAdmin ? 'true' : 'false' }};
+        const isStaff = {{ isStaff ? 'true' : 'false' }};
+        const baseUrl = '{{ app.request.schemeAndHttpHost }}';
+        const imageBasePath = '{{ asset('images/characters/') }}';
+        
+        console.log('Total characters loaded:', allCharactersData.length);
+        
+        // Transform characters to match the expected format
+        let characters = allCharactersData.map(char => ({
+            id: char.id,
+            name: char.name || 'Unknown',
+            creator: char.creator || 'Unknown',
+            alignment: char.alignment || 'Neutral',
+            colorCode: char.colorCode || '#6c757d',
+            image: char.image ? imageBasePath + char.image : 'https://via.placeholder.com/400x600?text=' + encodeURIComponent(char.name || 'Character'),
+            description: char.description || 'No description available.',
+            csrfToken: char.csrfToken
+        }));
+        
+        let filteredCharacters = [...characters];
+        
+        console.log('Processed characters:', characters);
+
+        let currentIndex = 0;
+        function getVisibleCount() {
+            if (window.innerWidth < 768) return 1;
+            if (window.innerWidth < 1024) return 2;
+            return 3;
+        }
+
+        // Helper function to lighten/darken colors
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#",""), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('characterCarousel');
+            container.innerHTML = '';
+            
+            if (!filteredCharacters || filteredCharacters.length === 0) {
+                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No characters found. <a href="' + (isAdmin ? '{{ path('app_admin_character_management_new') }}' : '{{ path('app_staff_character_management_new') }}') + '" class="text-blue-600 hover:underline">Add one now!</a></div>';
+                updateNavigationButtons();
+                return;
+            }
+
+            const displayed = filteredCharacters.slice(currentIndex, currentIndex + getVisibleCount());
+
+            displayed.forEach((char, index) => {
+                const colorLight = adjustColor(char.colorCode, 30);
+                const colorDark = adjustColor(char.colorCode, -30);
+                
+                const card = document.createElement('div');
+                card.className = `character-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
+                card.style.cssText = `--char-color-light: ${colorLight}; --char-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
+                card.setAttribute('data-color', char.colorCode);
+                
+                card.innerHTML = `
+                    <div class="character-image-wrapper">
+                        <img src="${char.image}" alt="${char.name}" onerror="this.src='https://via.placeholder.com/300x400?text=${encodeURIComponent(char.name)}'">
+                    </div>
+                    <div class="relative z-10 pt-8">
+                        <h3 class="text-4xl font-bold text-white mb-1">${char.name}</h3>
+                        <p class="text-white/70 text-sm mb-4">Creator: ${char.creator}</p>
+                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
+                            View Details >
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => openHero(char);
+                container.appendChild(card);
+            });
+            
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex + getVisibleCount() >= filteredCharacters.length;
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex + getVisibleCount() < filteredCharacters.length) {
+                currentIndex++;
+                renderCarousel();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCarousel();
+            }
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filteredCharacters = characters.filter(char => 
+                    char.name.toLowerCase().includes(searchTerm) ||
+                    char.creator.toLowerCase().includes(searchTerm) ||
+                    char.alignment.toLowerCase().includes(searchTerm)
+                );
+                currentIndex = 0;
+                const totalCountEl = document.getElementById('totalCount');
+                if (totalCountEl) {
+                    totalCountEl.textContent = filteredCharacters.length;
+                }
+                renderCarousel();
+            });
+        }
+
+        let currentCharacter = null;
+        
+        function openHero(char) {
+            currentCharacter = char;
+            const app = document.getElementById('app');
+            const heroBg = document.getElementById('heroBg');
+            const heroImage = document.getElementById('heroImage');
+            const heroName = document.getElementById('heroName');
+            const heroCreator = document.getElementById('heroCreator');
+            const heroAlignment = document.getElementById('heroAlignment');
+            const heroDesc = document.getElementById('heroDesc');
+
+            // Set content
+            const colorLight = adjustColor(char.colorCode, 30);
+            const colorDark = adjustColor(char.colorCode, -30);
+            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
+            
+            heroImage.src = char.image;
+            heroImage.onerror = function() {
+                this.src = 'https://via.placeholder.com/400x600?text=' + encodeURIComponent(char.name);
+            };
+            
+            heroName.innerText = char.name;
+            heroCreator.innerText = char.creator;
+            heroAlignment.innerText = char.alignment;
+            heroAlignment.style.backgroundColor = char.alignment === 'Good' ? '#28a745' : 
+                                                   char.alignment === 'Evil' ? '#dc3545' : '#6c757d';
+            heroDesc.innerText = char.description;
+            
+            // Update action buttons
+            const viewBtn = document.getElementById('heroViewBtn');
+            if (viewBtn) {
+                viewBtn.href = `${baseUrl}/character/${char.id}`;
+            }
+
+            const editBtn = document.getElementById('heroEditBtn');
+            if (editBtn) {
+                const editRoute = isAdmin ? 
+                    `${baseUrl}/admin/characters/${char.id}/edit` : 
+                    `${baseUrl}/staff/characters/${char.id}/edit`;
+                editBtn.href = editRoute;
+            }
+
+            // Trigger animation
+            app.classList.add('hero-active');
+            
+            // Reset text animations
+            const animatedElements = document.querySelectorAll('.slide-in');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight; // trigger reflow
+                el.style.animation = null;
+            });
+        }
+        
+        function deleteCharacter() {
+            if (!currentCharacter || !isAdmin) return;
+            
+            if (confirm(`Are you sure you want to delete "${currentCharacter.name}"?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `${baseUrl}/admin/characters/${currentCharacter.id}`;
+                
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = currentCharacter.csrfToken;
+                
+                form.appendChild(csrfToken);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function closeHero() {
+            document.getElementById('app').classList.remove('hero-active');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, rendering carousel...');
+            renderCarousel();
+            
+            window.addEventListener('resize', function() { renderCarousel(); });
+            
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+                
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 {% endblock %}

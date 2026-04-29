@@ -41,9 +41,13 @@ class ProductType extends AbstractType
                     new NotBlank(message: 'Please enter a product description'),
                 ],
             ])
-            ->add('price', MoneyType::class, [
-                'label' => 'Price (₱)',
-                'currency' => 'PHP',
+            ->add('price', NumberType::class, [
+                'label' => 'Price',
+                'scale' => 2,
+                'attr' => [
+                    'step' => '0.01',
+                    'min' => '0',
+                ],
                 'constraints' => [
                     new NotBlank(message: 'Please enter a price'),
                     new Positive(message: 'Price must be a positive number'),
@@ -56,6 +60,15 @@ class ProductType extends AbstractType
                 'placeholder' => 'Select a character',
                 'constraints' => [
                     new NotBlank(message: 'Please select a character'),
+                ],
+            ])
+            ->add('colorHex', TextType::class, [
+                'label' => 'Color Hex',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'FF6B6B',
+                    'maxlength' => 6,
+                    'pattern' => '[0-9A-Fa-f]{6}',
                 ],
             ])
             ->add('image', FileType::class, [

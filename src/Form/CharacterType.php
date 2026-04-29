@@ -48,14 +48,15 @@ class CharacterType extends AbstractType
             ->add('colorCode', TextType::class, [
                 'label' => 'Color Code (Hex)',
                 'attr' => [
-                    'placeholder' => '#FF5733',
-                    'pattern' => '^#[0-9A-Fa-f]{6}$',
+                    'placeholder' => 'FF5733',
+                    'pattern' => '^#?[0-9A-Fa-f]{6}$',
+                    'maxlength' => '7',
                 ],
                 'constraints' => [
                     new NotBlank(message: 'Please enter a color code'),
                     new Regex(
-                        pattern: '/^#[0-9A-Fa-f]{6}$/',
-                        message: 'Please enter a valid hex color code (e.g., #FF5733)'
+                        pattern: '/^#?[0-9A-Fa-f]{6}$/',
+                        message: 'Please enter a valid hex color code (e.g., FF5733)'
                     ),
                 ],
             ])
