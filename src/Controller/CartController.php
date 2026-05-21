@@ -32,14 +32,14 @@ class CartController extends AbstractController
         return $this->add($product, $request, $cartRepository, $entityManager, 'admin');
     }
 
-    #[Route('/admin/cart/update/{id}', name: 'app_admin_cart_update', methods: ['POST'])]
+    #[Route('/admin/cart/{id}/update', name: 'app_admin_cart_update', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function adminUpdate(CartItem $cartItem, Request $request, EntityManagerInterface $entityManager): Response
     {
         return $this->update($cartItem, $request, $entityManager);
     }
 
-    #[Route('/admin/cart/remove/{id}', name: 'app_admin_cart_remove', methods: ['POST'])]
+    #[Route('/admin/cart/{id}/remove', name: 'app_admin_cart_remove', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function adminRemove(CartItem $cartItem, EntityManagerInterface $entityManager): Response
     {
@@ -68,14 +68,14 @@ class CartController extends AbstractController
         return $this->add($product, $request, $cartRepository, $entityManager, 'staff');
     }
 
-    #[Route('/staff/cart/update/{id}', name: 'app_staff_cart_update', methods: ['POST'])]
+    #[Route('/staff/cart/{id}/update', name: 'app_staff_cart_update', methods: ['POST'])]
     #[IsGranted('ROLE_STAFF')]
     public function staffUpdate(CartItem $cartItem, Request $request, EntityManagerInterface $entityManager): Response
     {
         return $this->update($cartItem, $request, $entityManager);
     }
 
-    #[Route('/staff/cart/remove/{id}', name: 'app_staff_cart_remove', methods: ['POST'])]
+    #[Route('/staff/cart/{id}/remove', name: 'app_staff_cart_remove', methods: ['POST'])]
     #[IsGranted('ROLE_STAFF')]
     public function staffRemove(CartItem $cartItem, EntityManagerInterface $entityManager): Response
     {

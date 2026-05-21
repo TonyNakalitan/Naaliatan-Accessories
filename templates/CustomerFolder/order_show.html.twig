@@ -1,0 +1,486 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Order #{{ order.orderNumber }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/customer_dashboard.css') }}?v={{ random() }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        .page-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .detail-card {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+
+        .detail-card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .detail-card-header i { color: #6366f1; font-size: 0.95rem; }
+        .detail-card-header h3 { margin: 0; font-size: 0.95rem; font-weight: 700; color: #111827; }
+
+        .detail-card-body { padding: 1.25rem 1.5rem; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem 1.5rem;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .info-item span {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #111827;
+            word-break: break-word;
+        }
+
+        /* Order items */
+        .order-item-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .order-item-row:last-child { border-bottom: none; }
+
+        .item-thumb {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: #f3f4f6;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .item-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .item-thumb i { font-size: 1.1rem; color: #d1d5db; }
+
+        .item-info { flex: 1; min-width: 0; }
+        .item-name { font-size: 0.9rem; font-weight: 700; color: #111827; }
+        .item-qty  { font-size: 0.78rem; color: #9ca3af; margin-top: 0.1rem; }
+
+        .item-price { text-align: right; }
+        .item-subtotal { font-size: 0.95rem; font-weight: 700; color: #111827; }
+        .item-unit    { font-size: 0.72rem; color: #9ca3af; }
+
+        /* Total row */
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #f1f5f9;
+            background: #fafafa;
+        }
+        .total-label { font-size: 0.9rem; font-weight: 700; color: #374151; }
+        .total-amount { font-size: 1.2rem; font-weight: 800; color: #111827; }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-pending    { background: #fef9c3; color: #a16207; }
+        .status-completed  { background: #dcfce7; color: #15803d; }
+        .status-cancelled  { background: #fee2e2; color: #b91c1c; }
+        .status-processing { background: #dbeafe; color: #1d4ed8; }
+
+        /* Buttons */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e5e7eb;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-back:hover { background: #f1f5f9; color: #374151; }
+
+        .btn-primary-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(59,130,246,0.3);
+            text-decoration: none;
+        }
+        .btn-primary-sm:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(59,130,246,0.4); color: #fff; }
+        .btn-primary-sm:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-danger-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-danger-sm:hover { background: #fecaca; }
+
+        /* Shipping rows */
+        .ship-row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .ship-field {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            padding: 1rem 1.5rem;
+            border-right: 1px solid #f1f5f9;
+        }
+        .ship-field:last-child { border-right: none; }
+        .ship-icon {
+            font-size: 0.8rem;
+            color: #a5b4fc;
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+        .ship-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.2rem;
+        }
+        .ship-value {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #111827;
+            word-break: break-word;
+        }
+
+        /* Payment status */
+        .payment-status {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.85rem 1.1rem;
+            border-radius: 12px;
+            border: 1px solid #c7d2fe;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard-app-wrapper" class="min-h-screen">
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ path('app_customer_dashboard') }}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ path('app_customer_characters') }}" class="nav-item">
+                <i class="fas fa-user-astronaut"></i>
+                <span>Browse Products</span>
+            </a>
+            <a href="{{ path('app_customer_cart') }}" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>My Cart</span>
+            </a>
+            <a href="{{ path('app_customer_orders') }}" class="nav-item active">
+                <i class="fas fa-shopping-bag"></i>
+                <span>My Orders</span>
+            </a>
+            <a href="{{ path('app_customer_profile') }}" class="nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <div id="app" class="relative w-full h-screen glass-container flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">Order #{{ order.orderNumber }}</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ path('app_customer_profile') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                    {% else %}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0,2)|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Customer</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto page-content">
+
+            <!-- Back + status row -->
+            <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+                <a href="{{ path('app_customer_orders') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Orders
+                </a>
+                <span class="status-badge status-{{ order.status }}">
+                    {% if order.status == 'pending' %}<i class="fas fa-clock"></i>
+                    {% elseif order.status == 'completed' %}<i class="fas fa-check-circle"></i>
+                    {% elseif order.status == 'cancelled' %}<i class="fas fa-times-circle"></i>
+                    {% else %}<i class="fas fa-spinner"></i>
+                    {% endif %}
+                    {{ order.status|capitalize }}
+                </span>
+            </div>
+
+            <!-- Order summary card -->
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <i class="fas fa-receipt"></i>
+                    <h3>Order Summary</h3>
+                </div>
+                <div class="detail-card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Order Number</label>
+                            <span>#{{ order.orderNumber }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Date Placed</label>
+                            <span>{{ order.createdAt ? order.createdAt|date('F j, Y H:i') : 'N/A' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Items</label>
+                            <span>{{ order.orderItems|length }} item{{ order.orderItems|length != 1 ? 's' : '' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Total Amount</label>
+                            <span>₱{{ order.totalAmount|number_format(2) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping details card -->
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>Shipping Details</h3>
+                </div>
+                <div class="detail-card-body" style="padding:0;">
+                    <div class="ship-row">
+                        <div class="ship-field">
+                            <i class="fas fa-user ship-icon"></i>
+                            <div>
+                                <div class="ship-label">Name</div>
+                                <div class="ship-value">{{ order.customerName }}</div>
+                            </div>
+                        </div>
+                        <div class="ship-field">
+                            <i class="fas fa-phone ship-icon"></i>
+                            <div>
+                                <div class="ship-label">Phone</div>
+                                <div class="ship-value">{{ order.phoneNumber }}</div>
+                            </div>
+                        </div>
+                        <div class="ship-field">
+                            <i class="fas fa-truck ship-icon"></i>
+                            <div>
+                                <div class="ship-label">Delivery Type</div>
+                                <div class="ship-value">{{ order.deliveryType }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ship-row" style="border-top:1px solid #f1f5f9;">
+                        <div class="ship-field" style="flex:2;">
+                            <i class="fas fa-map-marker-alt ship-icon"></i>
+                            <div>
+                                <div class="ship-label">Address</div>
+                                <div class="ship-value">{{ order.customerAddress }}</div>
+                            </div>
+                        </div>
+                        <div class="ship-field">
+                            <i class="fas fa-city ship-icon"></i>
+                            <div>
+                                <div class="ship-label">City</div>
+                                <div class="ship-value">{{ order.city }}</div>
+                            </div>
+                        </div>
+                        <div class="ship-field">
+                            <i class="fas fa-map ship-icon"></i>
+                            <div>
+                                <div class="ship-label">Province</div>
+                                <div class="ship-value">{{ order.province }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items card -->
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>Items Ordered</h3>
+                </div>
+                <div class="detail-card-body" style="padding-top:0.5rem;padding-bottom:0.5rem;">
+                    {% for item in order.orderItems %}
+                        <div class="order-item-row">
+                            <div class="item-thumb">
+                                {% if item.product and item.product.image %}
+                                    <img src="{{ asset('images/products/' ~ item.product.image) }}" alt="{{ item.product.name }}" onerror="this.parentElement.innerHTML='<i class=\'fas fa-box\'></i>'">
+                                {% else %}
+                                    <i class="fas fa-box"></i>
+                                {% endif %}
+                            </div>
+                            <div class="item-info">
+                                <div class="item-name">{{ item.product ? item.product.name : 'Unknown product' }}</div>
+                                <div class="item-qty">Qty: {{ item.quantity }} &nbsp;·&nbsp; Unit price: ₱{{ item.unitPrice|number_format(2) }}</div>
+                            </div>
+                            <div class="item-price">
+                                <div class="item-subtotal">₱{{ item.subtotal|number_format(2) }}</div>
+                                <div class="item-unit">subtotal</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="total-row">
+                    <span class="total-label">Order Total</span>
+                    <span class="total-amount">₱{{ order.totalAmount|number_format(2) }}</span>
+                </div>
+            </div>
+
+            <!-- Actions card -->
+            {% if order.status == 'pending' %}
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Actions</h3>
+                </div>
+                <div class="detail-card-body" style="display:flex;flex-wrap:wrap;gap:0.75rem;">
+                    <form action="{{ path('app_customer_order_cancel', {'id': order.id}) }}" method="post" style="margin:0;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cancel_order_' ~ order.id) }}" />
+                        <button type="submit" class="btn-danger-sm">
+                            <i class="fas fa-times-circle"></i> Cancel Order
+                        </button>
+                    </form>
+                    <form action="{{ path('app_customer_order_pay', {'id': order.id}) }}" method="post" style="margin:0;"
+                          onsubmit="return confirm('Confirm payment for this order?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('pay_order_' ~ order.id) }}" />
+                        <input type="hidden" name="payment_method" value="card" />
+                        <button type="submit" class="btn-primary-sm">
+                            <i class="fas fa-credit-card"></i> Pay Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        });
+    </script>
+{% endblock %}

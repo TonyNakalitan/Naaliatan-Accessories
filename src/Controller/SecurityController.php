@@ -27,8 +27,10 @@ class SecurityController extends AbstractController
             // Redirect to role-based dashboard
             if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
                 return $this->redirectToRoute('app_admin_dashboard');
-            } else {
+            } elseif (in_array('ROLE_STAFF', $user->getRoles(), true)) {
                 return $this->redirectToRoute('app_staff_dashboard');
+            } elseif (in_array('ROLE_CUSTOMER', $user->getRoles(), true)) {
+                return $this->redirectToRoute('app_customer_dashboard');
             }
         }
 
@@ -120,8 +122,8 @@ class SecurityController extends AbstractController
                 )
             );
 
-            // Set default role as staff for new registrations
-            $user->setRoles(['ROLE_STAFF']);
+            // Set default role as customer for new registrations
+            $user->setRoles(['ROLE_CUSTOMER']);
             
             // User is not verified yet
             $user->setIsVerified(false);

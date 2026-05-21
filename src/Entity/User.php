@@ -78,6 +78,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:write'])]
     private bool $isActive = true;
 
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['user:read'])]
+    private bool $isOnline = false;
+
     #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['user:read'])]
     private ?string $provider = 'local';
@@ -234,6 +238,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+        return $this;
+    }
+
+    public function isOnline(): bool
+    {
+        return $this->isOnline;
+    }
+
+    public function setIsOnline(bool $isOnline): static
+    {
+        $this->isOnline = $isOnline;
         return $this;
     }
 

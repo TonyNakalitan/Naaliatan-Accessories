@@ -14,7 +14,7 @@
 <div id="product-app-wrapper" class="min-h-screen">
 
     <!-- App Wrapper -->
-    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
         
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
@@ -36,10 +36,6 @@
             <div class="flex items-center gap-6">
                 {% if isAdmin %}
                     <a href="{{ path('app_admin_product_management_new') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        <i class="fa fa-plus mr-2"></i>Add Product
-                    </a>
-                {% elseif isStaff %}
-                    <a href="{{ path('app_staff_product_management_new') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                         <i class="fa fa-plus mr-2"></i>Add Product
                     </a>
                 {% endif %}
@@ -66,7 +62,7 @@
         </header>
 
         <!-- Viewport -->
-        <main class="relative flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-x-auto">
             
             <!-- GRID VIEW (The Carousel) -->
             <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
@@ -79,7 +75,7 @@
                 <!-- Footer Nav -->
                 <div class="flex items-center justify-between pt-4 pb-2">
                     <div class="flex gap-6 text-sm font-medium text-gray-500">
-                        <span>Total Products: <span id="totalCount">{{ products|length }}</span></span>
+                        <span>Total Products: <span id="totalCount">{{ totalProducts }}</span></span>
                         <span>Low Stock: <span class="text-amber-600 font-bold">{{ products|filter(p => p.stockQuantity > 0 and p.stockQuantity < 10)|length }}</span></span>
                         <span>In Stock: <span class="text-emerald-600 font-bold">{{ products|filter(p => p.stockQuantity > 0)|length }}</span></span>
                     </div>
@@ -144,6 +140,10 @@
                             </div>
 
                             <div class="hero-actions slide-in" style="animation-delay: 0.4s">
+                                <a id="heroViewBtn" href="#" class="action-btn action-btn-view">
+                                    <i class="fa fa-eye"></i>
+                                    <span>View Product</span>
+                                </a>
                                 <a id="heroEditBtn" href="#" class="action-btn action-btn-primary">
                                     <i class="fa fa-edit"></i>
                                     <span>Edit Product</span>
@@ -242,7 +242,7 @@
             container.innerHTML = '';
             
             if (!filteredProducts || filteredProducts.length === 0) {
-                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No products found. <a href="' + (isAdmin ? '{{ path('app_admin_product_management_new') }}' : '{{ path('app_staff_product_management_new') }}') + '" class="text-blue-600 hover:underline">Add one now!</a></div>';
+                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No products found.' + (isAdmin ? ' <a href="{{ path('app_admin_product_management_new') }}" class="text-blue-600 hover:underline">Add one now!</a>' : '') + '</div>';
                 updateNavigationButtons();
                 return;
             }
@@ -362,6 +362,14 @@
             heroDesc.innerText = prod.description;
             
             // Update action buttons
+            const viewBtn = document.getElementById('heroViewBtn');
+            if (viewBtn) {
+                const viewRoute = isAdmin ?
+                    `${baseUrl}/admin/products/${prod.id}` :
+                    `${baseUrl}/staff/products/${prod.id}`;
+                viewBtn.href = viewRoute;
+            }
+
             const editBtn = document.getElementById('heroEditBtn');
             if (editBtn) {
                 const editRoute = isAdmin ? 

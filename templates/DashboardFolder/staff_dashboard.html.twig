@@ -13,58 +13,8 @@
 {% block body %}
 <div id="dashboard-app-wrapper" class="min-h-screen">
 
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
-        </div>
-        <nav class="sidebar-nav">
-            <a href="{{ path('app_staff_dashboard') }}" class="nav-item active">
-                <i class="fas fa-chart-line"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ path('app_staff_product_management_index') }}" class="nav-item">
-                <i class="fas fa-box-open"></i>
-                <span>Products</span>
-            </a>
-            <a href="{{ path('app_staff_stock_management_index') }}" class="nav-item">
-                <i class="fas fa-warehouse"></i>
-                <span>Stock Control</span>
-            </a>
-            <a href="{{ path('app_staff_order_index') }}" class="nav-item">
-                <i class="fas fa-shopping-bag"></i>
-                <span>Orders</span>
-            </a>
-            <a href="{{ path('app_staff_item_management_index') }}" class="nav-item">
-                <i class="fas fa-boxes"></i>
-                <span>Items</span>
-            </a>
-            <a href="{{ path('app_staff_cart_index') }}" class="nav-item">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Cart</span>
-            </a>
-            <a href="{{ path('app_staff_character_management_index') }}" class="nav-item">
-                <i class="fas fa-id-badge"></i>
-                <span>Characters</span>
-            </a>
-        </nav>
-        <div class="sidebar-footer">
-            <a href="{{ path('app_staff_profile_edit') }}" class="nav-item">
-                <i class="fas fa-user-circle"></i>
-                <span>My Profile</span>
-            </a>
-            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </a>
-        </div>
-    </aside>
-
     <!-- App Wrapper -->
-    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
         
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
@@ -107,7 +57,7 @@
         </header>
 
         <!-- Viewport -->
-        <main class="relative flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-x-auto">
             
             <!-- GRID VIEW (The Carousel) -->
             <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">

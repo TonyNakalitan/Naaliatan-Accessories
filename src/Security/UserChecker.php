@@ -19,6 +19,11 @@ class UserChecker implements UserCheckerInterface
         if (!$user->isActive()) {
             throw new CustomUserMessageAccountStatusException('Your account has been deactivated. Please contact an administrator for assistance.');
         }
+
+        // Block login if email is not verified
+        if (!$user->isVerified()) {
+            throw new CustomUserMessageAccountStatusException('email_not_verified::' . $user->getEmail());
+        }
     }
 
     public function checkPostAuth(UserInterface $user, ?\Symfony\Component\Security\Core\Authentication\Token\TokenInterface $token = null): void

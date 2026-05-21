@@ -87,12 +87,16 @@ class GoogleAuthenticator extends OAuth2Authenticator implements AuthenticationE
         $user = $token->getUser();
 
         if ($user instanceof User) {
-            // All authenticated users go to the same dashboard
-            // The dashboard will handle role-based display
-            return new RedirectResponse($this->router->generate('app_dashboard'));
+            $user->setIsOnline(true);
+            $this->entityManager->flush();
+
+            if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+                return new RedirectResponse($this->router->generate('app_admin_dashboard'));
+            }
+            return new RedirectResponse($this->router->generate('app_staff_dashboard'));
         }
 
-        return new RedirectResponse($this->router->generate('app_home'));
+        return new RedirectResponse($this->router->generate('app_login'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response

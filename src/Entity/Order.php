@@ -84,6 +84,14 @@ class Order
     #[Groups(['order:read', 'order:write'])]
     private ?string $phoneNumber = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['order:read', 'order:write'])]
+    private ?string $paymentMethod = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[Groups(['order:read', 'order:write'])]
+    private ?\DateTimeImmutable $paidAt = null;
+
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'orderRef', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[Groups(['order:read', 'order:write'])]
     private Collection $orderItems;
@@ -277,6 +285,28 @@ class Order
     public function setPhoneNumber(string $phoneNumber): static
     {
         $this->phoneNumber = $phoneNumber;
+        return $this;
+    }
+
+    public function getPaymentMethod(): ?string
+    {
+        return $this->paymentMethod;
+    }
+
+    public function setPaymentMethod(?string $paymentMethod): static
+    {
+        $this->paymentMethod = $paymentMethod;
+        return $this;
+    }
+
+    public function getPaidAt(): ?\DateTimeImmutable
+    {
+        return $this->paidAt;
+    }
+
+    public function setPaidAt(?\DateTimeImmutable $paidAt): static
+    {
+        $this->paidAt = $paidAt;
         return $this;
     }
 }

@@ -1,9 +1,7 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         app_user_provider:
             entity:
@@ -12,9 +10,9 @@ security:
 
     firewalls:
         dev:
-            # Ensure dev tools and static assets are always allowed
-            pattern: ^/(_profiler|_wdt|assets|build)/
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
         api_login:
             pattern: ^/api/login
             stateless: true
@@ -24,72 +22,85 @@ security:
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        api_public:
+            pattern: ^/api/(login|register|characters|products)
+            stateless: true
+            security: false
+
         api:
             pattern: ^/api
             stateless: true
             jwt: ~
+
         main:
             lazy: true
             provider: app_user_provider
             user_checker: App\Security\UserChecker
+            entry_point: App\Security\GoogleAuthenticator
             custom_authenticators:
-                - App\Security\LoginFormAuthenticator
                 - App\Security\GoogleAuthenticator
-            entry_point: App\Security\LoginFormAuthenticator
             form_login:
                 login_path: app_login
                 check_path: app_login
-                username_parameter: _username
-                password_parameter: _password
                 enable_csrf: true
-                csrf_parameter: _csrf_token
-                csrf_token_id: authenticate
                 default_target_path: app_dashboard
                 always_use_default_target_path: true
-                use_referer: false
             logout:
                 path: app_logout
                 target: app_home
-                invalidate_session: true
-                delete_cookies:
-                    - SymfonySESSID
-                    - REMEMBERME
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
 
-    # Note: Only the *first* matching rule is applied
     access_control:
         # Public routes
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/cart$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/characters, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/products, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/connect, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/verify-email, roles: PUBLIC_ACCESS }
-        - { path: ^/connect/google, roles: PUBLIC_ACCESS }
+        - { path: ^/verify/resend, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
-        - { path: ^/about, roles: PUBLIC_ACCESS }
-        - { path: ^/products, roles: PUBLIC_ACCESS }
-        - { path: ^/view-products, roles: PUBLIC_ACCESS }
-        - { path: ^/character, roles: PUBLIC_ACCESS }
-        - { path: ^/contact, roles: PUBLIC_ACCESS }
-        
-        # Admin-only routes (security through obscurity)
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        
-        # Staff routes (security through obscurity)
-        - { path: ^/staff, roles: ROLE_STAFF }
-        
-        # Fallback - require authentication for everything else
-        - { path: ^/, roles: ROLE_USER }
 
-when@test:
-    security:
-        password_hashers:
-            # Password hashers are resource-intensive by design to ensure security.
-            # In tests, it's safe to reduce their cost to improve performance.
-            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-                algorithm: auto
-                cost: 4 # Lowest possible value for bcrypt
-                time_cost: 3 # Lowest possible value for argon
-                memory_cost: 10 # Lowest possible value for argon
+        # Admin-only routes
+        - { path: ^/admin/dashboard, roles: ROLE_ADMIN }
+        - { path: ^/admin/user-management, roles: ROLE_ADMIN }
+        - { path: ^/admin/orders, roles: ROLE_ADMIN }
+        - { path: ^/admin/cart, roles: ROLE_ADMIN }
+        - { path: ^/admin/product-management, roles: ROLE_ADMIN }
+        - { path: ^/admin/products, roles: ROLE_ADMIN }
+        - { path: ^/admin/stock-management, roles: ROLE_ADMIN }
+        - { path: ^/admin/activity-logs, roles: ROLE_ADMIN }
+        - { path: ^/admin/payment-management, roles: ROLE_ADMIN }
+        - { path: ^/admin/settings, roles: ROLE_ADMIN }
+        - { path: ^/admin/profile, roles: ROLE_ADMIN }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # Customer routes
+        - { path: ^/customer, roles: ROLE_CUSTOMER }
+
+        # Staff-only routes
+        - { path: ^/staff/dashboard, roles: ROLE_STAFF }
+        - { path: ^/staff/orders, roles: ROLE_STAFF }
+        - { path: ^/staff/cart, roles: ROLE_STAFF }
+        - { path: ^/staff/product-management, roles: ROLE_STAFF }
+        - { path: ^/staff/stock-management, roles: ROLE_STAFF }
+        - { path: ^/staff/activity-logs, roles: ROLE_STAFF }
+        - { path: ^/staff/payment-management, roles: ROLE_STAFF }
+        - { path: ^/staff/settings, roles: ROLE_STAFF }
+        - { path: ^/staff/profile, roles: ROLE_STAFF }
+        - { path: ^/staff, roles: ROLE_STAFF }
+
+    role_hierarchy:
+        ROLE_CUSTOMER: ROLE_USER
+        ROLE_STAFF: ROLE_USER
+        ROLE_ADMIN: [ROLE_STAFF, ROLE_CUSTOMER, ROLE_USER]
+    

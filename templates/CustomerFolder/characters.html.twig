@@ -1,0 +1,399 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Browse Products{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/customer_dashboard.css') }}?v={{ random() }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        .page-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        /* Search bar */
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 0.6rem 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            flex: 1;
+            max-width: 420px;
+        }
+        .search-wrap input {
+            border: none;
+            outline: none;
+            font-size: 0.9rem;
+            width: 100%;
+            color: #374151;
+        }
+
+        /* Character cards */
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .char-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #f1f5f9;
+        }
+        .char-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+        }
+
+        .char-card-top {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .char-card-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            border: 3px solid rgba(255,255,255,0.7);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        .char-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .char-alignment-badge {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.2rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.45);
+            backdrop-filter: blur(6px);
+        }
+
+        .char-card-body {
+            padding: 1.1rem 1.25rem 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .char-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .char-creator {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .char-desc {
+            font-size: 0.8rem;
+            color: #6b7280;
+            line-height: 1.55;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .char-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .char-products-count {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .btn-view {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 1rem;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.25);
+        }
+        .btn-view:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(59,130,246,0.4);
+            color: #fff;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .page-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: #6b7280;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        .page-btn:hover { background: #f3f4f6; color: #111827; }
+        .page-btn.active { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(59,130,246,0.35); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #9ca3af;
+        }
+        .empty-state i { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.4; }
+        .empty-state h3 { font-size: 1.1rem; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard-app-wrapper" class="min-h-screen">
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ path('app_customer_dashboard') }}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ path('app_customer_characters') }}" class="nav-item active">
+                <i class="fas fa-user-astronaut"></i>
+                <span>Browse Products</span>
+            </a>
+            <a href="{{ path('app_customer_cart') }}" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>My Cart</span>
+                {% set cartCount = app.user.cart ? app.user.cart.cartItems|length : 0 %}
+                {% if cartCount > 0 %}
+                    <span class="nav-badge">{{ cartCount }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('app_customer_orders') }}" class="nav-item">
+                <i class="fas fa-shopping-bag"></i>
+                <span>My Orders</span>
+            </a>
+            <a href="{{ path('app_customer_profile') }}" class="nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <div id="app" class="relative w-full h-screen glass-container flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">Browse Products</span>
+            </div>
+
+            <form method="get" class="search-wrap">
+                <i class="fas fa-search text-gray-400"></i>
+                <input type="text" name="search" value="{{ app.request.query.get('search') }}" placeholder="Search characters...">
+                <button type="submit" style="background:none;border:none;cursor:pointer;color:#3b82f6;font-size:0.85rem;font-weight:600;white-space:nowrap;">Search</button>
+            </form>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ path('app_customer_profile') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                    {% else %}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0,2)|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Customer</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto page-content">
+
+            <!-- Stats bar -->
+            <div class="flex items-center gap-6 mb-6 text-sm text-gray-500 font-medium">
+                <span><span class="text-gray-800 font-bold">{{ totalChars }}</span> characters total</span>
+                {% if app.request.query.get('search') %}
+                    <span>Searching: "<span class="text-blue-600 font-semibold">{{ app.request.query.get('search') }}</span>"</span>
+                    <a href="{{ path('app_customer_characters') }}" class="text-red-400 hover:text-red-600 transition-colors text-xs">
+                        <i class="fas fa-times mr-1"></i>Clear
+                    </a>
+                {% endif %}
+            </div>
+
+            {% if characters is empty %}
+                <div class="empty-state">
+                    <i class="fas fa-user-astronaut"></i>
+                    <h3>No characters found</h3>
+                    <p>Try a different search term.</p>
+                </div>
+            {% else %}
+                <div class="char-grid">
+                    {% for character in characters %}
+                        {% set alignColor = character.alignment == 'Good' ? '#10b981' : (character.alignment == 'Evil' ? '#ef4444' : '#6b7280') %}
+                        <a href="{{ path('app_customer_character_show', {'id': character.id}) }}" class="char-card">
+                            <div class="char-card-top" style="background: linear-gradient(160deg, {{ character.colorCode }}dd, {{ character.colorCode }}88);">
+                                <span class="char-alignment-badge">{{ character.alignment }}</span>
+                                <div class="char-card-avatar" style="background: rgba(0,0,0,0.15);">
+                                    {% if character.image %}
+                                        <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
+                                    {% else %}
+                                        {{ character.name|slice(0,1)|upper }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="char-card-body">
+                                <div class="char-name">{{ character.name }}</div>
+                                <div class="char-creator"><i class="fas fa-pen-nib"></i>{{ character.creator }}</div>
+                                <div class="char-desc">{{ character.description|striptags }}</div>
+                                <div class="char-footer">
+                                    <span class="char-products-count">
+                                        <i class="fas fa-box"></i>
+                                        {{ character.products|length }} product{{ character.products|length != 1 ? 's' : '' }}
+                                    </span>
+                                    <span class="btn-view">View <i class="fas fa-arrow-right"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+
+                {% if totalPages > 1 %}
+                    <div class="pagination">
+                        {% if currentPage > 1 %}
+                            <a href="?page={{ currentPage - 1 }}{% if app.request.query.get('search') %}&search={{ app.request.query.get('search') }}{% endif %}" class="page-btn">
+                                <i class="fas fa-chevron-left text-xs"></i>
+                            </a>
+                        {% endif %}
+                        {% for page in 1..totalPages %}
+                            <a href="?page={{ page }}{% if app.request.query.get('search') %}&search={{ app.request.query.get('search') }}{% endif %}" class="page-btn {{ page == currentPage ? 'active' : '' }}">{{ page }}</a>
+                        {% endfor %}
+                        {% if currentPage < totalPages %}
+                            <a href="?page={{ currentPage + 1 }}{% if app.request.query.get('search') %}&search={{ app.request.query.get('search') }}{% endif %}" class="page-btn">
+                                <i class="fas fa-chevron-right text-xs"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        });
+    </script>
+{% endblock %}
+

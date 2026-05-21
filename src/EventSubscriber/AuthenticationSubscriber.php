@@ -32,6 +32,9 @@ class AuthenticationSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $user->setIsOnline(true);
+        $this->entityManager->persist($user);
+
         // Log the login activity
         $activityLog = new ActivityLog();
         $activityLog->setUser($user);
@@ -57,6 +60,9 @@ class AuthenticationSubscriber implements EventSubscriberInterface
         if (!$user instanceof User) {
             return;
         }
+
+        $user->setIsOnline(false);
+        $this->entityManager->persist($user);
 
         // Log the logout activity
         $activityLog = new ActivityLog();

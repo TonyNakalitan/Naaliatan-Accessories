@@ -14,7 +14,7 @@
 <div id="cart-app-wrapper" class="min-h-screen">
 
     <!-- App Wrapper -->
-    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
         
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
@@ -57,7 +57,7 @@
         </header>
 
         <!-- Viewport -->
-        <main class="relative flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-x-auto">
             
             <!-- GRID VIEW (The Carousel) -->
             <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
@@ -100,24 +100,12 @@
                 </button>
 
                 <div class="relative z-10 h-full flex items-center px-16">
-                    <!-- Left Side: Item Card -->
+                    <!-- Left Side: Large Image with Frame -->
                     <div class="w-1/2 flex justify-center items-center">
-                        <div class="hero-cart-card">
-                            <div class="cart-card-header">
-                                <div class="cart-card-image" id="heroItemImage">
+                        <div class="hero-image-frame">
+                            <div id="heroImageContainer" class="w-full h-full">
+                                <div class="hero-image-placeholder">
                                     <i class="fas fa-box text-6xl"></i>
-                                </div>
-                                <h3 id="heroItemName" class="text-3xl font-bold mb-2"></h3>
-                                <span id="heroItemCategory" class="category-badge-hero"></span>
-                            </div>
-                            <div class="cart-card-body">
-                                <div class="price-info-hero">
-                                    <div class="price-label">Unit Price</div>
-                                    <div id="heroItemPrice" class="price-value"></div>
-                                </div>
-                                <div class="stock-info-hero">
-                                    <i class="fas fa-box"></i>
-                                    <span id="heroItemStock"></span>
                                 </div>
                             </div>
                         </div>
@@ -126,21 +114,26 @@
                     <!-- Right Side: Content -->
                     <div class="w-1/2 pl-12 pr-8">
                         <div class="hero-content-wrapper">
-                            <h2 class="hero-title slide-in" style="animation-delay: 0.1s">Item Details</h2>
+                            <h2 id="heroName" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
                             
                             <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
                                 <div class="meta-item">
-                                    <i class="fa fa-shopping-cart text-blue-500"></i>
+                                    <i class="fa fa-tag text-blue-500"></i>
+                                    <span class="meta-label">Category:</span>
+                                    <span id="heroCategory" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-shopping-cart text-emerald-500"></i>
                                     <span class="meta-label">Quantity:</span>
                                     <span id="heroQuantity" class="meta-value"></span>
                                 </div>
                                 <div class="meta-item">
-                                    <i class="fa fa-coins text-emerald-500"></i>
+                                    <i class="fa fa-coins text-purple-500"></i>
                                     <span class="meta-label">Unit Price:</span>
                                     <span id="heroUnitPrice" class="meta-value"></span>
                                 </div>
                                 <div class="meta-item">
-                                    <i class="fa fa-calculator text-purple-500"></i>
+                                    <i class="fa fa-calculator text-orange-500"></i>
                                     <span class="meta-label">Subtotal:</span>
                                     <span id="heroSubtotal" class="meta-value"></span>
                                 </div>
@@ -152,7 +145,7 @@
                             </div>
 
                             <div class="hero-actions slide-in" style="animation-delay: 0.4s">
-                                <form id="heroUpdateForm" method="POST" class="flex items-center gap-3 mb-4">
+                                <form id="heroUpdateForm" method="POST" class="flex items-center gap-3 mb-4 w-full">
                                     <button type="button" class="qty-btn-hero" onclick="decrementHeroQty()">
                                         <i class="fas fa-minus"></i>
                                     </button>
@@ -243,14 +236,14 @@
                 card.setAttribute('data-color', item.colorCode);
                 
                 card.innerHTML = `
-                    <div class="cart-icon-wrapper">
-                        ${item.productImage ? 
-                            `<img src="${item.productImage}" alt="${item.productName}" class="w-full h-full object-cover rounded-2xl">` :
-                            '<i class="fas fa-box"></i>'
+                    <div class="cart-image-wrapper">
+                        ${item.productImage
+                            ? `<img src="${item.productImage}" alt="${item.productName}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-box\\'></i>'">`
+                            : '<i class="fas fa-box"></i>'
                         }
                     </div>
                     <div class="relative z-10 pt-8">
-                        <h3 class="text-2xl font-bold text-white mb-1">${item.productName}</h3>
+                        <h3 class="text-4xl font-bold text-white mb-1">${item.productName}</h3>
                         <p class="text-white/70 text-sm mb-1">${item.productCategory}</p>
                         <p class="text-white/90 text-lg font-semibold mb-2">₱${parseFloat(item.productPrice).toFixed(2)} × ${item.quantity}</p>
                         <p class="text-white/60 text-xs mb-4">Subtotal: ₱${parseFloat(item.subtotal).toFixed(2)}</p>
@@ -318,18 +311,16 @@
             const colorDark = adjustColor(item.colorCode, -30);
             heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
             
-            // Set image
-            const heroImage = document.getElementById('heroItemImage');
+            // Set image in frame
+            const heroImageContainer = document.getElementById('heroImageContainer');
             if (item.productImage) {
-                heroImage.innerHTML = `<img src="${item.productImage}" alt="${item.productName}">`;
+                heroImageContainer.innerHTML = `<img src="${item.productImage}" alt="${item.productName}" class="hero-image" onerror="this.parentElement.innerHTML='<div class=\\'hero-image-placeholder\\'><i class=\\'fas fa-box text-6xl\\'></i></div>'">`;
             } else {
-                heroImage.innerHTML = '<i class="fas fa-box text-6xl"></i>';
+                heroImageContainer.innerHTML = '<div class="hero-image-placeholder"><i class="fas fa-box text-6xl"></i></div>';
             }
             
-            document.getElementById('heroItemName').innerText = item.productName;
-            document.getElementById('heroItemCategory').innerText = item.productCategory;
-            document.getElementById('heroItemPrice').innerText = '₱' + parseFloat(item.productPrice).toFixed(2);
-            document.getElementById('heroItemStock').innerText = `Stock: ${item.stockQuantity} units`;
+            document.getElementById('heroName').innerText = item.productName;
+            document.getElementById('heroCategory').innerText = item.productCategory;
             document.getElementById('heroQuantity').innerText = item.quantity;
             document.getElementById('heroUnitPrice').innerText = '₱' + parseFloat(item.productPrice).toFixed(2);
             document.getElementById('heroSubtotal').innerText = '₱' + parseFloat(item.subtotal).toFixed(2);
@@ -364,7 +355,7 @@
             const animatedElements = document.querySelectorAll('.slide-in');
             animatedElements.forEach(el => {
                 el.style.animation = 'none';
-                el.offsetHeight; // trigger reflow
+                el.offsetHeight;
                 el.style.animation = null;
             });
         }

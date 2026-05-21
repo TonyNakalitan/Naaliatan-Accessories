@@ -21,8 +21,9 @@ class GoogleController extends AbstractController
     }
 
     #[Route('/connect/google/check', name: 'connect_google_check')]
-    public function connectCheckAction(Request $request, ClientRegistry $clientRegistry)
+    public function connectCheckAction(Request $request, ClientRegistry $clientRegistry): \Symfony\Component\HttpFoundation\Response
     {
-        // This method can be empty - it will be intercepted by the GoogleAuthenticator
+        // This method is intercepted by the GoogleAuthenticator
+        return new \Symfony\Component\HttpFoundation\Response('', 200);
     }
 }

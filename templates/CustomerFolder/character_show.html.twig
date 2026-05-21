@@ -1,0 +1,404 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ character.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/customer_dashboard.css') }}?v={{ random() }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        .page-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        /* Character hero */
+        .char-hero {
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            display: flex;
+            min-height: 200px;
+            background: #fff;
+        }
+
+        .char-hero-accent {
+            width: 220px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .char-hero-accent-icon {
+            width: 110px;
+            height: 110px;
+            border-radius: 24px;
+            border: 4px solid rgba(255,255,255,0.6);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        .char-hero-accent-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+        .char-hero-body {
+            flex: 1;
+            padding: 1.75rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid #f3f4f6;
+        }
+
+        .char-hero-name {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+        }
+
+        .char-hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .char-meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .char-hero-desc {
+            color: #6b7280;
+            font-size: 0.88rem;
+            line-height: 1.75;
+            max-width: 680px;
+        }
+
+        /* Products grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .product-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 32px rgba(0,0,0,0.13);
+        }
+
+        .product-card-img {
+            height: 160px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .product-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-card-img i { font-size: 3rem; color: #d1d5db; }
+
+        .product-card-body {
+            padding: 1.1rem 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.4rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-desc {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            line-height: 1.5;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 0.85rem;
+        }
+
+        .product-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .product-price {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .product-stock {
+            font-size: 0.72rem;
+            color: #9ca3af;
+            margin-top: 0.1rem;
+        }
+
+        .btn-view {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+        }
+        .btn-view:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(59,130,246,0.45);
+            color: #fff;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #9ca3af;
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+        .empty-state h3 { font-size: 1rem; font-weight: 600; color: #6b7280; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard-app-wrapper" class="min-h-screen">
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ path('app_customer_dashboard') }}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ path('app_customer_characters') }}" class="nav-item active">
+                <i class="fas fa-user-astronaut"></i>
+                <span>Browse Products</span>
+            </a>
+            <a href="{{ path('app_customer_cart') }}" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>My Cart</span>
+                {% set cartCount = app.user.cart ? app.user.cart.cartItems|length : 0 %}
+                {% if cartCount > 0 %}
+                    <span class="nav-badge">{{ cartCount }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('app_customer_orders') }}" class="nav-item">
+                <i class="fas fa-shopping-bag"></i>
+                <span>My Orders</span>
+            </a>
+            <a href="{{ path('app_customer_profile') }}" class="nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <div id="app" class="relative w-full h-screen glass-container flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="{{ path('app_customer_characters') }}" class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" title="Back to Characters">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">{{ character.name }}</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ path('app_customer_profile') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                    {% else %}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0,2)|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Customer</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto page-content">
+
+            <!-- Character Hero -->
+            <div class="char-hero">
+                <div class="char-hero-accent" style="background: linear-gradient(160deg, {{ character.colorCode }}, {{ character.colorCode }}99);">
+                    <div class="char-hero-accent-icon">
+                        {% if character.image %}
+                            <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
+                        {% else %}
+                            {{ character.name|slice(0,1)|upper }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="char-hero-body">
+                    <div class="char-hero-name">{{ character.name }}</div>
+                    <div class="char-hero-meta">
+                        {% set alignColor = character.alignment == 'Good' ? '#10b981' : (character.alignment == 'Evil' ? '#ef4444' : '#6b7280') %}
+                        {% set alignBg = character.alignment == 'Good' ? '#d1fae5' : (character.alignment == 'Evil' ? '#fee2e2' : '#f3f4f6') %}
+                        <span class="char-meta-pill" style="background:{{ alignBg }};color:{{ alignColor }};">
+                            <i class="fas {{ character.alignment == 'Good' ? 'fa-heart' : (character.alignment == 'Evil' ? 'fa-skull' : 'fa-balance-scale') }}"></i>
+                            {{ character.alignment }}
+                        </span>
+                        <span class="char-meta-pill" style="background:#eff6ff;color:#3b82f6;">
+                            <i class="fas fa-pen-nib"></i>
+                            {{ character.creator }}
+                        </span>
+                        <span class="char-meta-pill" style="background:#f5f3ff;color:#7c3aed;">
+                            <i class="fas fa-box"></i>
+                            {{ products|length }} product{{ products|length != 1 ? 's' : '' }}
+                        </span>
+                    </div>
+                    <div class="char-hero-desc">{{ character.description|striptags }}</div>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div class="section-title">Products featuring {{ character.name }}</div>
+
+            {% if products is empty %}
+                <div class="empty-state">
+                    <i class="fas fa-box-open"></i>
+                    <h3>No products yet for this character.</h3>
+                </div>
+            {% else %}
+                <div class="products-grid">
+                    {% for product in products %}
+                        <div class="product-card">
+                            <div class="product-card-img">
+                                {% if product.image is defined and product.image %}
+                                    <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}">
+                                {% else %}
+                                    <i class="fas fa-box"></i>
+                                {% endif %}
+                            </div>
+                            <div class="product-card-body">
+                                <div class="product-name">{{ product.name }}</div>
+                                <div class="product-desc">{{ product.description|striptags }}</div>
+                                <div class="product-footer">
+                                    <div>
+                                        <div class="product-price">₱{{ product.price }}</div>
+                                        <div class="product-stock">Stock: {{ product.stockQuantity }}</div>
+                                    </div>
+                                    <a href="{{ path('app_customer_product_show', {'id': product.id}) }}" class="btn-view">
+                                        View <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        });
+    </script>
+{% endblock %}
+

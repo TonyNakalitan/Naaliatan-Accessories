@@ -14,7 +14,7 @@
 <div id="order-app-wrapper" class="min-h-screen">
 
     <!-- App Wrapper -->
-    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
         
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
@@ -67,7 +67,7 @@
         </header>
 
         <!-- Viewport -->
-        <main class="relative flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-x-auto">
             
             <!-- GRID VIEW (The Carousel) -->
             <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
@@ -131,25 +131,34 @@
                             <h2 class="hero-title slide-in" style="animation-delay: 0.1s">Order Details</h2>
                             
                             <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
-                                <div class="meta-item">
-                                    <i class="fa fa-calendar text-blue-500"></i>
-                                    <span class="meta-label">Date:</span>
-                                    <span id="heroDate" class="meta-value"></span>
+                                <div class="meta-row">
+                                    <div class="meta-item">
+                                        <i class="fa fa-calendar text-blue-500"></i>
+                                        <span class="meta-label">Date:</span>
+                                        <span id="heroDate" class="meta-value"></span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fa fa-coins text-emerald-500"></i>
+                                        <span class="meta-label">Total:</span>
+                                        <span id="heroTotal" class="meta-value"></span>
+                                    </div>
                                 </div>
-                                <div class="meta-item">
-                                    <i class="fa fa-coins text-emerald-500"></i>
-                                    <span class="meta-label">Total:</span>
-                                    <span id="heroTotal" class="meta-value"></span>
+                                <div class="meta-row">
+                                    <div class="meta-item">
+                                        <i class="fa fa-truck text-purple-500"></i>
+                                        <span class="meta-label">Delivery:</span>
+                                        <span id="heroDelivery" class="meta-value"></span>
+                                    </div>
                                 </div>
-                                <div class="meta-item">
-                                    <i class="fa fa-truck text-purple-500"></i>
-                                    <span class="meta-label">Delivery:</span>
-                                    <span id="heroDelivery" class="meta-value"></span>
-                                </div>
-                                <div class="meta-item">
+                                <div class="meta-item meta-item-address">
                                     <i class="fa fa-map-marker-alt text-amber-500"></i>
                                     <span class="meta-label">Address:</span>
-                                    <span id="heroAddress" class="meta-value"></span>
+                                    <span id="heroAddress" class="meta-value meta-value-address"></span>
+                                </div>
+                                <div class="meta-item meta-item-location">
+                                    <i class="fa fa-city text-indigo-500"></i>
+                                    <span class="meta-label">City / Province:</span>
+                                    <span id="heroLocation" class="meta-value meta-value-address"></span>
                                 </div>
                             </div>
                             
@@ -190,11 +199,13 @@
                 orderNumber: {{ order.orderNumber|json_encode|raw }},
                 customerName: {{ order.customerName|json_encode|raw }},
                 phoneNumber: {{ order.phoneNumber|json_encode|raw }},
-                address: {{ order.address|json_encode|raw }},
+                address: {{ order.customerAddress|json_encode|raw }},
+                city: {{ order.city|json_encode|raw }},
+                province: {{ order.province|json_encode|raw }},
                 totalAmount: {{ order.totalAmount }},
                 status: {{ order.status|json_encode|raw }},
                 deliveryType: {{ order.deliveryType|json_encode|raw }},
-                notes: {{ order.notes|json_encode|raw }},
+                notes: '',
                 createdAt: {{ order.createdAt ? order.createdAt|date('Y-m-d H:i:s')|json_encode|raw : 'null' }}
             }{% if not loop.last %},{% endif %}
             {% endfor %}
@@ -217,6 +228,8 @@
             customerName: order.customerName || 'Guest Customer',
             phoneNumber: order.phoneNumber || 'No phone',
             address: order.address || 'No address provided',
+            city: order.city || 'N/A',
+            province: order.province || 'N/A',
             totalAmount: order.totalAmount || 0,
             status: order.status || 'pending',
             deliveryType: order.deliveryType || 'Standard',
@@ -246,9 +259,9 @@
         }
 
         function getStatusInfo(status) {
-            if (status === 'completed') return { text: 'Completed', class: 'status-completed', icon: 'check-circle' };
-            if (status === 'cancelled') return { text: 'Cancelled', class: 'status-cancelled', icon: 'times-circle' };
-            return { text: 'Pending', class: 'status-pending', icon: 'clock' };
+            if (status === 'completed') return { text: 'Completed', class: 'status-completed' };
+            if (status === 'cancelled') return { text: 'Cancelled', class: 'status-cancelled' };
+            return { text: 'Pending', class: 'status-pending' };
         }
 
         function formatDate(dateStr) {
@@ -286,7 +299,6 @@
                     <div class="relative z-10 pt-8">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="status-indicator ${statusInfo.class}">
-                                <i class="fas fa-${statusInfo.icon}"></i>
                                 ${statusInfo.text}
                             </span>
                         </div>
@@ -391,6 +403,7 @@
             document.getElementById('heroTotal').innerText = '₱' + parseFloat(order.totalAmount).toFixed(2);
             document.getElementById('heroDelivery').innerText = order.deliveryType;
             document.getElementById('heroAddress').innerText = order.address;
+            document.getElementById('heroLocation').innerText = `${order.city}, ${order.province}`;
             document.getElementById('heroNotes').innerText = order.notes;
             
             // Customer avatar
@@ -400,7 +413,7 @@
             // Status badge
             const statusBadge = document.getElementById('heroStatusBadge');
             statusBadge.className = `status-badge-hero ${statusInfo.class}`;
-            statusBadge.innerHTML = `<i class="fas fa-${statusInfo.icon}"></i> ${statusInfo.text}`;
+            statusBadge.innerText = statusInfo.text;
             
             // Update action buttons
             const viewBtn = document.getElementById('heroViewBtn');

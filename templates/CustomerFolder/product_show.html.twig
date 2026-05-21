@@ -1,0 +1,568 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/customer_dashboard.css') }}?v={{ random() }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        .page-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .product-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* Product hero card */
+        .product-hero {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .product-hero-img {
+            width: 100%;
+            height: 280px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .product-hero-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-hero-img .no-img-icon { font-size: 5rem; color: #e2e8f0; }
+
+        .stock-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .stock-in  { background: #d1fae5; color: #065f46; }
+        .stock-low { background: #fef3c7; color: #92400e; }
+        .stock-out { background: #fee2e2; color: #991b1b; }
+
+        .product-hero-body {
+            padding: 1.5rem;
+        }
+
+        .product-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 0.4rem;
+            line-height: 1.2;
+        }
+
+        .product-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.1rem;
+        }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .product-price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 1.1rem;
+        }
+
+        .product-desc {
+            font-size: 0.88rem;
+            color: #6b7280;
+            line-height: 1.8;
+            padding-top: 1rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        /* Related products */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .related-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: block;
+        }
+        .related-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+        .related-card-img {
+            height: 100px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .related-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .related-card-img i { font-size: 2rem; color: #e2e8f0; }
+
+        .related-card-body {
+            padding: 0.75rem;
+        }
+        .related-card-name {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 0.2rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .related-card-price { font-size: 0.82rem; font-weight: 700; color: #3b82f6; }
+
+        /* Order form */
+        .order-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+        }
+
+        .order-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .order-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #374151;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: #fafafa;
+        }
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            background: #fff;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .btn-order {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+        }
+        .btn-order:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 1rem;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e5e7eb;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-back:hover { background: #f1f5f9; color: #374151; }
+
+        .btn-cart {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1.5px solid #bbf7d0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-cart:hover {
+            background: #dcfce7;
+            border-color: #86efac;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard-app-wrapper" class="min-h-screen">
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ path('app_customer_dashboard') }}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ path('app_customer_characters') }}" class="nav-item active">
+                <i class="fas fa-user-astronaut"></i>
+                <span>Browse Products</span>
+            </a>
+            <a href="{{ path('app_customer_cart') }}" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>My Cart</span>
+                {% set cartCount = app.user.cart ? app.user.cart.cartItems|length : 0 %}
+                {% if cartCount > 0 %}
+                    <span class="nav-badge">{{ cartCount }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('app_customer_orders') }}" class="nav-item">
+                <i class="fas fa-shopping-bag"></i>
+                <span>My Orders</span>
+            </a>
+            <a href="{{ path('app_customer_profile') }}" class="nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <div id="app" class="relative w-full h-screen glass-container flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                {% if product.character %}
+                    <a href="{{ path('app_customer_character_show', {'id': product.character.id}) }}" class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" title="Back to {{ product.character.name }}">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                {% endif %}
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">{{ product.name }}</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ path('app_customer_cart') }}" class="relative flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700">
+                    <i class="fas fa-shopping-cart"></i>
+                    {% set cartCount = app.user.cart ? app.user.cart.cartItems|length : 0 %}
+                    {% if cartCount > 0 %}
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">{{ cartCount }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ path('app_customer_profile') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                    {% else %}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0,2)|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Customer</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto page-content">
+            <div class="product-layout">
+
+                <!-- Left: Product info + related -->
+                <div>
+                    <div class="product-hero">
+                        <div class="product-hero-img">
+                            {% if product.image %}
+                                <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}">
+                            {% else %}
+                                <i class="fas fa-box no-img-icon"></i>
+                            {% endif %}
+
+                            {% if product.stockQuantity <= 0 %}
+                                <span class="stock-badge stock-out">Out of Stock</span>
+                            {% elseif product.stockQuantity < 10 %}
+                                <span class="stock-badge stock-low">Low Stock</span>
+                            {% else %}
+                                <span class="stock-badge stock-in">In Stock</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="product-hero-body">
+                            <div class="product-title">{{ product.name }}</div>
+                            <div class="product-meta">
+                                {% if product.character %}
+                                    <span class="meta-pill" style="background:#f5f3ff;color:#7c3aed;">
+                                        <i class="fas fa-user-astronaut"></i>
+                                        {{ product.character.name }}
+                                    </span>
+                                {% endif %}
+                                <span class="meta-pill" style="background:#f0fdf4;color:#166534;">
+                                    <i class="fas fa-box"></i>
+                                    {{ product.stockQuantity }} in stock
+                                </span>
+                                {% if product.productCode %}
+                                    <span class="meta-pill" style="background:#f8fafc;color:#64748b;">
+                                        <i class="fas fa-barcode"></i>
+                                        {{ product.productCode }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="product-price">₱{{ product.price|number_format(2) }}</div>
+                            <div class="product-desc">{{ product.description|striptags }}</div>
+                        </div>
+                    </div>
+
+                    {% if related is not empty %}
+                        <div class="section-title">More from {{ product.character ? product.character.name : 'this collection' }}</div>
+                        <div class="related-grid">
+                            {% for item in related %}
+                                <a href="{{ path('app_customer_product_show', {'id': item.id}) }}" class="related-card">
+                                    <div class="related-card-img">
+                                        {% if item.image %}
+                                            <img src="{{ asset('images/products/' ~ item.image) }}" alt="{{ item.name }}">
+                                        {% else %}
+                                            <i class="fas fa-box"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="related-card-body">
+                                        <div class="related-card-name">{{ item.name }}</div>
+                                        <div class="related-card-price">₱{{ item.price|number_format(2) }}</div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Right: Order form -->
+                <div class="order-card">
+                    <div class="order-title">Place Order</div>
+
+                    {% if product.stockQuantity <= 0 %}
+                        <div style="text-align:center;padding:2rem 1rem;color:#9ca3af;">
+                            <i class="fas fa-box-open" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:0.75rem;"></i>
+                            <div style="font-weight:600;color:#6b7280;font-size:0.9rem;">This product is out of stock.</div>
+                        </div>
+                    {% else %}
+                        {# ── Add to Cart ── #}
+                        <form action="{{ path('app_customer_cart_add', {'id': product.id}) }}" method="post" style="margin-bottom:0.75rem;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('cart_add_' ~ product.id) }}">
+                            <div class="form-group">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" name="quantity" value="1" min="1" max="{{ product.stockQuantity }}" class="form-input" required>
+                            </div>
+                            <button type="submit" class="btn-cart">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                        </form>
+
+                        <div style="display:flex;align-items:center;gap:0.75rem;margin:1rem 0;color:#d1d5db;font-size:0.75rem;">
+                            <div style="flex:1;height:1px;background:#f1f5f9;"></div>
+                            <span style="color:#9ca3af;font-weight:600;">or</span>
+                            <div style="flex:1;height:1px;background:#f1f5f9;"></div>
+                        </div>
+
+                        {# ── Place Order ── #}
+                        <form action="{{ path('app_customer_order_place') }}" method="post">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('place_order') }}">
+                            <input type="hidden" name="quantity" value="1">
+
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" name="customer_name" value="{{ app.user.displayName ?: app.user.username }}" class="form-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Delivery Address</label>
+                                <textarea name="customer_address" rows="2" class="form-input" placeholder="Enter your delivery address" required></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label class="form-label">City</label>
+                                    <input type="text" name="city" class="form-input" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label class="form-label">Province</label>
+                                    <input type="text" name="province" class="form-input" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-top:1rem;">
+                                <label class="form-label">Delivery Type</label>
+                                <select name="delivery_type" class="form-input" required>
+                                    <option value="">Select delivery</option>
+                                    <option value="Standard">Standard Shipping</option>
+                                    <option value="Express">Express Delivery</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" name="phone_number" class="form-input" required>
+                            </div>
+
+                            <button type="submit" class="btn-order">
+                                <i class="fas fa-shopping-bag"></i> Place Order
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        });
+    </script>
+{% endblock %}
+

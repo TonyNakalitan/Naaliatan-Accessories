@@ -1,0 +1,369 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/customer_dashboard.css') }}?v={{ random() }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        .page-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        /* Orders list */
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .order-item {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.1rem 1.25rem;
+            transition: box-shadow 0.2s ease;
+        }
+        .order-item:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+        }
+
+        .order-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: #f3f4f6;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .order-icon i { font-size: 1.4rem; color: #d1d5db; }
+
+        .order-info { flex: 1; min-width: 0; }
+
+        .order-number {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.2rem;
+        }
+
+        .order-meta {
+            font-size: 0.78rem;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .order-total {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+            white-space: nowrap;
+        }
+
+        .order-total-label {
+            font-size: 0.72rem;
+            color: #9ca3af;
+            text-align: right;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-pending  { background: #fef9c3; color: #a16207; }
+        .status-completed { background: #dcfce7; color: #15803d; }
+        .status-cancelled { background: #fee2e2; color: #b91c1c; }
+        .status-processing { background: #dbeafe; color: #1d4ed8; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 0.85rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-label {
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 9px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e5e7eb;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .btn-ghost-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.4rem 0.85rem;
+            border-radius: 9px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e5e7eb;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-ghost-sm:hover { background: #f1f5f9; color: #374151; }
+
+        /* Empty state */
+        .empty-state {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #9ca3af;
+        }
+        .empty-state .empty-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+            display: block;
+        }
+        .empty-state h3 { font-size: 1.1rem; font-weight: 700; color: #374151; margin-bottom: 0.4rem; }
+        .empty-state p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+        .btn-primary-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(59,130,246,0.3);
+        }
+        .btn-primary-sm:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(59,130,246,0.4); color: #fff; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard-app-wrapper" class="min-h-screen">
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ path('app_customer_dashboard') }}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ path('app_customer_characters') }}" class="nav-item">
+                <i class="fas fa-user-astronaut"></i>
+                <span>Browse Products</span>
+            </a>
+            <a href="{{ path('app_customer_cart') }}" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>My Cart</span>
+            </a>
+            <a href="{{ path('app_customer_orders') }}" class="nav-item active">
+                <i class="fas fa-shopping-bag"></i>
+                <span>My Orders</span>
+            </a>
+            <a href="{{ path('app_customer_profile') }}" class="nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <div id="app" class="relative w-full h-screen glass-container flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">My Orders</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ path('app_customer_profile') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                    {% else %}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0,2)|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Customer</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto page-content">
+
+            {% if orders|length == 0 %}
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag empty-icon"></i>
+                    <h3>No orders yet</h3>
+                    <p>Start shopping to place your first order.</p>
+                    <a href="{{ path('app_customer_characters') }}" class="btn-primary-sm">
+                        <i class="fas fa-user-astronaut"></i> Browse Products
+                    </a>
+                </div>
+            {% else %}
+                <!-- Stats bar -->
+                <div class="flex items-center gap-6 mb-4 text-sm text-gray-500 font-medium">
+                    <span><span class="text-gray-800 font-bold">{{ orders|length }}</span> order{{ orders|length != 1 ? 's' : '' }}</span>
+                </div>
+
+                <!-- Filter bar -->
+                <div class="filter-bar">
+                    <span class="filter-label">Filter:</span>
+                    <a href="{{ path('app_customer_orders', {'status': 'all'}) }}" class="filter-btn {{ app.request.query.get('status', 'all') == 'all' ? 'active' : '' }}">
+                        <i class="fas fa-list"></i> All
+                    </a>
+                    <a href="{{ path('app_customer_orders', {'status': 'pending'}) }}" class="filter-btn {{ app.request.query.get('status') == 'pending' ? 'active' : '' }}">
+                        <i class="fas fa-clock"></i> Pending
+                    </a>
+                    <a href="{{ path('app_customer_orders', {'status': 'completed'}) }}" class="filter-btn {{ app.request.query.get('status') == 'completed' ? 'active' : '' }}">
+                        <i class="fas fa-check-circle"></i> Completed
+                    </a>
+                    <a href="{{ path('app_customer_orders', {'status': 'cancelled'}) }}" class="filter-btn {{ app.request.query.get('status') == 'cancelled' ? 'active' : '' }}">
+                        <i class="fas fa-times-circle"></i> Cancelled
+                    </a>
+                </div>
+
+                <!-- Orders list -->
+                <div class="orders-list">
+                    {% for order in orders %}
+                        <div class="order-item">
+                            <div class="order-icon">
+                                {% set firstItem = order.orderItems|first %}
+                                {% if firstItem and firstItem.product and firstItem.product.image %}
+                                    <img src="{{ asset('images/products/' ~ firstItem.product.image) }}" alt="{{ firstItem.product.name }}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                    <i class="fas fa-shopping-bag" style="display:none;font-size:1.4rem;color:#d1d5db;"></i>
+                                {% else %}
+                                    <i class="fas fa-shopping-bag"></i>
+                                {% endif %}
+                            </div>
+                            <div class="order-info">
+                                <div class="order-number">Order #{{ order.orderNumber }}</div>
+                                <div class="order-meta">
+                                    <span><i class="fas fa-calendar mr-1"></i>{{ order.createdAt ? order.createdAt|date('F j, Y') : 'N/A' }}</span>
+                                    {% if order.orderItems is defined %}
+                                        <span><i class="fas fa-layer-group mr-1"></i>{{ order.orderItems|length }} item{{ order.orderItems|length != 1 ? 's' : '' }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="order-total">₱{{ order.totalAmount|number_format(2) }}</div>
+                                <div class="order-total-label">total</div>
+                            </div>
+                            <span class="status-badge status-{{ order.status }}">
+                                {% if order.status == 'pending' %}<i class="fas fa-clock"></i>
+                                {% elseif order.status == 'completed' %}<i class="fas fa-check-circle"></i>
+                                {% elseif order.status == 'cancelled' %}<i class="fas fa-times-circle"></i>
+                                {% else %}<i class="fas fa-spinner"></i>
+                                {% endif %}
+                                {{ order.status|capitalize }}
+                            </span>
+                            <a href="{{ path('app_customer_order_show', {'id': order.id}) }}" class="btn-ghost-sm">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        });
+    </script>
+{% endblock %}
+

@@ -43,6 +43,7 @@ class StockManagementController extends AbstractController
     }
 
     #[Route('/admin/stock-management/restock/{id}', name: 'app_admin_stock_management_restock')]
+    #[Route('/admin/stock/{id}/restock')]
     #[IsGranted('ROLE_ADMIN')]
     public function adminRestock(Product $product): Response
     {
@@ -100,6 +101,7 @@ class StockManagementController extends AbstractController
     }
 
     #[Route('/staff/stock-management/restock/{id}', name: 'app_staff_stock_management_restock')]
+    #[Route('/staff/stock/{id}/restock')]
     #[IsGranted('ROLE_STAFF')]
     public function staffRestock(Product $product): Response
     {
@@ -185,7 +187,7 @@ class StockManagementController extends AbstractController
             ));
 
             $routeName = $role === 'admin' ? 'app_admin_stock_management_index' : 'app_staff_stock_management_index';
-            return $this->redirectToRoute($routeName);
+            return $this->redirectToRoute($routeName, ['tab' => 'stock-inventory']);
         }
 
         // Pagination logic

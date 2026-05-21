@@ -189,6 +189,26 @@ class ProductRepository extends ServiceEntityRepository
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
+    public function findFilteredProducts(?string $search = null, ?string $status = null): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.character', 'c')
+            ->orderBy('p.createdAt', 'DESC');
+
+        if ($search) {
+            $qb->andWhere('p.name LIKE :search OR p.productCode LIKE :search OR c.name LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($status === 'in stock') {
+            $qb->andWhere('p.stockQuantity > 0');
+        } elseif ($status === 'out of stock') {
+            $qb->andWhere('p.stockQuantity = 0');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     public function findLowStockProductsPaginated(int $page = 1, int $limit = 5, int $threshold = 10): array
     {
         return $this->createQueryBuilder('p')

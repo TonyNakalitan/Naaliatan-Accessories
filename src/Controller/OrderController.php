@@ -107,8 +107,8 @@ class OrderController extends AbstractController
     {
         $user = $this->getUser();
         
-        // Get orders for current user, or all orders if admin
-        if ($this->isGranted('ROLE_ADMIN')) {
+        // Get all orders for admin and staff, or only user's orders for customers
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_STAFF')) {
             $orders = $this->orderRepository->findBy([], ['createdAt' => 'DESC']);
         } else {
             $orders = $this->orderRepository->findBy(['customer' => $user], ['createdAt' => 'DESC']);
@@ -219,7 +219,7 @@ class OrderController extends AbstractController
     private function show(Order $order): Response
     {
         // Check if user can view this order
-        if (!$this->isGranted('ROLE_ADMIN') && $order->getCustomer() !== $this->getUser()) {
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_STAFF') && $order->getCustomer() !== $this->getUser()) {
             throw $this->createAccessDeniedException('You cannot view this order.');
         }
         
@@ -231,7 +231,7 @@ class OrderController extends AbstractController
     private function cancel(Order $order, string $role): Response
     {
         // Check if user can cancel this order
-        if (!$this->isGranted('ROLE_ADMIN') && $order->getCustomer() !== $this->getUser()) {
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_STAFF') && $order->getCustomer() !== $this->getUser()) {
             throw $this->createAccessDeniedException('You cannot cancel this order.');
         }
         

@@ -14,7 +14,7 @@
 <div id="character-app-wrapper" class="min-h-screen">
 
     <!-- App Wrapper -->
-    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
         
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
@@ -36,10 +36,6 @@
             <div class="flex items-center gap-6">
                 {% if isAdmin %}
                     <a href="{{ path('app_admin_character_management_new') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        <i class="fa fa-plus mr-2"></i>Add Character
-                    </a>
-                {% elseif isStaff %}
-                    <a href="{{ path('app_staff_character_management_new') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                         <i class="fa fa-plus mr-2"></i>Add Character
                     </a>
                 {% endif %}
@@ -66,7 +62,7 @@
         </header>
 
         <!-- Viewport -->
-        <main class="relative flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-x-auto">
             
             <!-- GRID VIEW (The Carousel) -->
             <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
@@ -235,7 +231,7 @@
             container.innerHTML = '';
             
             if (!filteredCharacters || filteredCharacters.length === 0) {
-                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No characters found. <a href="' + (isAdmin ? '{{ path('app_admin_character_management_new') }}' : '{{ path('app_staff_character_management_new') }}') + '" class="text-blue-600 hover:underline">Add one now!</a></div>';
+                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No characters found.' + (isAdmin ? ' <a href="{{ path('app_admin_character_management_new') }}" class="text-blue-600 hover:underline">Add one now!</a>' : '') + '</div>';
                 updateNavigationButtons();
                 return;
             }

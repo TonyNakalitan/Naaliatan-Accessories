@@ -14,7 +14,7 @@
 <div id="stock-app-wrapper" class="min-h-screen">
 
     <!-- App Wrapper -->
-    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
         
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
@@ -34,12 +34,23 @@
             </div>
 
             <div class="flex items-center gap-6">
-                <!-- Filter Dropdown -->
-                <div class="relative">
+                <!-- Tab Buttons -->
+                <div class="flex items-center gap-2">
+                    <button class="tab-btn active px-4 py-2 rounded-lg font-medium text-sm transition-all" data-tab="stock-inventory" id="tab-btn-stock-inventory">
+                        <i class="fa fa-warehouse mr-1"></i> Stock Inventory
+                    </button>
+                    <button class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all" data-tab="products-view" id="tab-btn-products-view">
+                        <i class="fa fa-boxes mr-1"></i> Products
+                    </button>
+                </div>
+
+                <!-- Filter Dropdown (for products view) -->
+                <div class="relative" id="stockFilterWrapper">
                     <select id="stockFilter" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-medium cursor-pointer">
-                        <option value="all">Stock Inventory</option>
+                        <option value="all">All Products</option>
                         <option value="in-use">Product In Use</option>
                         <option value="low-stock">Low Stock Product</option>
+                        <option value="out-stock">No Stock Product</option>
                     </select>
                 </div>
                 
@@ -71,10 +82,151 @@
         </header>
 
         <!-- Viewport -->
-        <main class="relative flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-x-auto">
+
+            <!-- STOCK INVENTORY TAB -->
+            <div id="stock-inventory" class="si-panel absolute inset-0 overflow-y-auto" style="display:none;">
+
+                <!-- Flash Messages -->
+                {% if app.flashes('success') %}
+                    <div class="si-flash si-flash-success">
+                        {% for msg in app.flashes('success') %}
+                            <i class="fas fa-check-circle"></i> {{ msg }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if app.flashes('error') %}
+                    <div class="si-flash si-flash-error">
+                        {% for msg in app.flashes('error') %}
+                            <i class="fas fa-exclamation-circle"></i> {{ msg }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Page Header -->
+                <div class="si-page-header">
+                    <div class="si-header-left">
+                        <div class="si-header-icon">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                        <div>
+                            <h1 class="si-header-title">Stock Inventory</h1>
+                            <p class="si-header-sub">All available stock entries ready for restocking</p>
+                        </div>
+                    </div>
+                    <div class="si-stats-row">
+                        <div class="si-stat-pill">
+                            <span class="si-stat-num">{{ stocks|length }}</span>
+                            <span class="si-stat-label">Total Entries</span>
+                        </div>
+                        <div class="si-stat-pill si-stat-green">
+                            <span class="si-stat-num">{{ stocks|reduce((sum, s) => sum + s.quantity, 0) }}</span>
+                            <span class="si-stat-label">Total Units</span>
+                        </div>
+                        <div class="si-stat-pill si-stat-blue">
+                            {% set uniqueProducts = [] %}
+                            {% for stock in stocks %}{% if stock.product.id not in uniqueProducts %}{% set uniqueProducts = uniqueProducts|merge([stock.product.id]) %}{% endif %}{% endfor %}
+                            <span class="si-stat-num">{{ uniqueProducts|length }}</span>
+                            <span class="si-stat-label">Products</span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Cards Grid -->
+                {% if stocks is empty %}
+                    <div class="si-empty">
+                        <div class="si-empty-icon"><i class="fas fa-box-open"></i></div>
+                        <h3>No Stock Entries Yet</h3>
+                        <p>Create your first stock entry to get started.</p>
+                    </div>
+                {% else %}
+                    <div class="si-grid" id="siGrid">
+                        {% for stock in stocks %}
+                            <div class="si-card" data-name="{{ stock.product.name|lower }}" data-code="{{ stock.product.productCode|lower }}">
+
+                                <!-- Card Top: Image + Badge -->
+                                <div class="si-card-top">
+                                    {% if stock.product.image %}
+                                        <img src="{{ asset('images/products/' ~ stock.product.image) }}" alt="{{ stock.product.name }}" class="si-card-img">
+                                    {% else %}
+                                        <div class="si-card-img-placeholder">
+                                            <i class="fas fa-box"></i>
+                                        </div>
+                                    {% endif %}
+                                    <span class="si-entry-badge">#{{ stock.id }}</span>
+                                    {% set qty = stock.quantity %}
+                                    {% if qty == 0 %}
+                                        <span class="si-qty-badge si-qty-out">Out</span>
+                                    {% elseif qty < 10 %}
+                                        <span class="si-qty-badge si-qty-low">Low</span>
+                                    {% else %}
+                                        <span class="si-qty-badge si-qty-ok">Ready</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Card Body -->
+                                <div class="si-card-body">
+                                    <div class="si-card-product">
+                                        <h3 class="si-product-name">{{ stock.product.name }}</h3>
+                                        <span class="si-product-code">#{{ stock.product.productCode }}</span>
+                                    </div>
+
+                                    <div class="si-quantity-display">
+                                        <span class="si-qty-number">{{ stock.quantity }}</span>
+                                        <span class="si-qty-unit">units</span>
+                                    </div>
+
+                                    {% if stock.notes %}
+                                        <div class="si-notes">
+                                            <i class="fas fa-sticky-note"></i>
+                                            <span>{{ stock.notes|length > 60 ? stock.notes|slice(0, 60) ~ '…' : stock.notes }}</span>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="si-meta">
+                                        <span class="si-meta-item">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            {{ stock.createdAt|date('M d, Y') }}
+                                        </span>
+                                        {% if stock.createdBy %}
+                                            <span class="si-meta-item">
+                                                <i class="fas fa-user"></i>
+                                                {{ stock.createdBy.displayName ?: stock.createdBy.username }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="si-card-actions">
+                                        <a href="{{ role_path('stock_management_restock', {'id': stock.product.id}) }}" class="si-btn-restock">
+                                            <i class="fas fa-arrow-up"></i> Restock
+                                        </a>
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                            <form method="post" action="{{ role_path('stock_management_delete_stock', {'id': stock.id}) }}" onsubmit="return confirm('Delete this stock entry?')">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_stock_' ~ stock.id) }}">
+                                                <button type="submit" class="si-btn-delete">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="si-no-results" id="siNoResults" style="display:none;">
+                        <i class="fas fa-search"></i>
+                        <p>No entries match your search.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- PRODUCTS TAB (Carousel) -->
+            <div id="products-view" class="tab-content absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
             
             <!-- GRID VIEW (The Carousel) -->
-            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+            <div id="gridView" class="grid-view flex flex-col justify-end h-full transition-all duration-500">
                 
                 <!-- Carousel at bottom -->
                 <div id="productCarousel" class="flex gap-8 items-end h-[500px] mb-6">
@@ -162,6 +314,8 @@
                     </div>
                 </div>
             </div>
+            </div><!-- end gridView -->
+            </div><!-- end products-view -->
         </main>
     </div>
 </div>
@@ -192,6 +346,8 @@
         const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
         const baseUrl = '{{ app.request.schemeAndHttpHost }}';
         const imageBasePath = '{{ asset('images/products/') }}';
+        const restockBasePath = isAdmin ? '/admin/stock-management/restock/' : '/staff/stock-management/restock/';
+        const viewBasePath = isAdmin ? '/admin/products/' : '/staff/products/';
         
         console.log('Total products loaded:', allProductsData.length);
         
@@ -322,6 +478,8 @@
                     matchesFilter = prod.stockQuantity > 0;
                 } else if (filterValue === 'low-stock') {
                     matchesFilter = prod.stockQuantity > 0 && prod.stockQuantity < 10;
+                } else if (filterValue === 'out-stock') {
+                    matchesFilter = prod.stockQuantity === 0;
                 }
                 
                 return matchesSearch && matchesFilter;
@@ -387,17 +545,11 @@
             const viewBtn = document.getElementById('heroViewBtn');
             
             if (restockBtn) {
-                const restockRoute = isAdmin ? 
-                    `${baseUrl}/admin/stock/${prod.id}/restock` : 
-                    `${baseUrl}/staff/stock/${prod.id}/restock`;
-                restockBtn.href = restockRoute;
+                restockBtn.href = restockBasePath + prod.id;
             }
             
             if (viewBtn) {
-                const viewRoute = isAdmin ? 
-                    `${baseUrl}/admin/products/${prod.id}` : 
-                    `${baseUrl}/staff/products/${prod.id}`;
-                viewBtn.href = viewRoute;
+                viewBtn.href = viewBasePath + prod.id;
             }
 
             // Trigger animation
@@ -419,7 +571,67 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, rendering carousel...');
-            renderCarousel();
+            
+            // Tab switching
+            const tabBtns = document.querySelectorAll('.tab-btn[data-tab]');
+            const stockInventoryTab = document.getElementById('stock-inventory');
+            const productsViewTab = document.getElementById('products-view');
+            const stockFilterWrapper = document.getElementById('stockFilterWrapper');
+
+            function activateTab(tabId) {
+                tabBtns.forEach(b => {
+                    b.classList.remove('active', 'bg-blue-600', 'text-white');
+                    b.classList.add('bg-gray-100', 'text-gray-600');
+                });
+                const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active', 'bg-blue-600', 'text-white');
+                    activeBtn.classList.remove('bg-gray-100', 'text-gray-600');
+                }
+
+                if (tabId === 'stock-inventory') {
+                    stockInventoryTab.style.display = 'block';
+                    productsViewTab.style.display = 'none';
+                    if (stockFilterWrapper) stockFilterWrapper.style.display = 'none';
+                } else {
+                    stockInventoryTab.style.display = 'none';
+                    productsViewTab.style.display = 'flex';
+                    if (stockFilterWrapper) stockFilterWrapper.style.display = '';
+                    renderCarousel();
+                }
+            }
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => activateTab(btn.getAttribute('data-tab')));
+            });
+
+            // Stock inventory live search
+            const siSearch = document.getElementById('siSearch');
+            if (siSearch) {
+                siSearch.addEventListener('input', function() {
+                    const term = this.value.toLowerCase().trim();
+                    const cards = document.querySelectorAll('.si-card');
+                    let visible = 0;
+                    cards.forEach(card => {
+                        const name = card.dataset.name || '';
+                        const code = card.dataset.code || '';
+                        const match = !term || name.includes(term) || code.includes(term);
+                        card.style.display = match ? '' : 'none';
+                        if (match) visible++;
+                    });
+                    const noResults = document.getElementById('siNoResults');
+                    if (noResults) noResults.style.display = visible === 0 ? 'flex' : 'none';
+                });
+            }
+
+            // Check URL param to auto-activate tab
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam === 'stock-inventory') {
+                activateTab('stock-inventory');
+            } else {
+                activateTab('products-view');
+            }
             
             window.addEventListener('resize', function() { renderCarousel(); });
             

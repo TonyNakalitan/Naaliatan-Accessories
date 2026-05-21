@@ -68,7 +68,8 @@ class CharacterManagementController extends AbstractController
     #[IsGranted('ROLE_STAFF')]
     public function staffNew(Request $request, EntityManagerInterface $entityManager): Response
     {
-        return $this->new($request, $entityManager, 'staff');
+        $this->addFlash('error', 'Staff are not permitted to add new characters.');
+        return $this->redirectToRoute('app_staff_character_management_index');
     }
 
     #[Route('/staff/characters/{id}/edit', name: 'app_staff_character_management_edit')]

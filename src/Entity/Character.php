@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use App\Repository\CharacterRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,10 +19,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Table(name: 'game_character')]
 #[ApiResource(
     operations: [
-        new Get(),
-        new GetCollection(),
+        new Get(security: "is_granted('PUBLIC_ACCESS')"),
+        new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
         new Post(security: "is_granted('ROLE_ADMIN')"),
         new Put(security: "is_granted('ROLE_ADMIN')"),
+        new Patch(security: "is_granted('ROLE_ADMIN')"),
         new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
     normalizationContext: ['groups' => ['character:read']],

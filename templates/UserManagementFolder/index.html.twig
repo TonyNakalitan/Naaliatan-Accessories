@@ -14,7 +14,7 @@
 <div id="user-app-wrapper" class="min-h-screen">
 
     <!-- App Wrapper -->
-    <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
         
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
@@ -60,7 +60,7 @@
         </header>
 
         <!-- Viewport -->
-        <main class="relative flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-x-auto">
             
             <!-- GRID VIEW (The Carousel) -->
             <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
@@ -75,6 +75,7 @@
                     <div class="flex gap-6 text-sm font-medium text-gray-500">
                         <span>Total Users: <span id="totalCount">{{ allUsers|length }}</span></span>
                         <span>Active: <span id="activeCount">{{ allUsers|filter(u => u.isActive)|length }}</span></span>
+                        <span>Online: <span id="onlineCount">{{ allUsers|filter(u => u.isOnline)|length }}</span></span>
                         <span>Admins: <span id="adminCount">{{ allUsers|filter(u => 'ROLE_ADMIN' in u.roles)|length }}</span></span>
                     </div>
                     <div class="flex gap-4">
@@ -127,8 +128,13 @@
                                 </div>
                                 <div class="meta-item">
                                     <i class="fa fa-circle text-green-500"></i>
-                                    <span class="meta-label">Status:</span>
+                                    <span class="meta-label">Account Status:</span>
                                     <span id="heroStatus" class="status-badge"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-circle text-blue-500"></i>
+                                    <span class="meta-label">Online Status:</span>
+                                    <span id="heroOnlineStatus" class="status-badge"></span>
                                 </div>
                             </div>
                             
@@ -151,6 +157,10 @@
                             </div>
 
                             <div class="hero-actions slide-in" style="animation-delay: 0.4s">
+                                <a id="heroViewBtn" href="#" class="action-btn action-btn-view">
+                                    <i class="fa fa-eye"></i>
+                                    <span>View User</span>
+                                </a>
                                 <a id="heroEditBtn" href="#" class="action-btn action-btn-primary">
                                     <i class="fa fa-edit"></i>
                                     <span>Edit User</span>
@@ -189,15 +199,20 @@
                 email: {{ user.email|json_encode|raw }},
                 roles: {{ user.roles|json_encode|raw }},
                 isActive: {{ user.isActive ? 'true' : 'false' }},
+                isOnline: {{ user.isOnline ? 'true' : 'false' }},
                 isVerified: {{ user.isVerified ? 'true' : 'false' }},
                 createdAt: {{ user.createdAt|date('Y-m-d H:i:s')|json_encode|raw }},
-                profilePicture: {{ user.profilePicture|json_encode|raw }}
+                profilePicture: {{ user.profilePicture|json_encode|raw }},
+                csrfToken: {{ csrf_token('delete' ~ user.id)|json_encode|raw }}
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         ];
         
         const baseUrl = '{{ app.request.schemeAndHttpHost }}';
         const imageBasePath = '{{ asset('images/profiles/') }}';
+        const showBaseUrl = '{{ path('app_admin_user_management_show', {'id': 0}) }}'.replace('/0', '');
+        const editBaseUrl = '{{ path('app_admin_user_management_edit', {'id': 0}) }}'.replace('/0/edit', '');
+        const deleteBaseUrl = '{{ path('app_admin_user_management_delete', {'id': 0}) }}'.replace('/0/delete', '');
         
         console.log('Total users loaded:', allUsersData.length);
         
@@ -209,9 +224,11 @@
             email: user.email || 'no-email@example.com',
             roles: user.roles || ['ROLE_USER'],
             isActive: user.isActive,
+            isOnline: user.isOnline,
             isVerified: user.isVerified,
             createdAt: user.createdAt,
             profilePicture: user.profilePicture,
+            csrfToken: user.csrfToken,
             colorCode: getUserColor(user.roles),
             avatar: user.profilePicture ? imageBasePath + user.profilePicture : null
         }));
@@ -379,6 +396,11 @@
             heroRole.style.backgroundColor = user.colorCode;
             heroStatus.innerText = user.isActive ? 'Active' : 'Inactive';
             heroStatus.style.backgroundColor = user.isActive ? '#10b981' : '#ef4444';
+            const heroOnlineStatus = document.getElementById('heroOnlineStatus');
+            if (heroOnlineStatus) {
+                heroOnlineStatus.innerText = user.isOnline ? 'Online' : 'Offline';
+                heroOnlineStatus.style.backgroundColor = user.isOnline ? '#3b82f6' : '#ef4444';
+            }
             heroId.innerText = '#' + user.id;
             heroCreated.innerText = new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
             heroVerified.innerText = user.isVerified ? 'Yes' : 'No';
@@ -387,7 +409,11 @@
             // Update action buttons
             const editBtn = document.getElementById('heroEditBtn');
             if (editBtn) {
-                editBtn.href = `${baseUrl}/admin/users/${user.id}/edit`;
+                editBtn.href = `${editBaseUrl}/${user.id}/edit`;
+            }
+            const viewBtn = document.getElementById('heroViewBtn');
+            if (viewBtn) {
+                viewBtn.href = `${showBaseUrl}/${user.id}`;
             }
 
             // Trigger animation
@@ -408,12 +434,12 @@
             if (confirm(`Are you sure you want to delete "${currentUser.displayName}"?`)) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `${baseUrl}/admin/users/${currentUser.id}`;
+                form.action = `${deleteBaseUrl}/${currentUser.id}/delete`;
                 
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
                 csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token("delete") }}';
+                csrfToken.value = currentUser.csrfToken;
                 
                 form.appendChild(csrfToken);
                 document.body.appendChild(form);

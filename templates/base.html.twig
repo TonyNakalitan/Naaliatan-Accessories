@@ -50,12 +50,12 @@
         </style>
     </head>
     <body>
-        {% if app.user %}
+        {% if app.user and (is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF')) %}
         {# Sidebar Overlay Backdrop #}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
         
         {# Sidebar for authenticated users #}
-        <aside class="sidebar sidebar-overlay" id="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
             </div>
@@ -81,6 +81,10 @@
                 <a href="{{ role_path('order_index') }}" class="nav-item {% if app.request.get('_route') starts with 'app_admin_order' or app.request.get('_route') starts with 'app_staff_order' %}active{% endif %}">
                     <i class="fas fa-shopping-bag"></i>
                     <span>Orders</span>
+                </a>
+                <a href="{{ role_path('payment_management_index') }}" class="nav-item {% if app.request.get('_route') starts with 'app_admin_payment_management' or app.request.get('_route') starts with 'app_staff_payment_management' %}active{% endif %}">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Payments</span>
                 </a>
                 <a href="{{ role_path('item_management_index') }}" class="nav-item {% if app.request.get('_route') starts with 'app_admin_item_management' or app.request.get('_route') starts with 'app_staff_item_management' %}active{% endif %}">
                     <i class="fas fa-boxes"></i>
@@ -190,6 +194,7 @@
         {% block body %}{% endblock %}
         
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
         {% block javascripts %}
             <script src="{{ asset('JSFolder/app.js') }}?v={{ random() }}"></script>
         {% endblock %}

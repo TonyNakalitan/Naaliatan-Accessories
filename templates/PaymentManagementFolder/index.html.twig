@@ -1,0 +1,401 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Payment Management{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('OrderFolder/index.css') }}?v={{ random() }}">
+{% endblock %}
+
+{% block body %}
+<div id="order-app-wrapper" class="min-h-screen">
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">Payment Management</span>
+            </div>
+
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search payments..." class="bg-transparent outline-none text-sm w-full">
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <select id="statusFilter" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-medium cursor-pointer">
+                        <option value="all">All Payments</option>
+                        <option value="processing">Pending Review</option>
+                        <option value="completed">Approved</option>
+                        <option value="cancelled">Rejected</option>
+                    </select>
+                </div>
+
+                <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_profile_edit') : path('app_staff_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                    {% else %}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0,2)|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-x-auto">
+
+            <!-- CAROUSEL VIEW -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
+                <div id="paymentCarousel" class="flex gap-8 items-end h-[500px] mb-6"></div>
+
+                <div class="flex items-center justify-between pt-4 pb-2">
+                    <div class="flex gap-6 text-sm font-medium text-gray-500">
+                        <span>Total: <span id="totalCount">{{ payments|length }}</span></span>
+                        <span>Pending: <span class="text-amber-600 font-bold">{{ counts.processing }}</span></span>
+                        <span>Approved: <span class="text-emerald-600 font-bold">{{ counts.completed }}</span></span>
+                        <span>Rejected: <span class="text-red-500 font-bold">{{ counts.cancelled }}</span></span>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i class="fa fa-chevron-left text-xs"></i> Prev
+                        </button>
+                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                            Next <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HERO VIEW -->
+            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
+                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
+
+                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
+                    <i class="fa fa-times text-red-500"></i> Close
+                </button>
+
+                <div class="relative z-10 h-full flex items-center px-16">
+                    <!-- Left: Card -->
+                    <div class="w-1/2 flex justify-center items-center">
+                        <div class="hero-order-card">
+                            <div class="order-card-header">
+                                <i class="fas fa-credit-card text-6xl mb-4"></i>
+                                <h3 id="heroOrderNumber" class="text-3xl font-bold mb-2"></h3>
+                                <span id="heroStatusBadge" class="status-badge-hero"></span>
+                            </div>
+                            <div class="order-card-body">
+                                <div class="customer-info-hero">
+                                    <div class="customer-avatar-hero" id="heroCustomerAvatar"></div>
+                                    <div>
+                                        <h4 id="heroCustomerName" class="text-xl font-bold"></h4>
+                                        <p id="heroCustomerPhone" class="text-gray-600"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Details -->
+                    <div class="w-1/2 pl-12 pr-8">
+                        <div class="hero-content-wrapper">
+                            <h2 class="hero-title slide-in" style="animation-delay: 0.1s">Payment Details</h2>
+
+                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
+                                <div class="meta-row">
+                                    <div class="meta-item">
+                                        <i class="fa fa-calendar text-blue-500"></i>
+                                        <span class="meta-label">Paid At:</span>
+                                        <span id="heroPaidAt" class="meta-value"></span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fa fa-coins text-emerald-500"></i>
+                                        <span class="meta-label">Amount:</span>
+                                        <span id="heroAmount" class="meta-value"></span>
+                                    </div>
+                                </div>
+                                <div class="meta-row">
+                                    <div class="meta-item">
+                                        <i class="fa fa-credit-card text-purple-500"></i>
+                                        <span class="meta-label">Method:</span>
+                                        <span id="heroMethod" class="meta-value"></span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fa fa-truck text-amber-500"></i>
+                                        <span class="meta-label">Delivery:</span>
+                                        <span id="heroDelivery" class="meta-value"></span>
+                                    </div>
+                                </div>
+                                <div class="meta-item meta-item-address">
+                                    <i class="fa fa-map-marker-alt text-amber-500"></i>
+                                    <span class="meta-label">Address:</span>
+                                    <span id="heroAddress" class="meta-value meta-value-address"></span>
+                                </div>
+                                <div class="meta-item meta-item-location">
+                                    <i class="fa fa-city text-indigo-500"></i>
+                                    <span class="meta-label">City / Province:</span>
+                                    <span id="heroLocation" class="meta-value meta-value-address"></span>
+                                </div>
+                            </div>
+
+                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
+                                <h3 class="description-title">Phone Number</h3>
+                                <p id="heroNotes" class="description-text"></p>
+                            </div>
+
+                            <div class="hero-actions slide-in" style="animation-delay: 0.4s">
+                                <a id="heroViewBtn" href="#" class="action-btn action-btn-primary">
+                                    <i class="fa fa-eye"></i>
+                                    <span>Review Payment</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
+    <script>
+        const allPaymentsData = [
+            {% for order in payments %}
+            {
+                id: {{ order.id }},
+                orderNumber: {{ order.orderNumber|json_encode|raw }},
+                customerName: {{ order.customerName|json_encode|raw }},
+                phoneNumber: {{ order.phoneNumber|json_encode|raw }},
+                address: {{ order.customerAddress|json_encode|raw }},
+                city: {{ order.city|json_encode|raw }},
+                province: {{ order.province|json_encode|raw }},
+                totalAmount: {{ order.totalAmount }},
+                status: {{ order.status|json_encode|raw }},
+                deliveryType: {{ order.deliveryType|json_encode|raw }},
+                paymentMethod: {{ order.paymentMethod|json_encode|raw }},
+                paidAt: {{ order.paidAt ? order.paidAt|date('Y-m-d H:i:s')|json_encode|raw : 'null' }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+        const baseUrl = '{{ app.request.schemeAndHttpHost }}';
+
+        let payments = allPaymentsData.map(p => ({
+            ...p,
+            colorCode: p.status === 'completed' ? '#10b981'
+                     : p.status === 'cancelled'  ? '#ef4444'
+                     : '#6366f1'
+        }));
+
+        let filteredPayments = [...payments];
+        let currentIndex = 0;
+
+        function getVisibleCount() {
+            if (window.innerWidth < 768)  return 1;
+            if (window.innerWidth < 1024) return 2;
+            return 3;
+        }
+
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function getStatusInfo(status) {
+            if (status === 'completed')  return { text: 'Approved',       cls: 'status-completed' };
+            if (status === 'cancelled')  return { text: 'Rejected',       cls: 'status-cancelled' };
+            if (status === 'processing') return { text: 'Pending Review', cls: 'status-pending'   };
+            return { text: 'Pending', cls: 'status-pending' };
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function capitalize(str) {
+            if (!str) return 'N/A';
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('paymentCarousel');
+            container.innerHTML = '';
+
+            if (!filteredPayments.length) {
+                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No payments found.</div>';
+                updateNav();
+                return;
+            }
+
+            filteredPayments.slice(currentIndex, currentIndex + getVisibleCount()).forEach(p => {
+                const colorLight = adjustColor(p.colorCode, 30);
+                const colorDark  = adjustColor(p.colorCode, -30);
+                const si = getStatusInfo(p.status);
+
+                const card = document.createElement('div');
+                card.className = 'order-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group';
+                card.style.cssText = `--order-color-light:${colorLight};--order-color-dark:${colorDark};background:linear-gradient(180deg,${colorLight} 0%,${colorDark} 100%);`;
+                card.setAttribute('data-color', p.colorCode);
+
+                card.innerHTML = `
+                    <div class="order-icon-wrapper">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="relative z-10 pt-8">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="status-indicator ${si.cls}">${si.text}</span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-white mb-1">${p.orderNumber}</h3>
+                        <p class="text-white/70 text-sm mb-1">${p.customerName}</p>
+                        <p class="text-white/90 text-lg font-semibold mb-2">&#8369;${parseFloat(p.totalAmount).toFixed(2)}</p>
+                        <p class="text-white/60 text-xs mb-1"><i class="fas fa-credit-card mr-1"></i>${capitalize(p.paymentMethod)}</p>
+                        <p class="text-white/60 text-xs mb-4">${formatDate(p.paidAt)}</p>
+                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
+                            Review >
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => openHero(p);
+                container.appendChild(card);
+            });
+
+            updateNav();
+        }
+
+        function updateNav() {
+            const prev = document.getElementById('prevBtn');
+            const next = document.getElementById('nextBtn');
+            if (prev) prev.disabled = currentIndex === 0;
+            if (next) next.disabled = currentIndex + getVisibleCount() >= filteredPayments.length;
+        }
+
+        function nextSlide() {
+            if (currentIndex + getVisibleCount() < filteredPayments.length) { currentIndex++; renderCarousel(); }
+        }
+        function prevSlide() {
+            if (currentIndex > 0) { currentIndex--; renderCarousel(); }
+        }
+
+        function applyFilters() {
+            const q   = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const val = document.getElementById('statusFilter')?.value || 'all';
+
+            filteredPayments = payments.filter(p => {
+                const matchSearch = !q ||
+                    p.orderNumber.toLowerCase().includes(q) ||
+                    p.customerName.toLowerCase().includes(q) ||
+                    (p.paymentMethod || '').toLowerCase().includes(q);
+                const matchStatus = val === 'all' || p.status === val;
+                return matchSearch && matchStatus;
+            });
+
+            currentIndex = 0;
+            const el = document.getElementById('totalCount');
+            if (el) el.textContent = filteredPayments.length;
+            renderCarousel();
+        }
+
+        document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+        document.getElementById('statusFilter')?.addEventListener('change', function () {
+            const val = this.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('status', val);
+            window.location.href = url.toString();
+        });
+
+        function openHero(p) {
+            const app    = document.getElementById('app');
+            const heroBg = document.getElementById('heroBg');
+            const si     = getStatusInfo(p.status);
+
+            heroBg.style.background = `linear-gradient(180deg,${adjustColor(p.colorCode,30)} 0%,${adjustColor(p.colorCode,-30)} 100%)`;
+
+            document.getElementById('heroOrderNumber').innerText  = p.orderNumber;
+            document.getElementById('heroCustomerName').innerText = p.customerName;
+            document.getElementById('heroCustomerPhone').innerText = p.phoneNumber;
+            document.getElementById('heroPaidAt').innerText       = formatDate(p.paidAt);
+            document.getElementById('heroAmount').innerText       = '&#8369;' + parseFloat(p.totalAmount).toFixed(2);
+            document.getElementById('heroMethod').innerText       = capitalize(p.paymentMethod);
+            document.getElementById('heroDelivery').innerText     = p.deliveryType;
+            document.getElementById('heroAddress').innerText      = p.address;
+            document.getElementById('heroLocation').innerText     = `${p.city}, ${p.province}`;
+            document.getElementById('heroNotes').innerText        = p.phoneNumber;
+
+            document.getElementById('heroCustomerAvatar').innerText = p.customerName.charAt(0).toUpperCase();
+
+            const badge = document.getElementById('heroStatusBadge');
+            badge.className = `status-badge-hero ${si.cls}`;
+            badge.innerText = si.text;
+
+            const viewBtn = document.getElementById('heroViewBtn');
+            if (viewBtn) {
+                viewBtn.href = isAdmin
+                    ? `${baseUrl}/admin/payment-management/${p.id}`
+                    : `${baseUrl}/staff/payment-management/${p.id}`;
+            }
+
+            app.classList.add('hero-active');
+
+            document.querySelectorAll('.slide-in').forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function closeHero() {
+            document.getElementById('app').classList.remove('hero-active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusFromUrl = urlParams.get('status');
+            document.getElementById('statusFilter').value = statusFromUrl || 'processing';
+            applyFilters();
+
+            window.addEventListener('resize', renderCarousel);
+
+            const toggle  = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            toggle?.addEventListener('click', () => {
+                sidebar?.classList.toggle('active');
+                overlay?.classList.toggle('active');
+            });
+            overlay?.addEventListener('click', () => {
+                sidebar?.classList.remove('active');
+                overlay?.classList.remove('active');
+            });
+        });
+    </script>
+{% endblock %}

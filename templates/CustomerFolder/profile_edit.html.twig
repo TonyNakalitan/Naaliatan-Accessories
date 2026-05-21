@@ -1,0 +1,540 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/customer_dashboard.css') }}?v={{ random() }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        .page-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* Profile card (same as My Profile) */
+        .profile-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: visible;
+            position: sticky;
+            top: 0;
+        }
+
+        .profile-card-top {
+            height: 120px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            border: 4px solid #fff;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #fff;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .profile-card-body {
+            padding: 3.25rem 1.5rem 1.75rem;
+            text-align: center;
+        }
+
+        .profile-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.2rem;
+        }
+
+        .profile-email {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+
+        .profile-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            text-align: left;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .profile-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.82rem;
+            color: #6b7280;
+        }
+        .profile-meta-row i {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+        .profile-meta-row span { font-weight: 500; color: #374151; }
+
+        .btn-back {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e5e7eb;
+            text-decoration: none;
+            margin-top: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        .btn-back:hover { background: #f1f5f9; color: #374151; }
+
+        /* Form card */
+        .info-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 1.5rem;
+        }
+
+        .info-card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .info-card-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        /* Form fields */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            color: #111827;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fafafa;
+            font-family: 'Poppins', sans-serif;
+        }
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            background: #fff;
+        }
+
+        textarea.form-input { resize: vertical; min-height: 100px; }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-divider {
+            border: none;
+            border-top: 1px solid #f3f4f6;
+            margin: 1.5rem 0;
+        }
+
+        .form-section-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 1rem;
+        }
+
+        .btn-save {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.75rem;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59,130,246,0.4);
+        }
+
+        .btn-cancel {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1.5px solid #e5e7eb;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-cancel:hover { background: #f1f5f9; color: #374151; }
+
+        .btn-upload {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #374151;
+            border: 1.5px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-upload:hover { background: #f1f5f9; border-color: #3b82f6; color: #3b82f6; }    </style>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard-app-wrapper" class="min-h-screen">
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ path('app_customer_dashboard') }}" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ path('app_customer_characters') }}" class="nav-item">
+                <i class="fas fa-user-astronaut"></i>
+                <span>Browse Products</span>
+            </a>
+            <a href="{{ path('app_customer_cart') }}" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>My Cart</span>
+                {% set cartCount = app.user.cart ? app.user.cart.cartItems|length : 0 %}
+                {% if cartCount > 0 %}
+                    <span class="nav-badge">{{ cartCount }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('app_customer_orders') }}" class="nav-item">
+                <i class="fas fa-shopping-bag"></i>
+                <span>My Orders</span>
+            </a>
+            <a href="{{ path('app_customer_profile') }}" class="nav-item active">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <div id="app" class="relative w-full h-screen glass-container flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">Edit Profile</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ path('app_customer_profile') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                    {% else %}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0,2)|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Customer</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto page-content">
+
+            <div class="profile-layout">
+
+                <!-- Left: Profile card (read-only preview) -->
+                <div>
+                    <div class="profile-card">
+                        <div class="profile-card-top">
+                            <div class="profile-avatar">
+                                {% if user.profilePicture %}
+                                    <img src="{{ asset('images/profiles/' ~ user.profilePicture) }}" alt="Profile">
+                                {% else %}
+                                    {% set displayText = user.displayName ?: user.username %}
+                                    {% set words = displayText|split(' ') %}
+                                    {% if words|length > 1 %}
+                                        {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                                    {% else %}
+                                        {{ displayText|slice(0,2)|upper }}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="profile-card-body">
+                            <div class="profile-name">{{ user.displayName ?: user.username }}</div>
+                            <div class="profile-email">
+                                <i class="fas fa-envelope"></i>{{ user.email }}
+                            </div>
+
+                            <div class="profile-meta">
+                                {% if user.zodiacSign %}
+                                    <div class="profile-meta-row">
+                                        <i class="fas fa-star"></i>
+                                        <span>{{ user.zodiacSign }}</span>
+                                    </div>
+                                {% endif %}
+                                <div class="profile-meta-row">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Joined {{ user.createdAt ? user.createdAt|date('F Y') : 'N/A' }}</span>
+                                </div>
+                                <div class="profile-meta-row">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>{{ user.roles|join(', ')|replace({'ROLE_': ''})|capitalize }}</span>
+                                </div>
+                            </div>
+
+                            <a href="{{ path('app_customer_profile') }}" class="btn-back">
+                                <i class="fas fa-arrow-left"></i> Back to Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Edit form -->
+                <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+                    <div class="info-card">
+                        <div class="info-card-title">Update Information</div>
+
+                        <form action="{{ path('app_customer_profile_edit') }}" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="_token" value="{{ csrf_token('edit_profile') }}" />
+
+                            <!-- Profile picture upload -->
+                            <div class="form-section-label">Profile Picture</div>
+                            <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;">
+                                <div id="avatar-preview" style="
+                                    width:72px;height:72px;border-radius:18px;overflow:hidden;
+                                    border:3px solid #e5e7eb;flex-shrink:0;
+                                    display:flex;align-items:center;justify-content:center;
+                                    background:linear-gradient(135deg,#2563eb,#7c3aed);
+                                    font-size:1.6rem;font-weight:800;color:#fff;
+                                ">
+                                    {% if user.profilePicture %}
+                                        <img id="avatar-img" src="{{ asset('images/profiles/' ~ user.profilePicture) }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;">
+                                    {% else %}
+                                        <span id="avatar-initials">
+                                            {% set displayText = user.displayName ?: user.username %}
+                                            {% set words = displayText|split(' ') %}
+                                            {% if words|length > 1 %}
+                                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                                            {% else %}
+                                                {{ displayText|slice(0,2)|upper }}
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <label for="profile_picture" class="btn-upload">
+                                        <i class="fas fa-camera"></i> Choose Photo
+                                    </label>
+                                    <input type="file" id="profile_picture" name="profile_picture"
+                                        accept="image/jpeg,image/png,image/gif,image/webp"
+                                        style="display:none;">
+                                    <div style="font-size:0.75rem;color:#9ca3af;margin-top:0.4rem;">
+                                        JPG, PNG, GIF or WebP · Max 2MB
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="form-divider">
+
+                            <!-- Profile info section -->
+                            <div class="form-section-label">Profile Info</div>                            <div class="form-group">
+                                <label class="form-label" for="display_name">Display Name</label>
+                                <input class="form-input" type="text" id="display_name" name="display_name"
+                                    value="{{ user.displayName }}" placeholder="How should we address you?">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="bio">Bio</label>
+                                <textarea class="form-input" id="bio" name="bio"
+                                    placeholder="Tell others a little about yourself...">{{ user.bio }}</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="zodiac_sign">Zodiac Sign</label>
+                                <input class="form-input" type="text" id="zodiac_sign" name="zodiac_sign"
+                                    value="{{ user.zodiacSign }}" placeholder="e.g. Pisces, Leo, Gemini...">
+                            </div>
+
+                            <hr class="form-divider">
+
+                            <!-- Password section -->
+                            <div class="form-section-label">Change Password</div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label class="form-label" for="new_password">New Password</label>
+                                    <input class="form-input" type="password" id="new_password" name="new_password"
+                                        placeholder="Leave blank to keep current">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="confirm_password">Confirm Password</label>
+                                    <input class="form-input" type="password" id="confirm_password" name="confirm_password"
+                                        placeholder="Repeat new password">
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.5rem;">
+                                <button type="submit" class="btn-save">
+                                    <i class="fas fa-check"></i> Save Changes
+                                </button>
+                                <a href="{{ path('app_customer_profile') }}" class="btn-cancel">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+
+            // Profile picture live preview
+            const fileInput = document.getElementById('profile_picture');
+            const preview   = document.getElementById('avatar-preview');
+            fileInput?.addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    </script>
+{% endblock %}
+

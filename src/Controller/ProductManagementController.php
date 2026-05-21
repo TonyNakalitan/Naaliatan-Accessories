@@ -86,7 +86,8 @@ class ProductManagementController extends AbstractController
     #[IsGranted('ROLE_STAFF')]
     public function staffNew(Request $request, EntityManagerInterface $entityManager): Response
     {
-        return $this->new($request, $entityManager, 'staff');
+        $this->addFlash('error', 'Staff are not permitted to add new products.');
+        return $this->redirectToRoute('app_staff_product_management_index');
     }
 
     #[Route('/staff/product-management/{id}/edit', name: 'app_staff_product_management_edit')]
@@ -106,30 +107,23 @@ class ProductManagementController extends AbstractController
     // Shared implementation methods
     private function index(Request $request): Response
     {
-        $page = max(1, $request->query->getInt('page', 1));
-        $limit = 5; // Show 5 products per page as requested
         $search = $request->query->get('search');
         $status = $request->query->get('status');
-        
-        // Get paginated products
-        $products = $this->productRepository->findPaginatedProducts($page, $limit, $search, $status);
-        
-        // Get total count for pagination
-        $totalProducts = $this->productRepository->getFilteredProductsCount($search, $status);
-        $totalPages = ceil($totalProducts / $limit);
-        
-        // Get out of stock count (for all products, not just filtered)
+
+        // Load all matching products for the management view
+        $products = $this->productRepository->findFilteredProducts($search, $status);
+        $totalProducts = count($products);
         $outOfStockCount = $this->productRepository->getOutOfStockCount();
-        
+
         return $this->render('ProductManagementFolder/index.html.twig', [
             'products' => $products,
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
             'isStaff' => $this->isGranted('ROLE_STAFF'),
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
+            'currentPage' => 1,
+            'totalPages' => 1,
             'totalProducts' => $totalProducts,
             'outOfStockCount' => $outOfStockCount,
-            'limit' => $limit,
+            'limit' => $totalProducts,
             'search' => $search,
             'status' => $status,
         ]);

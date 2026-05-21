@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Account{% endblock %} | Naaliatan's Accessories</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block extra_css %}{% endblock %}
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f8fafc; }
+
+        /* Sidebar */
+        .customer-sidebar {
+            position: fixed; top: 0; left: 0; height: 100vh; width: 260px;
+            background: linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+            z-index: 100; transform: translateX(-100%); transition: transform 0.3s ease;
+            display: flex; flex-direction: column; overflow-y: auto;
+        }
+        .customer-sidebar.open { transform: translateX(0); }
+        @media (min-width: 1024px) { .customer-sidebar { transform: translateX(0); } .main-content { margin-left: 260px; } }
+
+        .sidebar-logo { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo img { height: 40px; }
+
+        .sidebar-nav { flex: 1; padding: 1rem 0; }
+        .nav-link {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem;
+            color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.875rem;
+            font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #fff; background: rgba(255,255,255,0.1); border-left-color: #a78bfa;
+        }
+        .nav-link i { width: 18px; text-align: center; }
+
+        .sidebar-footer { padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-user { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 12px; background: rgba(255,255,255,0.08); }
+        .sidebar-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #a78bfa, #818cf8); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.875rem; overflow: hidden; flex-shrink: 0; }
+        .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .sidebar-user-info { flex: 1; min-width: 0; }
+        .sidebar-user-name { color: #fff; font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user-role { color: rgba(255,255,255,0.5); font-size: 0.7rem; }
+
+        /* Top bar */
+        .topbar {
+            position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0;
+            padding: 0.875rem 1.5rem; display: flex; align-items: center; gap: 1rem;
+        }
+        .topbar-title { font-size: 1.25rem; font-weight: 700; color: #1e1b4b; flex: 1; }
+        .menu-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; color: #64748b; }
+        @media (min-width: 1024px) { .menu-btn { display: none; } }
+
+        /* Overlay */
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+        .sidebar-overlay.show { display: block; }
+
+        /* Flash messages */
+        .flash-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 0.875rem 1rem; border-radius: 10px; display: flex; align-items: center; gap: 0.5rem; }
+        .flash-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 0.875rem 1rem; border-radius: 10px; display: flex; align-items: center; gap: 0.5rem; }
+
+        /* Cards */
+        .card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+        .card-body { padding: 1.5rem; }
+
+        /* Status badges */
+        .badge-pending { background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-processing { background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-completed { background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-cancelled { background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+
+        /* Buttons */
+        .btn-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; padding: 0.625rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: opacity 0.2s; }
+        .btn-primary:hover { opacity: 0.9; color: #fff; }
+        .btn-secondary { background: #f1f5f9; color: #475569; padding: 0.625rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.875rem; border: 1px solid #e2e8f0; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: background 0.2s; }
+        .btn-secondary:hover { background: #e2e8f0; color: #475569; }
+        .btn-danger { background: #fef2f2; color: #dc2626; padding: 0.625rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.875rem; border: 1px solid #fecaca; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: background 0.2s; }
+        .btn-danger:hover { background: #fee2e2; color: #dc2626; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="customer-sidebar" id="customerSidebar">
+        <div class="sidebar-logo">
+            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories">
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{{ path('app_customer_dashboard') }}" class="nav-link {% if app.request.get('_route') starts with 'app_customer_dashboard' %}active{% endif %}">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="{{ path('app_customer_characters') }}" class="nav-link {% if app.request.get('_route') starts with 'app_customer_char' %}active{% endif %}">
+                <i class="fas fa-user-astronaut"></i> Browse Products
+            </a>
+            <a href="{{ path('app_customer_cart') }}" class="nav-link {% if app.request.get('_route') == 'app_customer_cart' %}active{% endif %}">
+                <i class="fas fa-shopping-cart"></i> My Cart
+                {% set cartCount = app.user.cart ? app.user.cart.cartItems|length : 0 %}
+                {% if cartCount > 0 %}
+                    <span style="margin-left:auto;background:#ef4444;color:#fff;border-radius:20px;padding:0.1rem 0.5rem;font-size:0.7rem;font-weight:700;">{{ cartCount }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('app_customer_orders') }}" class="nav-link {% if app.request.get('_route') starts with 'app_customer_order' %}active{% endif %}">
+                <i class="fas fa-shopping-bag"></i> My Orders
+            </a>
+            <a href="{{ path('app_customer_profile') }}" class="nav-link {% if app.request.get('_route') starts with 'app_customer_profile' %}active{% endif %}">
+                <i class="fas fa-user-circle"></i> My Profile
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-avatar">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Avatar">
+                    {% else %}
+                        {{ (app.user.displayName ?: app.user.username)|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ app.user.displayName ?: app.user.username }}</div>
+                    <div class="sidebar-user-role">Customer</div>
+                </div>
+            </div>
+            <a href="{{ path('app_logout') }}" class="nav-link" style="margin-top:0.5rem;" onclick="return confirm('Log out?')">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content" style="min-height:100vh;">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <a href="{{ path('app_customer_cart') }}" style="position:relative;color:#64748b;font-size:1.1rem;">
+                    <i class="fas fa-shopping-cart"></i>
+                    {% set cartCount = app.user.cart ? app.user.cart.cartItems|length : 0 %}
+                    {% if cartCount > 0 %}
+                        <span style="position:absolute;top:-6px;right:-8px;background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;">{{ cartCount }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ path('app_customer_profile') }}" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.75rem;overflow:hidden;">
+                        {% if app.user.profilePicture %}
+                            <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" style="width:100%;height:100%;object-fit:cover;" alt="Avatar">
+                        {% else %}
+                            {{ (app.user.displayName ?: app.user.username)|slice(0,1)|upper }}
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div style="padding:1.5rem;">
+            {% for msg in app.flashes('success') %}
+                <div class="flash-success fade-in" style="margin-bottom:1rem;">
+                    <i class="fas fa-check-circle"></i> {{ msg }}
+                </div>
+            {% endfor %}
+            {% for msg in app.flashes('error') %}
+                <div class="flash-error fade-in" style="margin-bottom:1rem;">
+                    <i class="fas fa-exclamation-circle"></i> {{ msg }}
+                </div>
+            {% endfor %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('customerSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        menuBtn?.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        });
+        overlay?.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

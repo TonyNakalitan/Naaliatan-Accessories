@@ -206,6 +206,9 @@ function updateRolesPreview() {
             } else if (role === 'ROLE_STAFF') {
                 badge.classList.add('bg-gradient-to-r', 'from-blue-500', 'to-cyan-500', 'text-white');
                 badge.textContent = 'Staff';
+            } else if (role === 'ROLE_CUSTOMER') {
+                badge.classList.add('bg-gradient-to-r', 'from-emerald-500', 'to-lime-500', 'text-white');
+                badge.textContent = 'Customer';
             }
             
             previewContainer.appendChild(badge);

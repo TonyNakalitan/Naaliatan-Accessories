@@ -1,0 +1,584 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Payment — #{{ order.orderNumber }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/customer_dashboard.css') }}?v={{ random() }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        .page-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .payment-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* Payment hero card — mirrors product-hero */
+        .payment-hero {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-hero-banner {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-hero-banner .banner-icon {
+            font-size: 5rem;
+            color: rgba(255,255,255,0.9);
+            filter: drop-shadow(0 4px 16px rgba(0,0,0,0.15));
+        }
+
+        .status-badge-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .status-processing { background: rgba(219,234,254,0.95); color: #1d4ed8; }
+        .status-completed  { background: rgba(209,250,229,0.95); color: #065f46; }
+        .status-cancelled  { background: rgba(254,226,226,0.95); color: #991b1b; }
+        .status-pending    { background: rgba(254,249,195,0.95); color: #92400e; }
+
+        .payment-hero-body { padding: 1.5rem; }
+
+        .payment-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 0.4rem;
+            line-height: 1.2;
+        }
+
+        .payment-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.1rem;
+        }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .payment-amount {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 1.1rem;
+        }
+
+        /* Info sections inside hero body */
+        .section-divider {
+            border: none;
+            border-top: 1px solid #f3f4f6;
+            margin: 1rem 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem 1.5rem;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .info-item span {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #111827;
+            word-break: break-word;
+        }
+
+        /* Items list */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(180deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .item-row:last-child { border-bottom: none; }
+
+        .item-thumb {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: #f3f4f6;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .item-thumb i { font-size: 1.1rem; color: #d1d5db; }
+
+        .item-info { flex: 1; min-width: 0; }
+        .item-name { font-size: 0.9rem; font-weight: 700; color: #111827; }
+        .item-qty  { font-size: 0.78rem; color: #9ca3af; margin-top: 0.1rem; }
+
+        .item-price { text-align: right; }
+        .item-subtotal { font-size: 0.95rem; font-weight: 700; color: #111827; }
+        .item-unit { font-size: 0.72rem; color: #9ca3af; }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-top: 2px solid #f1f5f9;
+            margin-top: 0.5rem;
+        }
+        .total-label  { font-size: 0.9rem; font-weight: 700; color: #374151; }
+        .total-amount { font-size: 1.2rem; font-weight: 800; color: #111827; }
+
+        /* Right panel — mirrors order-card */
+        .action-panel {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(180deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .detail-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            margin-bottom: 1rem;
+        }
+        .detail-row label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .detail-row span {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .btn-approve {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(34,197,94,0.35);
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34,197,94,0.45);
+        }
+
+        .btn-reject {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1.5px solid #fecaca;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-reject:hover { background: #fee2e2; border-color: #fca5a5; }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 1rem;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e5e7eb;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-back:hover { background: #f1f5f9; color: #374151; }
+
+        .flash-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 0.875rem 1rem; border-radius: 10px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; }
+        .flash-error   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 0.875rem 1rem; border-radius: 10px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; }
+
+        .divider-or {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin: 1rem 0; color: #d1d5db; font-size: 0.75rem;
+        }
+        .divider-or::before, .divider-or::after {
+            content: ''; flex: 1; height: 1px; background: #f1f5f9;
+        }
+        .divider-or span { color: #9ca3af; font-weight: 600; }
+
+        .resolved-box {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #9ca3af;
+        }
+        .resolved-box i { font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 0.75rem; }
+        .resolved-box p { font-weight: 600; color: #6b7280; font-size: 0.9rem; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard-app-wrapper" class="min-h-screen">
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    {# Sidebar is rendered by base.html.twig #}
+
+    <div id="app" class="relative w-full h-screen glass-container flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_payment_management_index') : path('app_staff_payment_management_index') }}"
+                   class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700"
+                   title="Back to Payments">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">Order #{{ order.orderNumber }}</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_profile_edit') : path('app_staff_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                    {% else %}
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                            {% else %}
+                                {{ displayText|slice(0,2)|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto page-content">
+
+            {% for msg in app.flashes('success') %}
+                <div class="flash-success"><i class="fas fa-check-circle"></i> {{ msg }}</div>
+            {% endfor %}
+            {% for msg in app.flashes('error') %}
+                <div class="flash-error"><i class="fas fa-exclamation-circle"></i> {{ msg }}</div>
+            {% endfor %}
+
+            <div class="payment-layout">
+
+                <!-- LEFT: main info -->
+                <div>
+
+                    <!-- Payment hero banner -->
+                    <div class="payment-hero">
+                        <div class="payment-hero-banner" style="background: linear-gradient(135deg,
+                            {% if order.status == 'completed' %}#059669, #10b981
+                            {% elseif order.status == 'cancelled' %}#dc2626, #ef4444
+                            {% else %}#4f46e5, #6366f1{% endif %});">
+                            <i class="fas fa-credit-card banner-icon"></i>
+                            <span class="status-badge-overlay status-{{ order.status }}">
+                                {% if order.status == 'processing' %}<i class="fas fa-spinner fa-spin"></i> Pending Review
+                                {% elseif order.status == 'completed' %}<i class="fas fa-check-circle"></i> Approved
+                                {% elseif order.status == 'cancelled' %}<i class="fas fa-times-circle"></i> Rejected
+                                {% else %}<i class="fas fa-clock"></i> {{ order.status|capitalize }}{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="payment-hero-body">
+                            <div class="payment-title">Payment for Order #{{ order.orderNumber }}</div>
+                            <div class="payment-meta">
+                                <span class="meta-pill" style="background:#f5f3ff;color:#7c3aed;">
+                                    <i class="fas fa-credit-card"></i>
+                                    {{ order.paymentMethod ? order.paymentMethod|capitalize : 'N/A' }}
+                                </span>
+                                <span class="meta-pill" style="background:#f0fdf4;color:#166534;">
+                                    <i class="fas fa-calendar-check"></i>
+                                    {{ order.paidAt ? order.paidAt|date('M j, Y H:i') : 'Not paid yet' }}
+                                </span>
+                                <span class="meta-pill" style="background:#f8fafc;color:#64748b;">
+                                    <i class="fas fa-hashtag"></i>
+                                    {{ order.orderItems|length }} item{{ order.orderItems|length != 1 ? 's' : '' }}
+                                </span>
+                            </div>
+                            <div class="payment-amount">₱{{ order.totalAmount|number_format(2) }}</div>
+
+                            <hr class="section-divider">
+
+                            <!-- Customer & shipping info -->
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>Customer Name</label>
+                                    <span>{{ order.customerName }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Phone Number</label>
+                                    <span>{{ order.phoneNumber }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Delivery Type</label>
+                                    <span>{{ order.deliveryType }}</span>
+                                </div>
+                                <div class="info-item" style="grid-column: span 2;">
+                                    <label>Delivery Address</label>
+                                    <span>{{ order.customerAddress }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>City / Province</label>
+                                    <span>{{ order.city }}, {{ order.province }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Order Placed</label>
+                                    <span>{{ order.createdAt ? order.createdAt|date('M j, Y H:i') : 'N/A' }}</span>
+                                </div>
+                                {% if order.completedAt %}
+                                <div class="info-item">
+                                    <label>Completed At</label>
+                                    <span>{{ order.completedAt|date('M j, Y H:i') }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items ordered -->
+                    <div class="section-title">Items Ordered</div>
+                    <div class="payment-hero" style="padding: 1rem 1.5rem;">
+                        {% for item in order.orderItems %}
+                            <div class="item-row">
+                                <div class="item-thumb">
+                                    {% if item.product and item.product.image %}
+                                        <img src="{{ asset('images/products/' ~ item.product.image) }}"
+                                             alt="{{ item.product.name }}"
+                                             onerror="this.parentElement.innerHTML='<i class=\'fas fa-box\'></i>'">
+                                    {% else %}
+                                        <i class="fas fa-box"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="item-info">
+                                    <div class="item-name">{{ item.product ? item.product.name : 'Unknown product' }}</div>
+                                    <div class="item-qty">Qty: {{ item.quantity }} &nbsp;·&nbsp; Unit price: ₱{{ item.unitPrice|number_format(2) }}</div>
+                                </div>
+                                <div class="item-price">
+                                    <div class="item-subtotal">₱{{ item.subtotal|number_format(2) }}</div>
+                                    <div class="item-unit">subtotal</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="total-row">
+                            <span class="total-label">Order Total</span>
+                            <span class="total-amount">₱{{ order.totalAmount|number_format(2) }}</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT: action panel -->
+                <div class="action-panel">
+                    <div class="panel-title">Review Decision</div>
+
+                    <!-- Payment summary -->
+                    <div class="detail-row">
+                        <label>Order Number</label>
+                        <span>#{{ order.orderNumber }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Amount</label>
+                        <span style="font-size:1.1rem;color:#111827;">₱{{ order.totalAmount|number_format(2) }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Payment Method</label>
+                        <span>{{ order.paymentMethod ? order.paymentMethod|capitalize : 'N/A' }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Paid At</label>
+                        <span>{{ order.paidAt ? order.paidAt|date('M j, Y H:i') : '—' }}</span>
+                    </div>
+                    <div class="detail-row" style="margin-bottom:1.5rem;">
+                        <label>Current Status</label>
+                        <span class="meta-pill
+                            {% if order.status == 'processing' %}style="background:#dbeafe;color:#1d4ed8;"
+                            {% elseif order.status == 'completed' %}style="background:#dcfce7;color:#15803d;"
+                            {% elseif order.status == 'cancelled' %}style="background:#fee2e2;color:#b91c1c;"
+                            {% else %}style="background:#fef9c3;color:#92400e;"{% endif %}"
+                            style="
+                                {% if order.status == 'processing' %}background:#dbeafe;color:#1d4ed8;
+                                {% elseif order.status == 'completed' %}background:#dcfce7;color:#15803d;
+                                {% elseif order.status == 'cancelled' %}background:#fee2e2;color:#b91c1c;
+                                {% else %}background:#fef9c3;color:#92400e;{% endif %}">
+                            {% if order.status == 'processing' %}<i class="fas fa-spinner fa-spin"></i> Pending Review
+                            {% elseif order.status == 'completed' %}<i class="fas fa-check-circle"></i> Approved
+                            {% elseif order.status == 'cancelled' %}<i class="fas fa-times-circle"></i> Rejected
+                            {% else %}<i class="fas fa-clock"></i> {{ order.status|capitalize }}{% endif %}
+                        </span>
+                    </div>
+
+                    {% if order.status == 'processing' %}
+                        <form method="post"
+                              action="{{ is_granted('ROLE_ADMIN') ? path('app_admin_payment_management_approve', {id: order.id}) : path('app_staff_payment_management_approve', {id: order.id}) }}"
+                              onsubmit="return confirm('Approve this payment and mark order as completed?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('approve_payment_' ~ order.id) }}">
+                            <button type="submit" class="btn-approve">
+                                <i class="fas fa-check-circle"></i> Approve Payment
+                            </button>
+                        </form>
+
+                        <div class="divider-or"><span>or</span></div>
+
+                        <form method="post"
+                              action="{{ is_granted('ROLE_ADMIN') ? path('app_admin_payment_management_reject', {id: order.id}) : path('app_staff_payment_management_reject', {id: order.id}) }}"
+                              onsubmit="return confirm('Reject this payment? Stock will be restored and order cancelled.')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('reject_payment_' ~ order.id) }}">
+                            <button type="submit" class="btn-reject">
+                                <i class="fas fa-times-circle"></i> Reject Payment
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="resolved-box">
+                            {% if order.status == 'completed' %}
+                                <i class="fas fa-check-circle" style="color:#22c55e;opacity:1;"></i>
+                                <p>Payment approved.</p>
+                            {% else %}
+                                <i class="fas fa-times-circle" style="color:#ef4444;opacity:1;"></i>
+                                <p>Payment rejected.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        });
+    </script>
+{% endblock %}

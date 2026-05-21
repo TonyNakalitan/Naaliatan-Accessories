@@ -3,6 +3,22 @@ const totalSteps = 4;
 let selectedRoles = [];
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize selected roles from existing input state
+    const existingRoleInputs = document.querySelectorAll('input[name*="roles"]:checked');
+    if (existingRoleInputs.length > 0) {
+        existingRoleInputs.forEach(input => {
+            const role = input.value;
+            const roleCard = document.querySelector(`.role-card[data-role="${role}"]`);
+            if (roleCard) {
+                roleCard.classList.add('selected');
+            }
+            if (!selectedRoles.includes(role)) {
+                selectedRoles.push(role);
+            }
+        });
+        updateRolesPreview();
+    }
+
     // Initialize password strength checker
     const passwordInput = document.getElementById('passwordInput');
     if (passwordInput) {
@@ -157,6 +173,8 @@ function updateRolesPreview() {
                 return '<span class="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-xs font-semibold">Admin</span>';
             } else if (role === 'ROLE_STAFF') {
                 return '<span class="px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full text-xs font-semibold">Staff</span>';
+            } else if (role === 'ROLE_CUSTOMER') {
+                return '<span class="px-3 py-1 bg-gradient-to-r from-emerald-500 to-lime-500 text-white rounded-full text-xs font-semibold">Customer</span>';
             }
             return '';
         }).join(' ');

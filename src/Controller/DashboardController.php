@@ -105,11 +105,15 @@ class DashboardController extends AbstractController
     public function index(): Response
     {
         $user = $this->getUser();
-        
+
         if ($user->isAdmin()) {
             return $this->redirectToRoute('app_admin_dashboard');
-        } else {
+        } elseif ($this->isGranted('ROLE_STAFF')) {
             return $this->redirectToRoute('app_staff_dashboard');
+        } elseif ($this->isGranted('ROLE_CUSTOMER')) {
+            return $this->redirectToRoute('app_customer_dashboard');
         }
+
+        return $this->redirectToRoute('app_login');
     }
 }

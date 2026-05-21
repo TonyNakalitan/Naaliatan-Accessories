@@ -213,27 +213,29 @@
                     </div>
                 </div>
                 <div class="actions-grid">
-                    <a href="{{ path('app_admin_product_management_new') }}" class="action-card">
-                        <div class="action-icon action-icon-blue">
-                            <i class="fas fa-plus-circle"></i>
-                        </div>
-                        <div class="action-content">
-                            <h4>Add Product</h4>
-                            <p>Create new product listing</p>
-                        </div>
-                        <i class="fas fa-arrow-right action-arrow"></i>
-                    </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_admin_product_management_new') }}" class="action-card">
+                            <div class="action-icon action-icon-blue">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>Add Product</h4>
+                                <p>Create new product listing</p>
+                            </div>
+                            <i class="fas fa-arrow-right action-arrow"></i>
+                        </a>
 
-                    <a href="{{ path('app_admin_character_management_new') }}" class="action-card">
-                        <div class="action-icon action-icon-purple">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <div class="action-content">
-                            <h4>Add Character</h4>
-                            <p>Add new character profile</p>
-                        </div>
-                        <i class="fas fa-arrow-right action-arrow"></i>
-                    </a>
+                        <a href="{{ path('app_admin_character_management_new') }}" class="action-card">
+                            <div class="action-icon action-icon-purple">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>Add Character</h4>
+                                <p>Add new character profile</p>
+                            </div>
+                            <i class="fas fa-arrow-right action-arrow"></i>
+                        </a>
+                    {% endif %}
 
                     <a href="{{ path('app_admin_stock_management_index') }}" class="action-card">
                         <div class="action-icon action-icon-emerald">

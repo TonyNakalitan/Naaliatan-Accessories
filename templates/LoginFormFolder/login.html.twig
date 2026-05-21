@@ -64,10 +64,22 @@
                 </div>
 
                 {% if error %}
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
-                </div>
+                    {% set errorMsg = error.messageKey|trans(error.messageData, 'security') %}
+                    {% if errorMsg starts with 'email_not_verified::' %}
+                        {% set unverifiedEmail = errorMsg|replace({'email_not_verified::': ''}) %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-envelope"></i>
+                            <span>
+                                Your email address is not verified.
+                                <a href="{{ path('app_verify_resend_email', {email: unverifiedEmail}) }}" style="color: inherit; font-weight: 600; text-decoration: underline;">Resend verification email</a>
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ errorMsg }}</span>
+                        </div>
+                    {% endif %}
                 {% endif %}
 
                 {% for message in app.flashes('success') %}

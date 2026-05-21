@@ -13,83 +13,6 @@
 {% block body %}
 <div id="profile-app-wrapper" class="min-h-screen">
 
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="{{ asset('images/NA.png') }}" alt="Naaliatan's Accessories" class="sidebar-logo">
-        </div>
-        <nav class="sidebar-nav">
-            {% if is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('app_admin_dashboard') }}" class="nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{{ path('app_admin_user_management_index') }}" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    <span>User Management</span>
-                </a>
-                <a href="{{ path('app_admin_product_management_index') }}" class="nav-item">
-                    <i class="fas fa-box-open"></i>
-                    <span>Products</span>
-                </a>
-                <a href="{{ path('app_admin_stock_management_index') }}" class="nav-item">
-                    <i class="fas fa-warehouse"></i>
-                    <span>Stock Control</span>
-                </a>
-                <a href="{{ path('app_admin_order_index') }}" class="nav-item">
-                    <i class="fas fa-shopping-bag"></i>
-                    <span>Orders</span>
-                </a>
-                <a href="{{ path('app_admin_item_management_index') }}" class="nav-item">
-                    <i class="fas fa-boxes"></i>
-                    <span>Items</span>
-                </a>
-                <a href="{{ path('app_admin_cart_index') }}" class="nav-item">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Cart</span>
-                </a>
-                <a href="{{ path('app_admin_character_management_index') }}" class="nav-item">
-                    <i class="fas fa-id-badge"></i>
-                    <span>Characters</span>
-                </a>
-                <a href="{{ path('app_admin_activity_logs_index') }}" class="nav-item">
-                    <i class="fas fa-history"></i>
-                    <span>Activity Logs</span>
-                </a>
-            {% else %}
-                <a href="{{ path('app_staff_dashboard') }}" class="nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{{ path('app_staff_product_management_index') }}" class="nav-item">
-                    <i class="fas fa-box-open"></i>
-                    <span>Products</span>
-                </a>
-                <a href="{{ path('app_staff_stock_management_index') }}" class="nav-item">
-                    <i class="fas fa-warehouse"></i>
-                    <span>Stock Control</span>
-                </a>
-                <a href="{{ path('app_staff_order_index') }}" class="nav-item">
-                    <i class="fas fa-shopping-bag"></i>
-                    <span>Orders</span>
-                </a>
-            {% endif %}
-        </nav>
-        <div class="sidebar-footer">
-            <a href="{{ role_path('profile_show') }}" class="nav-item active">
-                <i class="fas fa-user-circle"></i>
-                <span>My Profile</span>
-            </a>
-            <a href="{{ path('app_logout') }}" class="nav-item" onclick="return confirm('Are you sure you want to logout?')">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </a>
-        </div>
-    </aside>
-
     <!-- App Wrapper -->
     <div id="app" class="relative w-full h-screen glass-container overflow-hidden flex flex-col">
         
@@ -111,7 +34,7 @@
             </div>
 
             <div class="flex items-center gap-6">
-                <a href="{{ role_path('profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <a href="{{ role_path("profile_edit") }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if user.profilePicture %}
                         <img src="{{ asset('images/profiles/' ~ user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
@@ -253,7 +176,7 @@
                     { icon: 'fa-signature', label: 'Display Name', value: '{{ user.displayName ?: "Not set" }}' }
                 ],
                 actions: [
-                    { label: 'Edit Profile', url: '{{ role_path('profile_edit') }}', class: 'primary' }
+                    { label: 'Edit Profile', url: '{{ role_path("profile_edit") }}', class: 'primary' }
                 ]
             },
             {
@@ -286,7 +209,7 @@
                 ],
                 actions: [
                     {% if is_granted('ROLE_ADMIN') %}
-                        { label: 'View All Logs', url: '{{ path('app_admin_activity_logs_index') }}', class: 'primary' }
+                        { label: 'View All Logs', url: '{{ path("app_admin_activity_logs_index") }}', class: 'primary' }
                     {% endif %}
                 ]
             }
@@ -298,7 +221,7 @@
                 badge: 'Info',
                 icon: 'fa-star',
                 colorCode: '#f59e0b',
-                description: '{{ user.bio ?: "Your personal information and preferences" }}',
+                description: '{{ user.bio ? user.bio|e('js') : "Your personal information and preferences" }}',
                 meta: [
                     {% if user.zodiacSign %}
                         { icon: 'fa-moon', label: 'Zodiac Sign', value: '{{ user.zodiacSign }}' },
@@ -307,7 +230,7 @@
                     { icon: 'fa-info-circle', label: 'Profile', value: '{{ user.profilePicture ? "Has Picture" : "No Picture" }}' }
                 ],
                 actions: [
-                    { label: 'Update Details', url: '{{ role_path('profile_edit') }}', class: 'primary' }
+                    { label: 'Update Details', url: '{{ role_path("profile_edit") }}', class: 'primary' }
                 ]
             }
             {% endif %}
@@ -346,7 +269,7 @@
                     <div class="relative z-10 pt-8">
                         <h3 class="text-4xl font-bold text-white mb-1">${stat.title}</h3>
                         <p class="text-white/70 text-sm mb-2">${stat.badge}</p>
-                        <p class="text-6xl font-extrabold text-white mb-4">${stat.value}</p>
+                        <p class="text-4xl font-bold text-white mb-4 truncate">${stat.value}</p>
                         <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
                             View Details >
                         </button>

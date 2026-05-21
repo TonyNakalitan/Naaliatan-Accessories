@@ -291,7 +291,7 @@
         const isAdmin = currentPath.includes('/admin/');
         const isStaff = currentPath.includes('/staff/');
         const cartAddUrl = isAdmin ? `/admin/cart/add/${productId}` :
-            (isStaff ? `/staff/cart/add/${productId}` : `/cart/add/${productId}`);
+            (isStaff ? `/staff/cart/add/${productId}` : `/api/cart/add/${productId}`);
 
         // Send request
         fetch(cartAddUrl, {
@@ -445,14 +445,15 @@
         const isAdmin = currentPath.includes('/admin/');
         const isStaff = currentPath.includes('/staff/');
         const cartAddUrl = isAdmin ? `/admin/cart/add/${productId}` :
-            (isStaff ? `/staff/cart/add/${productId}` : `/cart/add/${productId}`);
+            (isStaff ? `/staff/cart/add/${productId}` : `/api/cart/add/${productId}`);
 
-        const formData = new FormData(form);
+        const payload = { quantity: parseInt(quantity) || 1 };
 
         fetch(cartAddUrl, {
             method: 'POST',
-            body: formData,
+            body: JSON.stringify(payload),
             headers: {
+                'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })

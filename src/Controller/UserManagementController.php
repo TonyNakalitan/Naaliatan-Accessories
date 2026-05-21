@@ -172,6 +172,14 @@ class UserManagementController extends AbstractController
         return $this->redirectToRoute('app_admin_user_management_index');
     }
 
+    #[Route('/{id}', name: 'app_admin_user_management_show', methods: ['GET'])]
+    public function show(User $user): Response
+    {
+        return $this->render('UserManagementFolder/show.html.twig', [
+            'user' => $user,
+        ]);
+    }
+
     #[Route('/{id}/toggle-status', name: 'app_admin_user_management_toggle_status')]
     public function toggleStatus(User $user, EntityManagerInterface $entityManager): Response
     {
