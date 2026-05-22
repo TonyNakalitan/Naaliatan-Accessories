@@ -1,258 +1,626 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ character.name }} - Products | Naaliatan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ character.name }} - Products | Naaliatan{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('ItemsFolder/show.css?v=' ~ random()) }}">
-</head>
-<body>
+    <link rel="stylesheet" href="{{ asset('DashboardFolder/customer_dashboard.css') }}?v={{ random() }}">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
 
-    <!-- Hero Banner -->
-    <section class="hero-banner" {% if character.image %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{{ asset('images/characters/' ~ character.image) }}');"{% endif %}>
-        <div class="hero-content">
-            <a href="{{ role_path('item_management_index') }}" class="back-button">
-                <i class="fas fa-arrow-left"></i>
-                Back to Items
-            </a>
-            <h1 class="hero-title">{{ character.name }}</h1>
-            <p class="hero-description">{{ character.description }}</p>
-            <div class="hero-badges">
-                <span class="alignment-badge" style="background: {{ character.colorCode }}20; color: {{ character.colorCode }}; border-color: {{ character.colorCode }};">
-                    {% if character.alignment == 'Good' %}
-                        <i class="fas fa-heart"></i>
-                    {% elseif character.alignment == 'Evil' %}
-                        <i class="fas fa-skull"></i>
+        .page-content {
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        /* Section title accent */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        /* Character hero card */
+        .character-hero {
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            display: flex;
+            min-height: 200px;
+            background: #fff;
+        }
+
+        .char-hero-accent {
+            width: 220px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .char-hero-accent-icon {
+            width: 110px;
+            height: 110px;
+            border-radius: 24px;
+            border: 4px solid rgba(255,255,255,0.6);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        .char-hero-accent-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+        .character-hero-body {
+            flex: 1;
+            padding: 1.75rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid #f3f4f6;
+        }
+
+        .character-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+        }
+
+        .character-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .character-desc {
+            color: #6b7280;
+            font-size: 0.88rem;
+            line-height: 1.75;
+            max-width: 680px;
+        }
+
+        /* Product grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .product-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .product-card-img {
+            height: 140px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .product-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-card-img .no-img { font-size: 2.5rem; color: #e2e8f0; }
+
+        .stock-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .stock-in  { background: #d1fae5; color: #065f46; }
+        .stock-low { background: #fef3c7; color: #92400e; }
+        .stock-out { background: #fee2e2; color: #991b1b; }
+
+        .product-card-body {
+            padding: 0.9rem;
+        }
+
+        .product-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 0.15rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-code {
+            font-size: 0.7rem;
+            color: #9ca3af;
+            margin-bottom: 0.4rem;
+        }
+
+        .product-price {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 0.6rem;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .btn-cart {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            padding: 0.5rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(59,130,246,0.3);
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-cart:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(59,130,246,0.4); }
+        .btn-cart:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-buy {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            padding: 0.5rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1.5px solid #bbf7d0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-buy:hover { background: #dcfce7; border-color: #86efac; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #9ca3af;
+        }
+        .empty-state i { font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 1rem; }
+        .empty-state p { font-size: 0.9rem; font-weight: 600; color: #6b7280; }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 0.9rem 1.4rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transform: translateY(150%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 9999;
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+        #toast i { color: #10b981; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal-box {
+            position: relative;
+            background: #fff;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 440px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        .modal-head {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-head-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .modal-head-title i { color: #3b82f6; }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 0.3rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .modal-close-btn:hover { background: #f3f4f6; color: #374151; }
+        .modal-body { padding: 1.5rem; }
+        .modal-foot {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            gap: 0.6rem;
+            justify-content: flex-end;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.35rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #374151;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+            background: #fafafa;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            background: #fff;
+        }
+
+        .btn-secondary {
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover { background: #f1f5f9; color: #374151; }
+
+        .btn-primary {
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+            box-shadow: 0 3px 10px rgba(59,130,246,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(59,130,246,0.4); }
+
+        .product-info-highlight {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 0.9rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1d4ed8;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard-app-wrapper" class="min-h-screen">
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div id="app" class="relative w-full h-screen glass-container flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="{{ role_path('item_management_index') }}" class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700" title="Back to Items">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">{{ character.name }}</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <a href="{{ role_path('profile_show') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    {% if app.user.profilePicture %}
+                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        <i class="fas fa-balance-scale"></i>
-                    {% endif %}
-                    {{ character.alignment }}
-                </span>
-                <span class="creator-badge">
-                    <i class="fas fa-user"></i>
-                    {{ character.creator }}
-                </span>
-                <span class="count-badge">
-                    <i class="fas fa-box"></i>
-                    {{ products|length }} Products
-                </span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <div class="main-container">
-        
-        <!-- Character Info Sidebar -->
-        <aside class="character-sidebar">
-            <div class="sidebar-card">
-                <div class="sidebar-header">
-                    <div class="sidebar-icon">
-                        <i class="fas fa-user-ninja"></i>
-                    </div>
-                    <h2 class="sidebar-title">Character Info</h2>
-                </div>
-                
-                {% if character.image %}
-                <div class="character-image">
-                    <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
-                </div>
-                {% endif %}
-
-                <div class="info-section">
-                    <div class="info-item">
-                        <span class="info-label">Name</span>
-                        <p class="info-value">{{ character.name }}</p>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Creator</span>
-                        <p class="info-value">{{ character.creator }}</p>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Alignment</span>
-                        <span class="alignment-tag" style="background: {{ character.colorCode }}20; color: {{ character.colorCode }};">
-                            {{ character.alignment }}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="stats-section">
-                    <div class="stat-box">
-                        <div class="stat-icon" style="background: {{ character.colorCode }}20; color: {{ character.colorCode }};">
-                            <i class="fas fa-boxes"></i>
-                        </div>
-                        <div class="stat-details">
-                            <span class="stat-label">Products</span>
-                            <span class="stat-value">{{ products|length }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Product Grid Container -->
-        <main class="products-main">
-            <div class="products-header">
-                <div>
-                    <h2 class="products-title">Available Products</h2>
-                    <p class="products-subtitle">Showing {{ products|length }} product{{ products|length != 1 ? 's' : '' }} for {{ character.name }}</p>
-                </div>
-            </div>
-
-            {% if products|length > 0 %}
-            <!-- Product Grid -->
-            <div class="product-grid" id="productGrid">
-                {% for product in products %}
-                <div class="product-card">
-                    <div class="product-image-wrapper">
-                        {% if product.image %}
-                            <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="product-image">
-                        {% else %}
-                            <div class="product-image-placeholder">
-                                <i class="fas fa-image"></i>
-                            </div>
-                        {% endif %}
-                        <div class="product-overlay">
-                            <button class="overlay-btn" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="product-content">
-                        <h3 class="product-name">{{ product.name }}</h3>
-                        <p class="product-code">{{ product.productCode }}</p>
-                        <p class="product-price">{{ product.formattedPrice }}</p>
-                        
-                        <div class="product-stock">
-                            {% if product.isOutOfStock %}
-                                <span class="stock-badge stock-out">
-                                    <i class="fas fa-times-circle"></i>
-                                    Out of Stock
-                                </span>
-                            {% elseif product.isLowStock %}
-                                <span class="stock-badge stock-low">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    Low Stock ({{ product.stockQuantity }})
-                                </span>
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                            {% set displayText = app.user.displayName ?: app.user.username %}
+                            {% set words = displayText|split(' ') %}
+                            {% if words|length > 1 %}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
                             {% else %}
-                                <span class="stock-badge stock-in">
-                                    <i class="fas fa-check-circle"></i>
-                                    In Stock ({{ product.stockQuantity }})
-                                </span>
+                                {{ displayText|slice(0,2)|upper }}
                             {% endif %}
                         </div>
-                        
-                        {% if product.isOutOfStock %}
-                            <div class="product-actions">
-                                <button class="add-to-cart-btn disabled" disabled>
-                                    <i class="fas fa-ban"></i>
-                                    Out of Stock
-                                </button>
-                            </div>
+                    {% endif %}
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto page-content">
+
+            <!-- Character Hero -->
+            <div class="character-hero">
+                <div class="char-hero-accent" style="background: linear-gradient(160deg, {{ character.colorCode }}, {{ character.colorCode }}99);">
+                    <div class="char-hero-accent-icon">
+                        {% if character.image %}
+                            <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
                         {% else %}
-                            <div class="product-actions">
-                                <button class="add-to-cart-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
-                                    <i class="fas fa-shopping-cart"></i>
-                                    Add to Cart
-                                </button>
-                                <button class="buy-now-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-action="Buy Now" data-stock="{{ product.stockQuantity }}">
-                                    <i class="fas fa-bolt"></i>
-                                    Buy Now
-                                </button>
-                            </div>
+                            {{ character.name|slice(0,1)|upper }}
                         {% endif %}
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <!-- Empty State -->
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-box-open"></i>
+                <div class="character-hero-body">
+                    <div class="character-title">{{ character.name }}</div>
+                    <div class="character-meta">
+                        {% set alignColor = character.alignment == 'Good' ? '#10b981' : (character.alignment == 'Evil' ? '#ef4444' : '#6b7280') %}
+                        {% set alignBg = character.alignment == 'Good' ? '#d1fae5' : (character.alignment == 'Evil' ? '#fee2e2' : '#f3f4f6') %}
+                        <span class="meta-pill" style="background:{{ alignBg }};color:{{ alignColor }};">
+                            <i class="fas {{ character.alignment == 'Good' ? 'fa-heart' : (character.alignment == 'Evil' ? 'fa-skull' : 'fa-balance-scale') }}"></i>
+                            {{ character.alignment }}
+                        </span>
+                        <span class="meta-pill" style="background:#eff6ff;color:#3b82f6;">
+                            <i class="fas fa-pen-nib"></i>
+                            {{ character.creator }}
+                        </span>
+                        <span class="meta-pill" style="background:#f5f3ff;color:#7c3aed;">
+                            <i class="fas fa-box"></i>
+                            {{ products|length }} product{{ products|length != 1 ? 's' : '' }}
+                        </span>
+                    </div>
+                    {% if character.description %}
+                        <div class="character-desc">{{ character.description|striptags }}</div>
+                    {% endif %}
                 </div>
-                <h3 class="empty-title">No Products Available</h3>
-                <p class="empty-text">This character doesn't have any products yet.</p>
             </div>
-            {% endif %}
-        </main>
-    </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="toastMessage"></span>
-    </div>
+            <!-- Products -->
+            <div class="section-title">Available Products</div>
 
-    <!-- Add to Cart Modal -->
-    <div id="addToCartModal" class="modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">
-                    <i class="fas fa-cart-plus"></i>
-                    Add to Cart
-                </h2>
-                <button class="modal-close" onclick="closeAddToCartModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form id="addToCartForm" class="modal-body">
-                <input type="hidden" id="cartProductId" name="productId">
-                <input type="hidden" id="cartProductName" name="productName">
-                
-                <!-- Product Info -->
-                <div class="form-section">
-                    <h3 class="section-title">Product Details</h3>
-                    <div class="product-info-box">
-                        <div class="product-info-item">
-                            <span class="info-label">Product:</span>
-                            <span class="info-value" id="cartProductDisplay"></span>
+            {% if products|length > 0 %}
+                <div class="product-grid" id="productGrid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-card-img">
+                            {% if product.image %}
+                                <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}">
+                            {% else %}
+                                <i class="fas fa-box no-img"></i>
+                            {% endif %}
+
+                            {% if product.isOutOfStock %}
+                                <span class="stock-badge stock-out">Out of Stock</span>
+                            {% elseif product.isLowStock %}
+                                <span class="stock-badge stock-low">Low Stock</span>
+                            {% else %}
+                                <span class="stock-badge stock-in">In Stock</span>
+                            {% endif %}
                         </div>
-                        <div class="form-group">
-                            <label for="cartQuantity" class="form-label">
-                                <i class="fas fa-boxes"></i>
-                                Quantity
-                            </label>
-                            <input type="number" id="cartQuantity" name="quantity" class="form-input" min="1" value="1" required>
+                        <div class="product-card-body">
+                            <div class="product-name">{{ product.name }}</div>
+                            <div class="product-code">{{ product.productCode }}</div>
+                            <div class="product-price">{{ product.formattedPrice }}</div>
+                            <div class="product-actions">
+                                {% if product.isOutOfStock %}
+                                    <button class="btn-cart" disabled>
+                                        <i class="fas fa-ban"></i> Out of Stock
+                                    </button>
+                                {% else %}
+                                    <button class="btn-cart" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+                                        <i class="fas fa-shopping-cart"></i> Cart
+                                    </button>
+                                    <button class="btn-buy buy-now-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-action="Buy Now" data-stock="{{ product.stockQuantity }}">
+                                        <i class="fas fa-bolt"></i> Buy
+                                    </button>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-            </form>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeAddToCartModal()">
-                    Cancel
-                </button>
-                <button type="submit" form="addToCartForm" class="btn-primary">
-                    <i class="fas fa-cart-plus"></i>
-                    Add to Cart
-                </button>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-box-open"></i>
+                    <p>No products available for this character yet.</p>
+                </div>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage"></span>
+</div>
+
+<!-- Add to Cart Modal -->
+<div id="addToCartModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-box">
+        <div class="modal-head">
+            <div class="modal-head-title">
+                <i class="fas fa-cart-plus"></i>
+                Add to Cart
             </div>
+            <button class="modal-close-btn" onclick="closeAddToCartModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="addToCartForm" class="modal-body">
+            <input type="hidden" id="cartProductId" name="productId">
+            <input type="hidden" id="cartProductName" name="productName">
+            <div class="product-info-highlight" id="cartProductDisplay"></div>
+            <div class="form-group">
+                <label for="cartQuantity" class="form-label">Quantity</label>
+                <input type="number" id="cartQuantity" name="quantity" class="form-input" min="1" value="1" required>
+            </div>
+        </form>
+        <div class="modal-foot">
+            <button type="button" class="btn-secondary" onclick="closeAddToCartModal()">Cancel</button>
+            <button type="submit" form="addToCartForm" class="btn-primary">
+                <i class="fas fa-cart-plus"></i> Add to Cart
+            </button>
         </div>
     </div>
+</div>
+{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
     <script>
-    // Buy Now button handler
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle Buy Now button clicks
-        document.querySelectorAll('.buy-now-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const productId = this.dataset.productId;
-                const productName = this.dataset.productName;
-                const action = this.dataset.action;
-                const stock = this.dataset.stock;
-                
-                openEnterQuantityModal(productId, productName, action, stock);
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sidebar toggle
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+
+            // Add to Cart buttons
+            document.querySelectorAll('.btn-cart[data-product-id]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.getElementById('cartProductId').value = this.dataset.productId;
+                    document.getElementById('cartProductName').value = this.dataset.productName;
+                    document.getElementById('cartProductDisplay').textContent = this.dataset.productName;
+                    document.getElementById('cartQuantity').value = 1;
+                    document.getElementById('addToCartModal').classList.add('show');
+                });
+            });
+
+            // Buy Now buttons
+            document.querySelectorAll('.buy-now-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    openEnterQuantityModal(
+                        this.dataset.productId,
+                        this.dataset.productName,
+                        this.dataset.action,
+                        this.dataset.stock
+                    );
+                });
             });
         });
-    });
-    </script>
 
+        function closeAddToCartModal() {
+            document.getElementById('addToCartModal').classList.remove('show');
+        }
+    </script>
     <script src="{{ asset('ItemsFolder/show.js') }}"></script>
-    <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
-</body>
-</html>
+{% endblock %}

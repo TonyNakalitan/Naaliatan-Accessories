@@ -153,8 +153,8 @@ class CartController extends AbstractController
 
         $this->addFlash('success', $product->getName() . ' added to cart!');
 
-        $routeName = $role === 'admin' ? 'app_admin_item_management_show' : 'app_staff_item_management_show';
-        return $this->redirectToRoute($routeName, ['id' => $product->getCharacter()->getId()]);
+        $routeName = $role === 'admin' ? 'app_admin_cart_index' : 'app_staff_cart_index';
+        return $this->redirectToRoute($routeName);
     }
 
     private function update(CartItem $cartItem, Request $request, EntityManagerInterface $entityManager): Response
