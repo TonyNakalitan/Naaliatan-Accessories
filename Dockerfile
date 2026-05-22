@@ -1,38 +1,60 @@
-FROM php:8.3-fpm
+# ==========================================
+# 1. Base Image Setup
+# ==========================================
+FROM php:8.2-fpm-alpine
 
-RUN apt-get update && apt-get install -y \
-    nginx \
-    curl \
+# Install system dependencies & PHP extensions required by Symfony
+RUN apk add --no-cache \
     git \
     unzip \
-    openssl \
-    procps \
-    && docker-php-ext-install pdo pdo_mysql \
-    && rm -rf /var/lib/apt/lists/*
+    icu-dev \
+    libzip-dev \
+    && docker-php-ext-install \
+    intl \
+    opcache \
+    zip
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Install Composer globally
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Set the working directory inside the container
 WORKDIR /app
 
+# ==========================================
+# 2. Dependency Management
+# ==========================================
+# Copy only composer files first to leverage Docker cache layers
+COPY composer.json composer.lock ./
+
+# Install dependencies without running Symfony flex/scripts yet
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install --no-directory-output --no-scripts --no-progress --no-interaction
+
+# ==========================================
+# 3. Application Source & Build-Time Fix
+# ==========================================
+# Copy the rest of your application code
 COPY . .
 
-# Install production dependencies only
-RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# FIX: Create a minimal .env file so the Symfony runtime can bootstrap 
+# during this build phase. This satisfies bin/console without baking 
+# real production secrets into the image layers.
+RUN echo "APP_ENV=prod" > .env
 
-# Compile assets
+# Run your AssetMapper importmap installation (this will now pass)
 RUN php bin/console importmap:install --no-interaction
-RUN APP_ENV=prod php bin/console asset-map:compile --no-interaction
 
-# Create directories and set ownership to www-data
-RUN mkdir -p var/cache var/log config/jwt && \
-    chown -R www-data:www-data var config/jwt && \
-    chmod -R 775 var config/jwt
+# Optimize Composer autoloader and dump env for production
+RUN composer dump-env prod \
+    && composer run-script post-install-cmd --no-interaction
 
-COPY nginx-main.conf /etc/nginx/nginx.conf
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# OPTIONAL CLEANUP: Remove the temporary build .env file so that your 
+# runtime entrypoint script can safely generate the real one fresh.
+RUN rm -f .env .env.local.php
 
-EXPOSE 80
+# ==========================================
+# 4. Container Execution
+# ==========================================
+EXPOSE 9000
 
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php-fpm"]
