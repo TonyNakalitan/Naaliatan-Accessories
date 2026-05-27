@@ -39,7 +39,7 @@ COPY . .
 # FIX: Create a minimal .env file so the Symfony runtime can bootstrap 
 # during this build phase. This satisfies bin/console without baking 
 # real production secrets into the image layers.
-RUN echo "APP_ENV=prod" > .env
+RUN echo "APP_ENV=prod" > .env && echo "DATABASE_URL=mysql://AnthonyNaaliatan:09359730321@127.0.0.1:3308/NAcessoriesDB" >> .env
 
 # Run your AssetMapper importmap installation (this will now pass)
 RUN php bin/console importmap:install --no-interaction
