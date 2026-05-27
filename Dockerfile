@@ -9,10 +9,14 @@ RUN apk add --no-cache \
     unzip \
     icu-dev \
     libzip-dev \
+    nginx \
+    bash \
+    openssl \
     && docker-php-ext-install \
     intl \
     opcache \
-    zip
+    zip \
+    pdo_mysql
 
 # Install Composer globally
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -39,7 +43,7 @@ COPY . .
 # FIX: Create a minimal .env file so the Symfony runtime can bootstrap 
 # during this build phase. This satisfies bin/console without baking 
 # real production secrets into the image layers.
-RUN echo "APP_ENV=prod" > .env && echo "DATABASE_URL=mysql://AnthonyNaaliatan:09359730321@127.0.0.1:3308/NAcessoriesDB" >> .env
+RUN echo "APP_ENV=prod" > .env && echo "DATABASE_URL=mysql://user:password@localhost:3306/db" >> .env
 
 # Run your AssetMapper importmap installation (this will now pass)
 RUN php bin/console importmap:install --no-interaction
@@ -52,9 +56,16 @@ RUN composer dump-env prod \
 # Keep .env.local.php — it's the compiled env cache produced by dump-env above.
 RUN rm -f .env
 
+# Copy nginx configuration
+COPY nginx-main.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # ==========================================
 # 4. Container Execution
 # ==========================================
-EXPOSE 9000
+EXPOSE 80
 
-CMD ["php-fpm"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]
