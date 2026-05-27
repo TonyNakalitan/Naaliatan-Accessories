@@ -28,7 +28,7 @@ COPY composer.json composer.lock ./
 
 # Install dependencies without running Symfony flex/scripts yet
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-directory-output --no-scripts --no-progress --no-interaction
+RUN composer install --no-dev --no-scripts --no-progress --no-interaction
 
 # ==========================================
 # 3. Application Source & Build-Time Fix
