@@ -48,9 +48,9 @@ RUN php bin/console importmap:install --no-interaction
 RUN composer dump-env prod \
     && composer run-script post-install-cmd --no-interaction
 
-# OPTIONAL CLEANUP: Remove the temporary build .env file so that your 
-# runtime entrypoint script can safely generate the real one fresh.
-RUN rm -f .env .env.local.php
+# Remove the temporary build .env so the runtime entrypoint can write the real one.
+# Keep .env.local.php — it's the compiled env cache produced by dump-env above.
+RUN rm -f .env
 
 # ==========================================
 # 4. Container Execution

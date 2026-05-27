@@ -132,11 +132,12 @@
                             </div>
                             <div class="info-content">
                                 <h4>Stock Information</h4>
-                                <p>This will restore stock from the stock inventory back to the main product inventory. Available stock: {{ totalAvailableStock }} units.</p>
+                                <p>This will move stock from the product inventory into the stock inventory. Available product stock: {{ currentProductStock }} units.</p>
                             </div>
                         </div>
                         
                         <!-- Store Form -->
+                        {% if currentProductStock > 0 %}
                         <form method="post" class="store-form">
                             <input type="hidden" name="_token" value="{{ csrf_token('store_stock') }}">
                             
@@ -148,10 +149,10 @@
                                        class="form-input"
                                        placeholder="Enter quantity" 
                                        min="1" 
-                                       max="{{ totalAvailableStock }}" 
+                                       max="{{ currentProductStock }}" 
                                        required>
                                 <small class="form-hint">
-                                    <i class="fas fa-info-circle"></i> Maximum: {{ totalAvailableStock }} units available from stock inventory
+                                    <i class="fas fa-info-circle"></i> Maximum: {{ currentProductStock }} units available from product stock
                                 </small>
                             </div>
 
@@ -176,6 +177,17 @@
                                 </a>
                             </div>
                         </form>
+                        {% else %}
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm mb-4">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            No product stock available to restore. The product has 0 units in stock.
+                        </div>
+                        <div class="form-actions">
+                            <a href="{{ role_path('stock_management_index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                        {% endif %}
 
                         <!-- Available Stock Information -->
                         <div class="info-section">

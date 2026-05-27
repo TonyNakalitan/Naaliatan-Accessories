@@ -110,7 +110,11 @@ class CartItem
 
     public function getSubtotal(): float
     {
-        return $this->product->getPrice() * $this->quantity;
+        if ($this->product === null || $this->quantity === null) {
+            return 0.0;
+        }
+
+        return (float) $this->product->getPrice() * $this->quantity;
     }
 
     public function getFormattedSubtotal(): string

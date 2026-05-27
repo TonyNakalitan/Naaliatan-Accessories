@@ -35,6 +35,12 @@ services:
     App\Command\TestEmailCommand:
         arguments:
             $mailFromAddress: '%app.mail_from_address%'
+
+    # Email verification service
+    App\Service\EmailVerificationService:
+        arguments:
+            $mailFromAddress: '%app.mail_from_address%'
+            $mailFromName: "Naaliatan's Accessories"
     # Logout handler for reliably marking users offline
     App\Security\UserLogoutHandler:
         tags: ['security.logout_handler']

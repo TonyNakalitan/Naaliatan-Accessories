@@ -339,6 +339,26 @@
     transform: translateY(0);
 }
 
+.action-btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.action-btn-warning:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+}
+
+.action-btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.action-btn-success:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+}
+
 
 /* ============================================
    CUSTOM SIDEBAR FOR USER MANAGEMENT
@@ -617,4 +637,16 @@
 
 #sidebarToggle:hover i {
     transform: rotate(90deg);
+}
+
+/* Hide scrollbars */
+#user-app-wrapper,
+#user-app-wrapper * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+#user-app-wrapper ::-webkit-scrollbar,
+#user-app-wrapper::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
 }

@@ -305,6 +305,10 @@
                                     <i class="fa fa-plus"></i>
                                     <span>Restock</span>
                                 </a>
+                                <a id="heroStoreBtn" href="#" class="action-btn action-btn-store">
+                                    <i class="fa fa-archive"></i>
+                                    <span>Store</span>
+                                </a>
                                 <a id="heroViewBtn" href="#" class="action-btn action-btn-secondary">
                                     <i class="fa fa-eye"></i>
                                     <span>View Details</span>
@@ -347,6 +351,7 @@
         const baseUrl = '{{ app.request.schemeAndHttpHost }}';
         const imageBasePath = '{{ asset('images/products/') }}';
         const restockBasePath = isAdmin ? '/admin/stock-management/restock/' : '/staff/stock-management/restock/';
+        const storeBasePath = isAdmin ? '/admin/stock-management/store/' : '/staff/stock-management/store/';
         const viewBasePath = isAdmin ? '/admin/products/' : '/staff/products/';
         
         console.log('Total products loaded:', allProductsData.length);
@@ -542,10 +547,15 @@
             
             // Update action buttons
             const restockBtn = document.getElementById('heroRestockBtn');
+            const storeBtn = document.getElementById('heroStoreBtn');
             const viewBtn = document.getElementById('heroViewBtn');
             
             if (restockBtn) {
                 restockBtn.href = restockBasePath + prod.id;
+            }
+            
+            if (storeBtn) {
+                storeBtn.href = storeBasePath + prod.id;
             }
             
             if (viewBtn) {

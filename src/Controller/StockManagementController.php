@@ -297,71 +297,62 @@ class StockManagementController extends AbstractController
 
     private function store(Product $product, Request $request, string $role): Response
     {
-        // Get available stock entries for this product
-        $availableStocks = $this->stockRepository->findBy(['product' => $product], ['createdAt' => 'ASC']);
-        $totalAvailableStock = array_sum(array_map(fn($stock) => $stock->getQuantity(), $availableStocks));
+        $currentProductStock = $product->getStockQuantity();
 
         if ($request->isMethod('POST')) {
+            $submittedToken = $request->request->get('_token');
+            if (!$this->isCsrfTokenValid('store_stock', $submittedToken)) {
+                $this->addFlash('error', 'Invalid CSRF token.');
+                $routeName = $role === 'admin' ? 'app_admin_stock_management_store' : 'app_staff_stock_management_store';
+                return $this->redirectToRoute($routeName, ['id' => $product->getId()]);
+            }
+
             $quantityToStore = (int) $request->request->get('quantity');
-            
-            if ($quantityToStore <= 0 || $quantityToStore > $totalAvailableStock) {
-                $this->addFlash('error', 'Invalid quantity to store. Available stock: ' . $totalAvailableStock . ' units.');
-                $routeName = $role === 'admin' ? 'app_admin_stock_management_index' : 'app_staff_stock_management_index';
-                return $this->redirectToRoute($routeName);
+            $notes = $request->request->get('notes', '');
+
+            if ($quantityToStore <= 0 || $quantityToStore > $currentProductStock) {
+                $this->addFlash('error', 'Invalid quantity. Available product stock: ' . $currentProductStock . ' units.');
+                $routeName = $role === 'admin' ? 'app_admin_stock_management_store' : 'app_staff_stock_management_store';
+                return $this->redirectToRoute($routeName, ['id' => $product->getId()]);
             }
 
-            // Move stock from stock entries to product inventory
-            $remainingQuantity = $quantityToStore;
-            
-            foreach ($availableStocks as $stock) {
-                if ($remainingQuantity <= 0) break;
-                
-                $stockQuantity = $stock->getQuantity();
-                if ($stockQuantity <= 0) continue;
-                
-                $quantityToTransfer = min($remainingQuantity, $stockQuantity);
-                
-                if ($quantityToTransfer >= $stockQuantity) {
-                    // Remove the entire stock entry
-                    $this->entityManager->remove($stock);
-                } else {
-                    // Reduce the stock entry quantity
-                    $stock->setQuantity($stockQuantity - $quantityToTransfer);
-                }
-                
-                $remainingQuantity -= $quantityToTransfer;
-            }
+            // Deduct from product stock
+            $newProductStock = $currentProductStock - $quantityToStore;
+            $product->setStockQuantity($newProductStock);
 
-            // Increase product stock quantity
-            $currentStock = $product->getStockQuantity();
-            $newStock = $currentStock + $quantityToStore;
-            $product->setStockQuantity($newStock);
+            // Create a new stock inventory entry
+            $stock = new Stock();
+            $stock->setProduct($product);
+            $stock->setQuantity($quantityToStore);
+            $stock->setNotes($notes ?: 'Restored from product stock');
+            $stock->setCreatedBy($this->getUser());
+            $this->entityManager->persist($stock);
 
             $transaction = new StockTransaction();
             $transaction->setProduct($product);
             $transaction->setUser($this->getUser());
             $transaction->setType(StockTransaction::TYPE_RESTOCK);
             $transaction->setQuantity($quantityToStore);
-            $transaction->setNotes('Restored from stock inventory');
+            $transaction->setNotes('Moved to stock inventory');
             $this->entityManager->persist($transaction);
 
             $activityLog = new ActivityLog();
             $activityLog->setUser($this->getUser());
             $activityLog->setUsername($this->getUser()->getUserIdentifier());
             $activityLog->setRole(json_encode($this->getUser()->getRoles()));
-            $activityLog->setAction('RESTORE');
+            $activityLog->setAction('STORE');
             $activityLog->setTargetData(sprintf(
-                'Product: %s - Restored: +%d | New Stock: %d',
+                'Product: %s - Stored: %d units to stock inventory | Remaining Product Stock: %d',
                 $product->getName(),
                 $quantityToStore,
-                $newStock
+                $newProductStock
             ));
             $this->entityManager->persist($activityLog);
 
             $this->entityManager->flush();
 
             $this->addFlash('success', sprintf(
-                'Successfully restored %d units of %s from stock inventory to product stock.',
+                'Successfully moved %d units of %s to stock inventory.',
                 $quantityToStore,
                 $product->getName()
             ));
@@ -370,10 +361,12 @@ class StockManagementController extends AbstractController
             return $this->redirectToRoute($routeName);
         }
 
+        $availableStocks = $this->stockRepository->findBy(['product' => $product], ['createdAt' => 'ASC']);
+
         return $this->render('StockManagementFolder/store.html.twig', [
             'product' => $product,
             'availableStocks' => $availableStocks,
-            'totalAvailableStock' => $totalAvailableStock,
+            'currentProductStock' => $currentProductStock,
         ]);
     }
 

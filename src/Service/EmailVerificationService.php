@@ -12,7 +12,9 @@ class EmailVerificationService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private MailerInterface $mailer
+        private MailerInterface $mailer,
+        private string $mailFromAddress = 'noreply@example.com',
+        private string $mailFromName = "Naaliatan's Accessories"
     ) {
     }
 
@@ -30,7 +32,7 @@ class EmailVerificationService
     public function sendVerificationEmail(User $user, string $verificationUrl): void
     {
         $email = (new TemplatedEmail())
-            ->from(new Address('naaliatananthony98@gmail.com', 'Naaliatan\'s Accessories'))
+            ->from(new Address($this->mailFromAddress, $this->mailFromName))
             ->to(new Address($user->getEmail()))
             ->subject('Please verify your email address')
             ->htmlTemplate('emails/verification.html.twig')
@@ -67,7 +69,7 @@ class EmailVerificationService
     public function sendResetEmail(User $user, string $resetUrl): void
     {
         $email = (new TemplatedEmail())
-            ->from(new Address('naaliatananthony98@gmail.com', 'Naaliatan\'s Accessories'))
+            ->from(new Address($this->mailFromAddress, $this->mailFromName))
             ->to(new Address($user->getEmail()))
             ->subject('Password Reset Request')
             ->htmlTemplate('emails/password_reset.html.twig')

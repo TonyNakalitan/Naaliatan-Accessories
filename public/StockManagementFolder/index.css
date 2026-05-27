@@ -318,6 +318,17 @@
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
 }
 
+.action-btn-store {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.action-btn-store:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
 .action-btn:active {
     transform: translateY(0);
 }

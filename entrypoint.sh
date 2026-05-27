@@ -26,6 +26,9 @@ ENVEOF
 
 echo ".env file created successfully"
 
+# Remove the build-time compiled env cache so Symfony reads the fresh .env above.
+rm -f /app/.env.local.php
+
 # Generate JWT keys if missing
 if [ ! -f /app/config/jwt/private.pem ]; then
     echo "Generating JWT keys..."

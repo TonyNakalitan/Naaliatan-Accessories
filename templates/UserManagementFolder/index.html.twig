@@ -165,6 +165,10 @@
                                     <i class="fa fa-edit"></i>
                                     <span>Edit User</span>
                                 </a>
+                                <button id="heroToggleBtn" onclick="toggleUserStatus()" class="action-btn action-btn-warning">
+                                    <i class="fa fa-ban"></i>
+                                    <span>Deactivate</span>
+                                </button>
                                 <button id="heroDeleteBtn" onclick="deleteUser()" class="action-btn action-btn-danger">
                                     <i class="fa fa-trash"></i>
                                     <span>Delete</span>
@@ -203,7 +207,8 @@
                 isVerified: {{ user.isVerified ? 'true' : 'false' }},
                 createdAt: {{ user.createdAt|date('Y-m-d H:i:s')|json_encode|raw }},
                 profilePicture: {{ user.profilePicture|json_encode|raw }},
-                csrfToken: {{ csrf_token('delete' ~ user.id)|json_encode|raw }}
+                csrfToken: {{ csrf_token('delete' ~ user.id)|json_encode|raw }},
+                toggleCsrfToken: {{ csrf_token('toggle' ~ user.id)|json_encode|raw }}
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         ];
@@ -213,6 +218,7 @@
         const showBaseUrl = '{{ path('app_admin_user_management_show', {'id': 0}) }}'.replace('/0', '');
         const editBaseUrl = '{{ path('app_admin_user_management_edit', {'id': 0}) }}'.replace('/0/edit', '');
         const deleteBaseUrl = '{{ path('app_admin_user_management_delete', {'id': 0}) }}'.replace('/0/delete', '');
+        const toggleBaseUrl = '{{ path('app_admin_user_management_toggle_status', {'id': 0}) }}'.replace('/0/toggle-status', '');
         
         console.log('Total users loaded:', allUsersData.length);
         
@@ -229,6 +235,7 @@
             createdAt: user.createdAt,
             profilePicture: user.profilePicture,
             csrfToken: user.csrfToken,
+            toggleCsrfToken: user.toggleCsrfToken,
             colorCode: getUserColor(user.roles),
             avatar: user.profilePicture ? imageBasePath + user.profilePicture : null
         }));
@@ -416,6 +423,14 @@
                 viewBtn.href = `${showBaseUrl}/${user.id}`;
             }
 
+            // Update deactivate button
+            const toggleBtn = document.getElementById('heroToggleBtn');
+            if (toggleBtn) {
+                const isActive = user.isActive;
+                toggleBtn.querySelector('span').textContent = isActive ? 'Deactivate' : 'Activate';
+                toggleBtn.className = `action-btn ${isActive ? 'action-btn-warning' : 'action-btn-success'}`;
+            }
+
             // Trigger animation
             app.classList.add('hero-active');
             
@@ -441,6 +456,26 @@
                 csrfToken.name = '_token';
                 csrfToken.value = currentUser.csrfToken;
                 
+                form.appendChild(csrfToken);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function toggleUserStatus() {
+            if (!currentUser) return;
+
+            const action = currentUser.isActive ? 'deactivate' : 'activate';
+            if (confirm(`Are you sure you want to ${action} "${currentUser.displayName}"?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `${toggleBaseUrl}/${currentUser.id}/toggle-status`;
+
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = currentUser.toggleCsrfToken;
+
                 form.appendChild(csrfToken);
                 document.body.appendChild(form);
                 form.submit();

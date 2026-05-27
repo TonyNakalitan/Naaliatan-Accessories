@@ -180,9 +180,14 @@ class UserManagementController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/toggle-status', name: 'app_admin_user_management_toggle_status')]
-    public function toggleStatus(User $user, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/toggle-status', name: 'app_admin_user_management_toggle_status', methods: ['POST'])]
+    public function toggleStatus(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->isCsrfTokenValid('toggle'.$user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('app_admin_user_management_index');
+        }
+
         $user->setIsActive(!$user->isActive());
         $entityManager->flush();
 
