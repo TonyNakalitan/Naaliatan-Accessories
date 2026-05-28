@@ -45,12 +45,10 @@ COPY . .
 # real production secrets into the image layers.
 RUN echo "APP_ENV=prod" > .env && echo "DATABASE_URL=mysql://user:password@localhost:3306/db" >> .env
 
-# Optimize Composer autoloader and dump env for production
-RUN composer dump-env prod \
-    && composer run-script post-install-cmd --no-interaction
+# Optimize Composer autoloader for production
+RUN composer dump-autoload --optimize --no-dev
 
 # Remove the temporary build .env so the runtime entrypoint can write the real one.
-# Keep .env.local.php — it's the compiled env cache produced by dump-env above.
 RUN rm -f .env
 
 # Copy nginx configuration
