@@ -55,7 +55,7 @@ chmod -R 775 /app/var
 # Wait for database and run migrations
 if [ ! -z "$MYSQLHOST" ]; then
     echo "Waiting for database connection..."
-    for i in {1..20}; do
+    for i in {1..40}; do
         if php -r "
         try {
             new PDO('mysql:host=${MYSQLHOST};port=${MYSQLPORT:-3306};dbname=${MYSQLDATABASE}', '${MYSQLUSER}', '${MYSQLPASSWORD}', [PDO::ATTR_TIMEOUT => 3]);
