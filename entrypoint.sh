@@ -7,6 +7,23 @@ echo "=== Checking images ==="
 ls /app/public/images/ 2>&1 || echo "Images folder NOT FOUND"
 echo "=== End images check ==="
 
+# ── Normalize Railway MySQL variable names ──────────────────────────────────
+# Railway's MySQL plugin may inject variables as MYSQL_HOST / MYSQL_USER etc.
+# Fall back to those if the MYSQLHOST-style vars are not set.
+MYSQLHOST="${MYSQLHOST:-${MYSQL_HOST:-}}"
+MYSQLPORT="${MYSQLPORT:-${MYSQL_PORT:-3306}}"
+MYSQLUSER="${MYSQLUSER:-${MYSQL_USER:-}}"
+MYSQLPASSWORD="${MYSQLPASSWORD:-${MYSQL_PASSWORD:-}}"
+MYSQLDATABASE="${MYSQLDATABASE:-${MYSQL_DATABASE:-}}"
+
+echo "=== DB connection info ==="
+echo "  MYSQLHOST     = ${MYSQLHOST}"
+echo "  MYSQLPORT     = ${MYSQLPORT}"
+echo "  MYSQLUSER     = ${MYSQLUSER}"
+echo "  MYSQLDATABASE = ${MYSQLDATABASE}"
+echo "  (password omitted)"
+echo "==========================="
+
 # Create .env file from Railway environment variables
 echo "Creating .env from environment variables..."
 cat > /app/.env << ENVEOF
@@ -49,8 +66,17 @@ chown -R www-data:www-data /app/var
 chmod -R 775 /app/var
 
 # Wait for database and run migrations
-if [ -z "$MYSQLHOST" ]; then
-    echo "ERROR: MYSQLHOST is not set. Add a MySQL service in Railway or set the MySQL environment variables (MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE)."
+if [ -z "$MYSQLHOST" ] || [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASSWORD" ] || [ -z "$MYSQLDATABASE" ]; then
+    echo "ERROR: One or more MySQL environment variables are missing."
+    echo "  MYSQLHOST     = '${MYSQLHOST}'"
+    echo "  MYSQLPORT     = '${MYSQLPORT}'"
+    echo "  MYSQLUSER     = '${MYSQLUSER}'"
+    echo "  MYSQLDATABASE = '${MYSQLDATABASE}'"
+    echo "  MYSQLPASSWORD = (set: $([ -n "$MYSQLPASSWORD" ] && echo yes || echo NO))"
+    echo ""
+    echo "Go to your Railway project → your app service → Variables tab and make sure"
+    echo "these are referenced from your MySQL service (MYSQLHOST, MYSQLPORT, MYSQLUSER,"
+    echo "MYSQLPASSWORD, MYSQLDATABASE) or the MYSQL_HOST / MYSQL_USER variants."
     exit 1
 fi
 
