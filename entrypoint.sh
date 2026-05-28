@@ -13,7 +13,7 @@ cat > /app/.env << ENVEOF
 APP_ENV=prod
 APP_SECRET=${APP_SECRET}
 DEFAULT_URI=https://${RAILWAY_PUBLIC_DOMAIN:-localhost}
-DATABASE_URL="mysql://${MYSQLUSER}:${MYSQLPASSWORD}@${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4"
+DATABASE_URL="mysql://${MYSQLUSER}:${MYSQLPASSWORD}@${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4&sslmode=require"
 CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
 MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
 GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -43,10 +43,6 @@ echo "Clearing and warming cache..."
 php /app/bin/console cache:clear --env=prod --no-debug 2>&1 || echo "Cache clear warning (non-fatal)"
 php /app/bin/console cache:warmup --env=prod 2>&1 || echo "Cache warmup warning (non-fatal)"
 
-# Install importmap assets
-echo "Installing importmap assets..."
-php /app/bin/console importmap:install --no-interaction 2>&1 || echo "importmap:install warning (non-fatal)"
-
 # Fix permissions after cache operations
 echo "Fixing filesystem permissions..."
 chown -R www-data:www-data /app/var
@@ -63,10 +59,13 @@ if [ true ]; then
     for i in {1..40}; do
         if php -r "
         try {
-            new PDO('mysql:host=${MYSQLHOST};port=${MYSQLPORT:-3306};dbname=${MYSQLDATABASE}', '${MYSQLUSER}', '${MYSQLPASSWORD}', [PDO::ATTR_TIMEOUT => 3]);
+            new PDO('mysql:host=${MYSQLHOST};port=${MYSQLPORT:-3306};dbname=${MYSQLDATABASE}', '${MYSQLUSER}', '${MYSQLPASSWORD}', [
+                PDO::ATTR_TIMEOUT => 5,
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+            ]);
             echo 'connected';
             exit(0);
-        } catch (Exception \$e) { exit(1); }
+        } catch (Exception \$e) { echo \$e->getMessage(); exit(1); }
         " 2>/dev/null; then
             echo "Database connected!"
             
@@ -95,7 +94,10 @@ if [ true ]; then
     # If we exhausted retries without connecting, abort with a clear message
     if ! php -r "
     try {
-        new PDO('mysql:host=${MYSQLHOST};port=${MYSQLPORT:-3306};dbname=${MYSQLDATABASE}', '${MYSQLUSER}', '${MYSQLPASSWORD}', [PDO::ATTR_TIMEOUT => 3]);
+        new PDO('mysql:host=${MYSQLHOST};port=${MYSQLPORT:-3306};dbname=${MYSQLDATABASE}', '${MYSQLUSER}', '${MYSQLPASSWORD}', [
+            PDO::ATTR_TIMEOUT => 5,
+            PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+        ]);
         exit(0);
     } catch (Exception \$e) { exit(1); }
     " 2>/dev/null; then
