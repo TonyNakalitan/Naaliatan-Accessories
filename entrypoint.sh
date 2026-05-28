@@ -53,7 +53,12 @@ chown -R www-data:www-data /app/var
 chmod -R 775 /app/var
 
 # Wait for database and run migrations
-if [ ! -z "$MYSQLHOST" ]; then
+if [ -z "$MYSQLHOST" ]; then
+    echo "ERROR: MYSQLHOST is not set. Add a MySQL service in Railway or set the MySQL environment variables (MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE)."
+    exit 1
+fi
+
+if [ true ]; then
     echo "Waiting for database connection..."
     for i in {1..40}; do
         if php -r "
@@ -86,8 +91,17 @@ if [ ! -z "$MYSQLHOST" ]; then
         echo "Waiting... ($i/40)"
         sleep 3
     done
-else
-    echo "No MySQL service detected. Skipping database setup."
+
+    # If we exhausted retries without connecting, abort with a clear message
+    if ! php -r "
+    try {
+        new PDO('mysql:host=${MYSQLHOST};port=${MYSQLPORT:-3306};dbname=${MYSQLDATABASE}', '${MYSQLUSER}', '${MYSQLPASSWORD}', [PDO::ATTR_TIMEOUT => 3]);
+        exit(0);
+    } catch (Exception \$e) { exit(1); }
+    " 2>/dev/null; then
+        echo "ERROR: Could not connect to MySQL at ${MYSQLHOST}:${MYSQLPORT:-3306} after 40 attempts. Check your Railway MySQL service or connection variables."
+        exit 1
+    fi
 fi
 
 # Replace ${PORT} in nginx config with actual Railway PORT
