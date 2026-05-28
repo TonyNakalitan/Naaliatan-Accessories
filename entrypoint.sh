@@ -10,11 +10,11 @@ echo "=== End images check ==="
 # ── Normalize Railway MySQL variable names ──────────────────────────────────
 # Railway's MySQL plugin may inject variables as MYSQL_HOST / MYSQL_USER etc.
 # Fall back to those if the MYSQLHOST-style vars are not set.
-MYSQLHOST="${MYSQLHOST:-${MYSQL_HOST:-}}"
+MYSQLHOST="${MYSQLHOST:-${MYSQL_HOST:-127.0.0.1}}"
 MYSQLPORT="${MYSQLPORT:-${MYSQL_PORT:-3306}}"
-MYSQLUSER="${MYSQLUSER:-${MYSQL_USER:-}}"
-MYSQLPASSWORD="${MYSQLPASSWORD:-${MYSQL_PASSWORD:-}}"
-MYSQLDATABASE="${MYSQLDATABASE:-${MYSQL_DATABASE:-}}"
+MYSQLUSER="${MYSQLUSER:-${MYSQL_USER:-AnthonyNaaliatan}}"
+MYSQLPASSWORD="${MYSQLPASSWORD:-${MYSQL_PASSWORD:-09359730321}}"
+MYSQLDATABASE="${MYSQLDATABASE:-${MYSQL_DATABASE:-NAcessoriesDB}}"
 
 echo "=== DB connection info ==="
 echo "  MYSQLHOST     = ${MYSQLHOST}"
