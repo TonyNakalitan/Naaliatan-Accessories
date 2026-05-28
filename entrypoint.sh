@@ -13,7 +13,7 @@ cat > /app/.env << ENVEOF
 APP_ENV=prod
 APP_SECRET=${APP_SECRET}
 DEFAULT_URI=https://${RAILWAY_PUBLIC_DOMAIN:-localhost}
-DATABASE_URL="mysql://${MYSQLUSER}:${MYSQLPASSWORD}@${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4&sslmode=require&ssl_ca=/etc/ssl/certs/ca-certificates.crt"
+DATABASE_URL="mysql://${MYSQLUSER}:${MYSQLPASSWORD}@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4"
 CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
 MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
 GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -61,8 +61,6 @@ if [ true ]; then
         try {
             new PDO('mysql:host=${MYSQLHOST};port=${MYSQLPORT:-3306};dbname=${MYSQLDATABASE}', '${MYSQLUSER}', '${MYSQLPASSWORD}', [
                 PDO::ATTR_TIMEOUT => 5,
-                PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/ca-certificates.crt',
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => true,
             ]);
             echo 'connected';
             exit(0);
@@ -97,8 +95,6 @@ if [ true ]; then
     try {
         new PDO('mysql:host=${MYSQLHOST};port=${MYSQLPORT:-3306};dbname=${MYSQLDATABASE}', '${MYSQLUSER}', '${MYSQLPASSWORD}', [
             PDO::ATTR_TIMEOUT => 5,
-            PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/ca-certificates.crt',
-            PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => true,
         ]);
         exit(0);
     } catch (Exception \$e) { exit(1); }
