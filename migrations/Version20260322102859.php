@@ -19,10 +19,31 @@ final class Version20260322102859 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('DROP INDEX UNIQ_D34A04ADF9038C4 ON product');
-        $this->addSql('ALTER TABLE product DROP sku, DROP reorder_point, DROP reorder_quantity, DROP location, DROP low_stock_alert_enabled, DROP last_cycle_count');
-        $this->addSql('ALTER TABLE stock_transaction ADD is_stored TINYINT DEFAULT 0 NOT NULL, DROP previous_stock, DROP new_stock, DROP location, DROP transfer_to_location, DROP added_stock, DROP current_stock, CHANGE type type VARCHAR(20) NOT NULL');
+        // Safely drop the unique index if it exists
+        $this->addSql("SET @idx = (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'product' AND INDEX_NAME = 'UNIQ_D34A04ADF9038C4')");
+        $this->addSql("SET @sql = IF(@idx > 0, 'DROP INDEX UNIQ_D34A04ADF9038C4 ON product', 'SELECT 1')");
+        $this->addSql('PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt');
+
+        // Drop product columns if they exist
+        foreach (['sku', 'reorder_point', 'reorder_quantity', 'location', 'low_stock_alert_enabled', 'last_cycle_count'] as $col) {
+            $this->addSql("SET @col = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'product' AND COLUMN_NAME = '$col')");
+            $this->addSql("SET @sql = IF(@col > 0, 'ALTER TABLE product DROP COLUMN $col', 'SELECT 1')");
+            $this->addSql('PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt');
+        }
+
+        // Add is_stored to stock_transaction if missing
+        $this->addSql("SET @col = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'stock_transaction' AND COLUMN_NAME = 'is_stored')");
+        $this->addSql("SET @sql = IF(@col = 0, 'ALTER TABLE stock_transaction ADD is_stored TINYINT DEFAULT 0 NOT NULL', 'SELECT 1')");
+        $this->addSql('PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt');
+
+        // Drop stock_transaction columns if they exist
+        foreach (['previous_stock', 'new_stock', 'location', 'transfer_to_location', 'added_stock', 'current_stock'] as $col) {
+            $this->addSql("SET @col = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'stock_transaction' AND COLUMN_NAME = '$col')");
+            $this->addSql("SET @sql = IF(@col > 0, 'ALTER TABLE stock_transaction DROP COLUMN $col', 'SELECT 1')");
+            $this->addSql('PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt');
+        }
+
+        $this->addSql("ALTER TABLE stock_transaction CHANGE type type VARCHAR(20) NOT NULL");
     }
 
     public function down(Schema $schema): void

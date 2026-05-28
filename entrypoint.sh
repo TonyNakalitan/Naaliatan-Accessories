@@ -26,11 +26,30 @@ echo "==========================="
 
 # Create .env file from Railway environment variables
 echo "Creating .env from environment variables..."
+
+# URL-encode credentials to handle special characters (@, #, /, ?, & etc.)
+urlencode() {
+    local string="${1}"
+    local encoded=""
+    local i
+    for (( i=0; i<${#string}; i++ )); do
+        local c="${string:$i:1}"
+        case "$c" in
+            [a-zA-Z0-9._~-]) encoded+="$c" ;;
+            *) encoded+=$(printf '%%%02X' "'$c") ;;
+        esac
+    done
+    echo "$encoded"
+}
+
+ENCODED_USER=$(urlencode "${MYSQLUSER}")
+ENCODED_PASS=$(urlencode "${MYSQLPASSWORD}")
+
 cat > /app/.env << ENVEOF
 APP_ENV=prod
 APP_SECRET=${APP_SECRET}
 DEFAULT_URI=https://${RAILWAY_PUBLIC_DOMAIN:-localhost}
-DATABASE_URL="mysql://${MYSQLUSER}:${MYSQLPASSWORD}@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4"
+DATABASE_URL="mysql://${ENCODED_USER}:${ENCODED_PASS}@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4"
 CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
 MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
 GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
