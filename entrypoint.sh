@@ -76,8 +76,10 @@ fi
 
 # Clear and warmup cache for production
 echo "Clearing and warming cache..."
-php /app/bin/console cache:clear --env=prod --no-debug 2>&1 || echo "Cache clear warning (non-fatal)"
-php /app/bin/console cache:warmup --env=prod 2>&1 || echo "Cache warmup warning (non-fatal)"
+# Wipe the prod cache dir first to avoid stale/corrupt cache from a previous failed warmup
+rm -rf /app/var/cache/prod
+php /app/bin/console cache:clear --env=prod --no-debug 2>&1
+php /app/bin/console cache:warmup --env=prod 2>&1
 
 # Fix permissions after cache operations
 echo "Fixing filesystem permissions..."
