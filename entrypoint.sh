@@ -44,21 +44,31 @@ urlencode() {
 
 ENCODED_USER=$(urlencode "${MYSQLUSER}")
 ENCODED_PASS=$(urlencode "${MYSQLPASSWORD}")
+BUILT_DATABASE_URL="mysql://${ENCODED_USER}:${ENCODED_PASS}@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4"
 
-cat > /app/.env << ENVEOF
-APP_ENV=prod
-APP_SECRET=${APP_SECRET}
-DEFAULT_URI=https://${RAILWAY_PUBLIC_DOMAIN:-localhost}
-DATABASE_URL="mysql://${ENCODED_USER}:${ENCODED_PASS}@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4"
-CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
-MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
-GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-MAILER_DSN=${MAILER_DSN}
-JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
-JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
-JWT_PASSPHRASE=${JWT_PASSPHRASE}
-ENVEOF
+echo "  DATABASE_URL (masked) = mysql://${ENCODED_USER}:***@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}"
+
+# Write .env — use printf to avoid heredoc variable expansion issues
+# We explicitly unset any Railway-injected DATABASE_URL so our built one wins
+unset DATABASE_URL
+
+{
+  echo "APP_ENV=prod"
+  echo "APP_SECRET=${APP_SECRET}"
+  echo "DEFAULT_URI=https://${RAILWAY_PUBLIC_DOMAIN:-localhost}"
+  printf 'DATABASE_URL="%s"\n' "${BUILT_DATABASE_URL}"
+  echo "CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}"
+  echo "MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0"
+  echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}"
+  echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}"
+  echo "MAILER_DSN=${MAILER_DSN}"
+  echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem"
+  echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem"
+  echo "JWT_PASSPHRASE=${JWT_PASSPHRASE}"
+} > /app/.env
+
+echo ".env file created. DATABASE_URL line:"
+grep "^DATABASE_URL" /app/.env
 
 echo ".env file created successfully"
 
