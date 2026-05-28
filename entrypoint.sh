@@ -43,6 +43,10 @@ echo "Clearing and warming cache..."
 php /app/bin/console cache:clear --env=prod --no-debug 2>&1 || echo "Cache clear warning (non-fatal)"
 php /app/bin/console cache:warmup --env=prod 2>&1 || echo "Cache warmup warning (non-fatal)"
 
+# Install importmap assets
+echo "Installing importmap assets..."
+php /app/bin/console importmap:install --no-interaction 2>&1 || echo "importmap:install warning (non-fatal)"
+
 # Fix permissions after cache operations
 echo "Fixing filesystem permissions..."
 chown -R www-data:www-data /app/var
