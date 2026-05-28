@@ -45,9 +45,6 @@ COPY . .
 # real production secrets into the image layers.
 RUN echo "APP_ENV=prod" > .env && echo "DATABASE_URL=mysql://user:password@localhost:3306/db" >> .env
 
-# Run your AssetMapper importmap installation (this will now pass)
-RUN php bin/console importmap:install --no-interaction
-
 # Optimize Composer autoloader and dump env for production
 RUN composer dump-env prod \
     && composer run-script post-install-cmd --no-interaction
