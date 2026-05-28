@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Starting Cartlify on Railway ==="
+echo "=== Starting Naaliatan's Accessories on Railway ==="
 
 echo "=== Checking images ==="
 ls /app/public/images/ 2>&1 || echo "Images folder NOT FOUND"
