@@ -83,7 +83,7 @@ if [ ! -z "$MYSQLHOST" ]; then
             chmod -R 775 /app/var
             break
         fi
-        echo "Waiting... ($i/20)"
+        echo "Waiting... ($i/40)"
         sleep 3
     done
 else
