@@ -41,8 +41,5 @@ services:
         arguments:
             $mailFromAddress: '%app.mail_from_address%'
             $mailFromName: "Naaliatan's Accessories"
-    # Logout handler for reliably marking users offline
-    App\Security\UserLogoutHandler:
-        tags: ['security.logout_handler']
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
