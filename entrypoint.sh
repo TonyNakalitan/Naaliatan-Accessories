@@ -3,13 +3,8 @@ set -e
 
 echo "=== Starting Naaliatan's Accessories on Railway ==="
 
-echo "=== Ensuring image directories exist ==="
-mkdir -p /app/public/images/profiles
-mkdir -p /app/public/images/products
-mkdir -p /app/public/images/characters
-chown -R www-data:www-data /app/public/images
-chmod -R 775 /app/public/images
-ls /app/public/images/ 2>&1
+echo "=== Checking images ==="
+ls /public/images/ 2>&1 || echo "Images folder NOT FOUND"
 echo "=== End images check ==="
 
 # ── Normalize Railway MySQL variable names ──────────────────────────────────
