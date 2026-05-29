@@ -43,16 +43,21 @@ COPY composer.json composer.lock ./
 
 # Install dependencies without running Symfony flex/scripts yet
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-dev --no-scripts --no-progress --no-interaction
+RUN composer install --no-dev --no-scripts --no-progress --no-interaction \
+    && php -r " \
+        \$f = 'vendor/knpuniversity/oauth2-client-bundle/src/Client/OAuth2Client.php'; \
+        \$c = file_get_contents(\$f); \
+        \$old = 'return \$request->query->has(\$key) ? \$request->query->get(\$key) : \$request->request->get(\$key);'; \
+        \$new = 'return \$request->query->has(\$key) ? \$request->query->get(\$key) : (\$request->request->has(\$key) ? \$request->request->get(\$key) : null);'; \
+        file_put_contents(\$f, str_replace(\$old, \$new, \$c)); \
+        echo \"Patched OAuth2Client.php\n\"; \
+    "
 
 # ==========================================
 # 3. Application Source & Build-Time Fix
 # ==========================================
 # Copy the rest of your application code
 COPY . .
-
-# Patch vendor: fix deprecated Request::get() in oauth2-client-bundle
-RUN php scripts/patch-vendor.php
 
 # FIX: Create a minimal .env file so the Symfony runtime can bootstrap 
 # during this build phase. This satisfies bin/console without baking 
