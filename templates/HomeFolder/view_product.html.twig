@@ -71,7 +71,7 @@
             </div>
 
             <!-- Hero Banner -->
-            <section class="hero-banner" {% if character and character.image %}style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(79, 70, 229, 0.75) 100%), url('{{ asset('images/characters/' ~ character.image) }}');"{% else %}style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(79, 70, 229, 0.85) 50%, rgba(139, 92, 246, 0.85) 100%);"{% endif %}>
+            <section class="hero-banner" {% if character and character.image %}style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(79, 70, 229, 0.75) 100%), url('{{ character_image_url(character.image) }}');"{% else %}style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(79, 70, 229, 0.85) 50%, rgba(139, 92, 246, 0.85) 100%);"{% endif %}>
                 <div class="hero-content">
                     <a href="{{ path('app_products') }}" class="back-button">
                         <i class="fas fa-arrow-left" aria-hidden="true"></i>

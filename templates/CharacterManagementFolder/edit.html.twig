@@ -197,7 +197,7 @@
                                             </div>
                                             <div id="previewContainer" {% if not character.image %}class="hidden"{% endif %}>
                                                 <div class="relative inline-block group">
-                                                    <img src="{% if character.image %}{{ asset('images/characters/' ~ character.image) }}{% endif %}" id="imgResult" class="max-h-32 sm:max-h-48 rounded-xl shadow-lg border-4 border-white" data-original-src="{% if character.image %}{{ asset('images/characters/' ~ character.image) }}{% endif %}">
+                                                    <img src="{% if character.image %}{{ character_image_url(character.image) }}{% endif %}" id="imgResult" class="max-h-32 sm:max-h-48 rounded-xl shadow-lg border-4 border-white" data-original-src="{% if character.image %}{{ character_image_url(character.image) }}{% endif %}">
                                                     <button type="button" onclick="resetFile(event)" class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-7 h-7 sm:w-8 sm:h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 text-xs sm:text-sm">
                                                         <i class="fas fa-times"></i>
                                                     </button>
@@ -290,7 +290,7 @@
                             </div>
                             
                             <div class="aspect-[4/5] bg-slate-100 relative group overflow-hidden">
-                                <img id="previewMainImg" src="{% if character.image %}{{ asset('images/characters/' ~ character.image) }}{% else %}https://placehold.co/400x500/f1f5f9/94a3b8?text=Character+Image{% endif %}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-original-src="{% if character.image %}{{ asset('images/characters/' ~ character.image) }}{% endif %}">
+                                <img id="previewMainImg" src="{% if character.image %}{{ character_image_url(character.image) }}{% else %}https://placehold.co/400x500/f1f5f9/94a3b8?text=Character+Image{% endif %}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-original-src="{% if character.image %}{{ character_image_url(character.image) }}{% endif %}">
                                 
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                                 

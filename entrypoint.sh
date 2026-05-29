@@ -65,6 +65,7 @@ unset DATABASE_URL
   echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem"
   echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem"
   echo "JWT_PASSPHRASE=${JWT_PASSPHRASE}"
+  echo "CLOUDINARY_URL=${CLOUDINARY_URL}"
 } > /app/.env
 
 echo ".env file created. DATABASE_URL line:"
