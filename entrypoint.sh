@@ -4,7 +4,7 @@ set -e
 echo "=== Starting Naaliatan's Accessories on Railway ==="
 
 echo "=== Checking images ==="
-ls /public/images/ 2>&1 || echo "Images folder NOT FOUND"
+ls /app/public/images/ 2>&1 || echo "Images folder NOT FOUND"
 echo "=== End images check ==="
 
 # Ensure upload directories exist and are writable

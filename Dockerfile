@@ -12,19 +12,21 @@ RUN apk add --no-cache \
     nginx \
     bash \
     openssl \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
     intl \
     opcache \
     zip \
-    pdo_mysql
+    pdo_mysql \
+    gd \
+    exif \
+    fileinfo
 
 # Install Composer globally
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Increase PHP upload limits
-RUN echo "upload_max_filesize=20M" > /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "post_max_size=25M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "memory_limit=256M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -52,6 +54,13 @@ RUN echo "APP_ENV=prod" > .env && echo "DATABASE_URL=mysql://user:password@local
 
 # Optimize Composer autoloader for production
 RUN composer dump-autoload --optimize --no-dev
+
+# Pre-create upload directories so they exist in the image
+RUN mkdir -p /app/public/images/profiles \
+    && mkdir -p /app/public/images/products \
+    && mkdir -p /app/public/images/characters \
+    && chown -R www-data:www-data /app/public/images \
+    && chmod -R 775 /app/public/images
 
 # Remove the temporary build .env so the runtime entrypoint can write the real one.
 RUN rm -f .env
