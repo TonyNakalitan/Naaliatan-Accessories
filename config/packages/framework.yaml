@@ -11,7 +11,6 @@ when@prod:
             cookie_secure: auto
             cookie_samesite: lax
         trusted_proxies: '127.0.0.1,REMOTE_ADDR'
-        trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-port', 'x-forwarded-proto', 'x-forwarded-prefix']
 
 when@dev:
     framework:
