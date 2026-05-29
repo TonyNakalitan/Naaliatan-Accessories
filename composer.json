@@ -88,7 +88,15 @@
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
+        "patch-vendor": [
+            "php scripts/patch-vendor.php"
+        ],
+        "post-install-cmd": [
+            "@patch-vendor",
+            "@auto-scripts"
+        ],
         "post-update-cmd": [
+            "@patch-vendor",
             "@auto-scripts"
         ]
     },
