@@ -8,7 +8,6 @@ use App\Form\CharacterType;
 use App\Repository\CharacterRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -123,17 +122,19 @@ class CharacterManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
+                $uploadDir = $this->getParameter('character_images_directory');
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0775, true);
+                }
+
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
                 
                 try {
-                    $imageFile->move(
-                        $this->getParameter('character_images_directory'),
-                        $newFilename
-                    );
+                    $imageFile->move($uploadDir, $newFilename);
                     $character->setImage($newFilename);
-                } catch (FileException $e) {
+                } catch (\Exception $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
             }
@@ -185,26 +186,28 @@ class CharacterManagementController extends AbstractController
             if ($imageFile) {
                 // Store old image filename to delete after successful upload
                 $oldImage = $character->getImage();
-                
+
+                $uploadDir = $this->getParameter('character_images_directory');
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0775, true);
+                }
+
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
                 
                 try {
-                    $imageFile->move(
-                        $this->getParameter('character_images_directory'),
-                        $newFilename
-                    );
+                    $imageFile->move($uploadDir, $newFilename);
                     $character->setImage($newFilename);
                     
                     // Delete old image file if it exists
                     if ($oldImage) {
-                        $oldImagePath = $this->getParameter('character_images_directory') . '/' . $oldImage;
+                        $oldImagePath = $uploadDir . '/' . $oldImage;
                         if (file_exists($oldImagePath)) {
                             unlink($oldImagePath);
                         }
                     }
-                } catch (FileException $e) {
+                } catch (\Exception $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
             }
