@@ -6,6 +6,7 @@ use App\Entity\ActivityLog;
 use App\Entity\Character;
 use App\Form\CharacterType;
 use App\Repository\CharacterRepository;
+use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,16 +30,16 @@ class CharacterManagementController extends AbstractController
 
     #[Route('/admin/characters/new', name: 'app_admin_character_management_new')]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminNew(Request $request, EntityManagerInterface $entityManager): Response
+    public function adminNew(Request $request, EntityManagerInterface $entityManager, CloudinaryService $cloudinary): Response
     {
-        return $this->new($request, $entityManager, 'admin');
+        return $this->new($request, $entityManager, $cloudinary, 'admin');
     }
 
     #[Route('/admin/characters/{id}/edit', name: 'app_admin_character_management_edit')]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminEdit(Request $request, Character $character, EntityManagerInterface $entityManager): Response
+    public function adminEdit(Request $request, Character $character, EntityManagerInterface $entityManager, CloudinaryService $cloudinary): Response
     {
-        return $this->edit($request, $character, $entityManager, 'admin');
+        return $this->edit($request, $character, $entityManager, $cloudinary, 'admin');
     }
 
     #[Route('/admin/characters/{id}', name: 'app_admin_character_management_delete', methods: ['POST'])]
@@ -73,9 +74,9 @@ class CharacterManagementController extends AbstractController
 
     #[Route('/staff/characters/{id}/edit', name: 'app_staff_character_management_edit')]
     #[IsGranted('ROLE_STAFF')]
-    public function staffEdit(Request $request, Character $character, EntityManagerInterface $entityManager): Response
+    public function staffEdit(Request $request, Character $character, EntityManagerInterface $entityManager, CloudinaryService $cloudinary): Response
     {
-        return $this->edit($request, $character, $entityManager, 'staff');
+        return $this->edit($request, $character, $entityManager, $cloudinary, 'staff');
     }
 
     #[Route('/staff/characters/{id}/show', name: 'app_staff_character_management_show')]
@@ -112,7 +113,7 @@ class CharacterManagementController extends AbstractController
         ]);
     }
 
-    private function new(Request $request, EntityManagerInterface $entityManager, string $role): Response
+    private function new(Request $request, EntityManagerInterface $entityManager, CloudinaryService $cloudinary, string $role): Response
     {
         $character = new Character();
         $form = $this->createForm(CharacterType::class, $character);
@@ -122,18 +123,9 @@ class CharacterManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
-                $uploadDir = $this->getParameter('character_images_directory');
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0775, true);
-                }
-
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-                
                 try {
-                    $imageFile->move($uploadDir, $newFilename);
-                    $character->setImage($newFilename);
+                    $imageUrl = $cloudinary->upload($imageFile, 'characters');
+                    $character->setImage($imageUrl);
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
@@ -168,7 +160,7 @@ class CharacterManagementController extends AbstractController
         ]);
     }
 
-    private function edit(Request $request, Character $character, EntityManagerInterface $entityManager, string $role): Response
+    private function edit(Request $request, Character $character, EntityManagerInterface $entityManager, CloudinaryService $cloudinary, string $role): Response
     {
         // Staff can only edit if they didn't create it (admin characters)
         if ($this->isGranted('ROLE_STAFF') && $character->getCreatedBy() && $character->getCreatedBy()->isStaff()) {
@@ -184,28 +176,15 @@ class CharacterManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
-                // Store old image filename to delete after successful upload
                 $oldImage = $character->getImage();
 
-                $uploadDir = $this->getParameter('character_images_directory');
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0775, true);
-                }
-
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-                
                 try {
-                    $imageFile->move($uploadDir, $newFilename);
-                    $character->setImage($newFilename);
-                    
-                    // Delete old image file if it exists
-                    if ($oldImage) {
-                        $oldImagePath = $uploadDir . '/' . $oldImage;
-                        if (file_exists($oldImagePath)) {
-                            unlink($oldImagePath);
-                        }
+                    $imageUrl = $cloudinary->upload($imageFile, 'characters');
+                    $character->setImage($imageUrl);
+
+                    // Delete old image from Cloudinary if it was a Cloudinary URL
+                    if ($oldImage && str_contains($oldImage, 'cloudinary.com')) {
+                        $cloudinary->deleteByUrl($oldImage);
                     }
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
