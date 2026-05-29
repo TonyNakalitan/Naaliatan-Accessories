@@ -5,12 +5,8 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
-when@prod:
-    framework:
-        session:
-            cookie_secure: auto
-            cookie_samesite: lax
-        trusted_proxies: '127.0.0.1,REMOTE_ADDR'
+    #esi: true
+    #fragments: true
 
 when@dev:
     framework:

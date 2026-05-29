@@ -62,7 +62,7 @@ RUN composer dump-autoload --optimize --no-dev
 # Pre-create upload directories so they exist in the image
 RUN mkdir -p /app/public/images/profiles \
     && mkdir -p /app/public/images/products \
-    && mkdir -p /app/public/images/characters \
+    && mkdir -p /app/public/images/game_character \
     && chown -R www-data:www-data /app/public/images \
     && chmod -R 775 /app/public/images
 
