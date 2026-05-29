@@ -3,6 +3,10 @@ set -e
 
 echo "=== Starting Naaliatan's Accessories on Railway ==="
 
+echo "=== Ensuring image directories exist ==="
+mkdir -p /app/public/images/characters
+mkdir -p /app/public/images/profiles
+mkdir -p /app/public/images/products
 echo "=== Checking images ==="
 ls /app/public/images/ 2>&1 || echo "Images folder NOT FOUND"
 echo "=== End images check ==="
@@ -95,14 +99,6 @@ php /app/bin/console cache:warmup --env=prod 2>&1
 echo "Fixing filesystem permissions..."
 chown -R www-data:www-data /app/var
 chmod -R 775 /app/var
-
-# Ensure image upload directories exist with correct permissions
-echo "Creating image upload directories..."
-mkdir -p /app/public/images/profiles
-mkdir -p /app/public/images/products
-mkdir -p /app/public/images/characters
-chown -R www-data:www-data /app/public/images
-chmod -R 775 /app/public/images
 
 # Wait for database and run migrations
 if [ -z "$MYSQLHOST" ] || [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASSWORD" ] || [ -z "$MYSQLDATABASE" ]; then
