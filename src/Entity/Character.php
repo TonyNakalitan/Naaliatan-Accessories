@@ -57,7 +57,7 @@ class Character
     #[Groups(['character:read', 'character:write'])]
     private ?string $alignment = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['character:read', 'character:write'])]
     private ?string $image = null;
 

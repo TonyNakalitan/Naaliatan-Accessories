@@ -8,6 +8,7 @@ use App\Form\CharacterType;
 use App\Repository\CharacterRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -119,14 +120,20 @@ class CharacterManagementController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle image upload — store as base64 data URI in DB (survives Railway redeploys)
+            // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                
                 try {
-                    $mimeType = $imageFile->getMimeType();
-                    $imageData = base64_encode(file_get_contents($imageFile->getPathname()));
-                    $character->setImage('data:' . $mimeType . ';base64,' . $imageData);
-                } catch (\Exception $e) {
+                    $imageFile->move(
+                        $this->getParameter('character_images_directory'),
+                        $newFilename
+                    );
+                    $character->setImage($newFilename);
+                } catch (FileException $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
             }
@@ -173,14 +180,31 @@ class CharacterManagementController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle image upload — store as base64 data URI in DB (survives Railway redeploys)
+            // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
+                // Store old image filename to delete after successful upload
+                $oldImage = $character->getImage();
+                
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                
                 try {
-                    $mimeType = $imageFile->getMimeType();
-                    $imageData = base64_encode(file_get_contents($imageFile->getPathname()));
-                    $character->setImage('data:' . $mimeType . ';base64,' . $imageData);
-                } catch (\Exception $e) {
+                    $imageFile->move(
+                        $this->getParameter('character_images_directory'),
+                        $newFilename
+                    );
+                    $character->setImage($newFilename);
+                    
+                    // Delete old image file if it exists
+                    if ($oldImage) {
+                        $oldImagePath = $this->getParameter('character_images_directory') . '/' . $oldImage;
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                        }
+                    }
+                } catch (FileException $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
             }

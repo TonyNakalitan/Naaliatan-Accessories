@@ -25,8 +25,8 @@ class ImageUrlExtension extends AbstractExtension
             return '';
         }
 
-        // If it's already a full URL (e.g. Google OAuth picture) or a base64 data URI, return as-is
-        if (str_starts_with($filename, 'http://') || str_starts_with($filename, 'https://') || str_starts_with($filename, 'data:')) {
+        // If it's already a full URL (e.g. Google OAuth picture), return as-is
+        if (str_starts_with($filename, 'http://') || str_starts_with($filename, 'https://')) {
             return $filename;
         }
 
