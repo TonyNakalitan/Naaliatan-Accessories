@@ -6,7 +6,6 @@ use App\Entity\ActivityLog;
 use App\Entity\Character;
 use App\Form\CharacterType;
 use App\Repository\CharacterRepository;
-use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,16 +29,16 @@ class CharacterManagementController extends AbstractController
 
     #[Route('/admin/characters/new', name: 'app_admin_character_management_new')]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminNew(Request $request, EntityManagerInterface $entityManager, CloudinaryService $cloudinary): Response
+    public function adminNew(Request $request, EntityManagerInterface $entityManager): Response
     {
-        return $this->new($request, $entityManager, $cloudinary, 'admin');
+        return $this->new($request, $entityManager, 'admin');
     }
 
     #[Route('/admin/characters/{id}/edit', name: 'app_admin_character_management_edit')]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminEdit(Request $request, Character $character, EntityManagerInterface $entityManager, CloudinaryService $cloudinary): Response
+    public function adminEdit(Request $request, Character $character, EntityManagerInterface $entityManager): Response
     {
-        return $this->edit($request, $character, $entityManager, $cloudinary, 'admin');
+        return $this->edit($request, $character, $entityManager, 'admin');
     }
 
     #[Route('/admin/characters/{id}', name: 'app_admin_character_management_delete', methods: ['POST'])]
@@ -74,9 +73,9 @@ class CharacterManagementController extends AbstractController
 
     #[Route('/staff/characters/{id}/edit', name: 'app_staff_character_management_edit')]
     #[IsGranted('ROLE_STAFF')]
-    public function staffEdit(Request $request, Character $character, EntityManagerInterface $entityManager, CloudinaryService $cloudinary): Response
+    public function staffEdit(Request $request, Character $character, EntityManagerInterface $entityManager): Response
     {
-        return $this->edit($request, $character, $entityManager, $cloudinary, 'staff');
+        return $this->edit($request, $character, $entityManager, 'staff');
     }
 
     #[Route('/staff/characters/{id}/show', name: 'app_staff_character_management_show')]
@@ -113,19 +112,20 @@ class CharacterManagementController extends AbstractController
         ]);
     }
 
-    private function new(Request $request, EntityManagerInterface $entityManager, CloudinaryService $cloudinary, string $role): Response
+    private function new(Request $request, EntityManagerInterface $entityManager, string $role): Response
     {
         $character = new Character();
         $form = $this->createForm(CharacterType::class, $character);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle image upload
+            // Handle image upload — store as base64 data URI in DB (survives Railway redeploys)
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
                 try {
-                    $imageUrl = $cloudinary->upload($imageFile, 'characters');
-                    $character->setImage($imageUrl);
+                    $mimeType = $imageFile->getMimeType();
+                    $imageData = base64_encode(file_get_contents($imageFile->getPathname()));
+                    $character->setImage('data:' . $mimeType . ';base64,' . $imageData);
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
@@ -160,7 +160,7 @@ class CharacterManagementController extends AbstractController
         ]);
     }
 
-    private function edit(Request $request, Character $character, EntityManagerInterface $entityManager, CloudinaryService $cloudinary, string $role): Response
+    private function edit(Request $request, Character $character, EntityManagerInterface $entityManager, string $role): Response
     {
         // Staff can only edit if they didn't create it (admin characters)
         if ($this->isGranted('ROLE_STAFF') && $character->getCreatedBy() && $character->getCreatedBy()->isStaff()) {
@@ -173,19 +173,13 @@ class CharacterManagementController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle image upload
+            // Handle image upload — store as base64 data URI in DB (survives Railway redeploys)
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
-                $oldImage = $character->getImage();
-
                 try {
-                    $imageUrl = $cloudinary->upload($imageFile, 'characters');
-                    $character->setImage($imageUrl);
-
-                    // Delete old image from Cloudinary if it was a Cloudinary URL
-                    if ($oldImage && str_contains($oldImage, 'cloudinary.com')) {
-                        $cloudinary->deleteByUrl($oldImage);
-                    }
+                    $mimeType = $imageFile->getMimeType();
+                    $imageData = base64_encode(file_get_contents($imageFile->getPathname()));
+                    $character->setImage('data:' . $mimeType . ';base64,' . $imageData);
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }

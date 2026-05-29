@@ -201,7 +201,7 @@
             creator: char.creator || 'Unknown',
             alignment: char.alignment || 'Neutral',
             colorCode: char.colorCode || '#6c757d',
-            image: char.image ? imageBasePath + char.image : 'https://via.placeholder.com/400x600?text=' + encodeURIComponent(char.name || 'Character'),
+            image: char.image ? (char.image.startsWith('data:') ? char.image : imageBasePath + char.image) : 'https://via.placeholder.com/400x600?text=' + encodeURIComponent(char.name || 'Character'),
             description: char.description || 'No description available.',
             csrfToken: char.csrfToken
         }));
