@@ -9,8 +9,7 @@ parameters:
     profile_images_directory: '%kernel.project_dir%/public/images/profiles'
     product_images_directory: '%kernel.project_dir%/public/images/products'
     character_images_directory: '%kernel.project_dir%/public/images/characters'
-    app.mail_from_address: '%env(default:app.mail_from_address_default:MAIL_FROM_ADDRESS)%'
-    app.mail_from_address_default: 'noreply@example.com'
+    app.mail_from_address: '%env(MAIL_FROM_ADDRESS)%'
 
 services:
     # default configuration for services in *this* file

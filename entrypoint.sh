@@ -96,6 +96,14 @@ echo "Fixing filesystem permissions..."
 chown -R www-data:www-data /app/var
 chmod -R 775 /app/var
 
+# Ensure image upload directories exist with correct permissions
+echo "Creating image upload directories..."
+mkdir -p /app/public/images/profiles
+mkdir -p /app/public/images/products
+mkdir -p /app/public/images/characters
+chown -R www-data:www-data /app/public/images
+chmod -R 775 /app/public/images
+
 # Wait for database and run migrations
 if [ -z "$MYSQLHOST" ] || [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASSWORD" ] || [ -z "$MYSQLDATABASE" ]; then
     echo "ERROR: One or more MySQL environment variables are missing."
