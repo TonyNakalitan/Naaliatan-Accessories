@@ -91,6 +91,14 @@ rm -rf /app/var/cache/prod
 php /app/bin/console cache:clear --env=prod --no-debug 2>&1
 php /app/bin/console cache:warmup --env=prod 2>&1
 
+# Ensure upload directories exist and are writable
+echo "Creating upload directories..."
+mkdir -p /app/public/images/characters
+mkdir -p /app/public/images/products
+mkdir -p /app/public/images/profiles
+chown -R www-data:www-data /app/public/images
+chmod -R 775 /app/public/images
+
 # Fix permissions after cache operations
 echo "Fixing filesystem permissions..."
 chown -R www-data:www-data /app/var
