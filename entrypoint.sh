@@ -53,7 +53,7 @@ urlencode() {
 
 ENCODED_USER=$(urlencode "${MYSQLUSER}")
 ENCODED_PASS=$(urlencode "${MYSQLPASSWORD}")
-BUILT_DATABASE_URL="mysql://${ENCODED_USER}:${ENCODED_PASS}@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}?serverVersion=8.0&charset=utf8mb4"
+BUILT_DATABASE_URL="mysql://${ENCODED_USER}:${ENCODED_PASS}@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}?serverVersion=8.0.45&charset=utf8mb4"
 
 echo "  DATABASE_URL (masked) = mysql://${ENCODED_USER}:***@${MYSQLHOST}:${MYSQLPORT:-3306}/${MYSQLDATABASE}"
 
