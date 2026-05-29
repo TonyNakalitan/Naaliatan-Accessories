@@ -7,6 +7,15 @@ echo "=== Checking images ==="
 ls /public/images/ 2>&1 || echo "Images folder NOT FOUND"
 echo "=== End images check ==="
 
+# Ensure upload directories exist and are writable
+echo "Creating upload directories..."
+mkdir -p /app/public/images/profiles
+mkdir -p /app/public/images/products
+mkdir -p /app/public/images/characters
+chown -R www-data:www-data /app/public/images
+chmod -R 775 /app/public/images
+echo "Upload directories ready."
+
 # ── Normalize Railway MySQL variable names ──────────────────────────────────
 # Railway's MySQL plugin may inject variables as MYSQL_HOST / MYSQL_USER etc.
 # Fall back to those if the MYSQLHOST-style vars are not set.
@@ -65,7 +74,6 @@ unset DATABASE_URL
   echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem"
   echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem"
   echo "JWT_PASSPHRASE=${JWT_PASSPHRASE}"
-  echo "CLOUDINARY_URL=${CLOUDINARY_URL:-}"
 } > /app/.env
 
 echo ".env file created. DATABASE_URL line:"
@@ -91,14 +99,6 @@ echo "Clearing and warming cache..."
 rm -rf /app/var/cache/prod
 php /app/bin/console cache:clear --env=prod --no-debug 2>&1
 php /app/bin/console cache:warmup --env=prod 2>&1
-
-# Ensure upload directories exist and are writable
-echo "Creating upload directories..."
-mkdir -p /app/public/images/characters
-mkdir -p /app/public/images/products
-mkdir -p /app/public/images/profiles
-chown -R www-data:www-data /app/public/images
-chmod -R 775 /app/public/images
 
 # Fix permissions after cache operations
 echo "Fixing filesystem permissions..."
