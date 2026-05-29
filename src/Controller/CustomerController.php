@@ -313,7 +313,7 @@ class CustomerController extends AbstractController
         $orderItem->setProduct($product);
         $orderItem->setQuantity($quantity);
         $orderItem->setUnitPrice($product->getPrice());
-        $subtotal = bcmul($product->getPrice(), (string) $quantity, 2);
+        $subtotal = number_format((float) $product->getPrice() * $quantity, 2, '.', '');
         $orderItem->setSubtotal($subtotal);
 
         $order->addOrderItem($orderItem);
