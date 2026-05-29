@@ -63,6 +63,7 @@ RUN composer dump-autoload --optimize --no-dev
 RUN mkdir -p /app/public/images/profiles \
     && mkdir -p /app/public/images/products \
     && mkdir -p /app/public/images/game_character \
+    && mkdir -p /app/public/images/characters \
     && chown -R www-data:www-data /app/public/images \
     && chmod -R 775 /app/public/images
 
