@@ -81,6 +81,7 @@ class ApiProfileController extends AbstractController
             'displayName' => $user->getDisplayName(),
             'bio' => $user->getBio(),
             'zodiacSign' => $user->getZodiacSign(),
+            'profilePicture' => $user->getProfilePicture(),
             'roles' => $user->getRoles(),
             'isActive' => $user->isActive(),
             'isVerified' => $user->isVerified(),
