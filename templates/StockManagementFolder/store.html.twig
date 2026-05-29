@@ -79,7 +79,7 @@
                             
                             <div class="product-image-section">
                                 {% if product.image %}
-                                <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}">
+                                <img src="{{ product.image|image_url('images/products') }}" alt="{{ product.name }}">
                                 {% else %}
                                 <div class="product-image-placeholder">
                                     <i class="fas fa-box"></i>

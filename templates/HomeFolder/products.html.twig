@@ -41,7 +41,7 @@
                 {% if app.user %}
                     <div class="avatar">
                         {% if app.user.profilePicture %}
-                            <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                            <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="{{ app.user.displayName ?: app.user.username }}">
                         {% else %}
                             {{ (app.user.displayName ?: app.user.username)|default('U')|slice(0,1)|upper }}
                         {% endif %}
@@ -229,7 +229,7 @@
                                     <div class="game-card-container">
                                         <div class="game-card-image">
                                             {% if character.image %}
-                                                <img src="{{ asset('images/characters/' ~ character.image) }}" 
+                                                <img src="{{ character.image|image_url('images/characters') }}" 
                                                      alt="{{ character.name }}" 
                                                      class="game-cover"
                                                      onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ character.name|url_encode }}&background=2d3748&size=400&color=fff';">

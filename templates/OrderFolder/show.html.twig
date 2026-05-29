@@ -111,7 +111,7 @@
                                     <div class="order-item-card">
                                         <div class="flex items-center gap-4">
                                             {% if item.product and item.product.image %}
-                                                <img src="{{ asset('images/products/' ~ item.product.image) }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-md">
+                                                <img src="{{ item.product.image|image_url('images/products') }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-md">
                                             {% else %}
                                                 <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border-2 border-white shadow-md">
                                                     <i class="fas fa-box text-slate-400 text-xl"></i>

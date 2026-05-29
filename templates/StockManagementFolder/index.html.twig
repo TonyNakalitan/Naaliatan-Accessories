@@ -61,7 +61,7 @@
                 {% endif %}
                 <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_profile_edit') : path('app_staff_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
                         <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
                             {% set displayText = app.user.displayName ?: app.user.username %}
@@ -149,7 +149,7 @@
                                 <!-- Card Top: Image + Badge -->
                                 <div class="si-card-top">
                                     {% if stock.product.image %}
-                                        <img src="{{ asset('images/products/' ~ stock.product.image) }}" alt="{{ stock.product.name }}" class="si-card-img">
+                                        <img src="{{ stock.product.image|image_url('images/products') }}" alt="{{ stock.product.name }}" class="si-card-img">
                                     {% else %}
                                         <div class="si-card-img-placeholder">
                                             <i class="fas fa-box"></i>

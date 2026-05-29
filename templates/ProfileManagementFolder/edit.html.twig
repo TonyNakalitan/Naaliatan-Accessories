@@ -132,7 +132,7 @@
                                             </div>
                                             <div id="previewContainer" {% if not user.profilePicture %}class="hidden"{% endif %}>
                                                 <div class="relative inline-block group">
-                                                    <img src="{% if user.profilePicture %}{{ asset('images/profiles/' ~ user.profilePicture) }}{% endif %}" id="imgResult" class="max-h-32 sm:max-h-48 rounded-xl shadow-lg border-4 border-white">
+                                                    <img src="{% if user.profilePicture %}{{ user.profilePicture|image_url('images/profiles') }}{% endif %}" id="imgResult" class="max-h-32 sm:max-h-48 rounded-xl shadow-lg border-4 border-white">
                                                     <button type="button" onclick="resetFile(event)" class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-7 h-7 sm:w-8 sm:h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 text-xs sm:text-sm">
                                                         <i class="fas fa-times"></i>
                                                     </button>
@@ -309,7 +309,7 @@
                                 <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')]"></div>
                                 <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-2xl overflow-hidden relative z-10" id="previewAvatarContainer">
                                     {% if user.profilePicture %}
-                                        <img src="{{ asset('images/profiles/' ~ user.profilePicture) }}" id="previewAvatar" class="w-full h-full object-cover">
+                                        <img src="{{ user.profilePicture|image_url('images/profiles') }}" id="previewAvatar" class="w-full h-full object-cover">
                                     {% else %}
                                         <div class="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold">
                                             <span id="previewInitial">{{ user.displayName|default(user.username)|slice(0,1)|upper }}</span>

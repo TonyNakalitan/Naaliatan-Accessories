@@ -144,7 +144,7 @@
                         <div class="user-preview">
                             <div class="user-preview-avatar">
                                 {% if app.user.profilePicture %}
-                                    <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                                    <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="{{ app.user.displayName ?: app.user.username }}">
                                 {% else %}
                                     <i class="fas fa-user"></i>
                                 {% endif %}

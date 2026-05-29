@@ -284,7 +284,7 @@
             <div class="flex items-center gap-6">
                 <a href="{{ path('app_customer_profile') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
                         <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
                             {% set displayText = app.user.displayName ?: app.user.username %}
@@ -312,7 +312,7 @@
                 <div class="char-hero-accent" style="background: linear-gradient(160deg, {{ character.colorCode }}, {{ character.colorCode }}99);">
                     <div class="char-hero-accent-icon">
                         {% if character.image %}
-                            <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
+                            <img src="{{ character.image|image_url('images/characters') }}" alt="{{ character.name }}">
                         {% else %}
                             {{ character.name|slice(0,1)|upper }}
                         {% endif %}
@@ -354,7 +354,7 @@
                         <div class="product-card">
                             <div class="product-card-img">
                                 {% if product.image is defined and product.image %}
-                                    <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}">
+                                    <img src="{{ product.image|image_url('images/products') }}" alt="{{ product.name }}">
                                 {% else %}
                                     <i class="fas fa-box"></i>
                                 {% endif %}

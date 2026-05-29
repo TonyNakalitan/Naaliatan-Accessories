@@ -92,7 +92,7 @@
                         <span class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
                     </div>
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.username }}" class="user-avatar">
+                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="{{ app.user.username }}" class="user-avatar">
                     {% else %}
                         <img src="https://ui-avatars.com/api/?name={{ app.user.username|url_encode }}&background=667eea&color=fff" alt="{{ app.user.username }}" class="user-avatar">
                     {% endif %}
@@ -106,7 +106,7 @@
             <div>
                 <div class="product-card">
                     {% if product.image %}
-                        <img src="{{ asset('images/products/' ~ product.image) }}" alt="{{ product.name }}" class="product-image">
+                        <img src="{{ product.image|image_url('images/products') }}" alt="{{ product.name }}" class="product-image">
                     {% else %}
                         <div class="product-image-placeholder">
                             <i class="fas fa-box"></i>
@@ -244,7 +244,7 @@
                                                 <div class="user-pill">
                                                     {% if transaction.user %}
                                                         {% if transaction.user.profilePicture %}
-                                                            <img src="{{ asset('images/profiles/' ~ transaction.user.profilePicture) }}" alt="{{ transaction.user.username }}" class="user-pill-avatar">
+                                                            <img src="{{ transaction.user.profilePicture|image_url('images/profiles') }}" alt="{{ transaction.user.username }}" class="user-pill-avatar">
                                                         {% else %}
                                                             <i class="fas fa-user-circle" style="color: #a0aec0;"></i>
                                                         {% endif %}

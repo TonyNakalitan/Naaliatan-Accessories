@@ -92,7 +92,7 @@
                                         <div class="check-badge"><i class="fas fa-check text-[10px]"></i></div>
                                         <div class="aspect-square bg-slate-100 relative overflow-hidden">
                                             {% if product.image %}
-                                            <img src="{{ asset('images/products/' ~ product.image) }}" class="w-full h-full object-cover">
+                                            <img src="{{ product.image|image_url('images/products') }}" class="w-full h-full object-cover">
                                             {% else %}
                                             <div class="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
                                                 <i class="fas fa-box text-4xl text-slate-400"></i>

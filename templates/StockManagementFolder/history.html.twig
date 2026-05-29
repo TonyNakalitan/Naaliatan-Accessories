@@ -98,7 +98,7 @@
                         <span class="user-role">{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }}</span>
                     </div>
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.username }}" class="user-avatar">
+                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="{{ app.user.username }}" class="user-avatar">
                     {% else %}
                         <img src="https://ui-avatars.com/api/?name={{ app.user.username|url_encode }}&background=667eea&color=fff" alt="{{ app.user.username }}" class="user-avatar">
                     {% endif %}

@@ -44,7 +44,7 @@
                 {% if app.user %}
                     <div class="avatar" aria-label="User avatar">
                         {% if app.user.profilePicture %}
-                            <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="{{ app.user.displayName ?: app.user.username }}">
+                            <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="{{ app.user.displayName ?: app.user.username }}">
                         {% else %}
                             <span>{{ (app.user.displayName ?: app.user.username)|default('U')|slice(0,1)|upper }}</span>
                         {% endif %}
@@ -76,7 +76,7 @@
                 <div class="main-character-section">
                     <div class="main-character-image">
                         {% if character.image %}
-                            <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
+                            <img src="{{ character.image|image_url('images/characters') }}" alt="{{ character.name }}">
                         {% else %}
                             <div class="no-image-placeholder">
                                 <i class="fas fa-user"></i>
@@ -89,7 +89,7 @@
                     <div class="character-card">
                         <div class="character-card-image">
                             {% if character.image %}
-                                <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
+                                <img src="{{ character.image|image_url('images/characters') }}" alt="{{ character.name }}">
                             {% else %}
                                 <div class="card-no-image">
                                     <i class="fas fa-user"></i>

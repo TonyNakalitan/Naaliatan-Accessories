@@ -43,15 +43,7 @@ COPY composer.json composer.lock ./
 
 # Install dependencies without running Symfony flex/scripts yet
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-dev --no-scripts --no-progress --no-interaction \
-    && php -r " \
-        \$f = 'vendor/knpuniversity/oauth2-client-bundle/src/Client/OAuth2Client.php'; \
-        \$c = file_get_contents(\$f); \
-        \$old = 'return \$request->query->has(\$key) ? \$request->query->get(\$key) : \$request->request->get(\$key);'; \
-        \$new = 'return \$request->query->has(\$key) ? \$request->query->get(\$key) : (\$request->request->has(\$key) ? \$request->request->get(\$key) : null);'; \
-        file_put_contents(\$f, str_replace(\$old, \$new, \$c)); \
-        echo \"Patched OAuth2Client.php\n\"; \
-    "
+RUN composer install --no-dev --no-scripts --no-progress --no-interaction
 
 # ==========================================
 # 3. Application Source & Build-Time Fix

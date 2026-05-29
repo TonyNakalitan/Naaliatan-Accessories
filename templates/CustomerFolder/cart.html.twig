@@ -298,7 +298,7 @@
             <div class="flex items-center gap-6">
                 <a href="{{ path('app_customer_profile') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ asset('images/profiles/' ~ app.user.profilePicture) }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
                         <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
                             {% set displayText = app.user.displayName ?: app.user.username %}
@@ -344,7 +344,7 @@
                             <div class="cart-item">
                                 <div class="cart-item-img">
                                     {% if item.product and item.product.image is defined and item.product.image %}
-                                        <img src="{{ asset('images/products/' ~ item.product.image) }}" alt="{{ item.product.name }}">
+                                        <img src="{{ item.product.image|image_url('images/products') }}" alt="{{ item.product.name }}">
                                     {% else %}
                                         <i class="fas fa-box"></i>
                                     {% endif %}
