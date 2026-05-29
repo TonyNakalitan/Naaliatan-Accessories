@@ -454,7 +454,7 @@
                 <div class="char-hero-accent" style="background: linear-gradient(160deg, {{ character.colorCode }}, {{ character.colorCode }}99);">
                     <div class="char-hero-accent-icon">
                         {% if character.image %}
-                            <img src="{{ character_image_url(character.image) }}" alt="{{ character.name }}">
+                            <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
                         {% else %}
                             {{ character.name|slice(0,1)|upper }}
                         {% endif %}

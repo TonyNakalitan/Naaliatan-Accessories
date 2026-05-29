@@ -331,7 +331,7 @@
                                 <span class="char-alignment-badge">{{ character.alignment }}</span>
                                 <div class="char-card-avatar" style="background: rgba(0,0,0,0.15);">
                                     {% if character.image %}
-                                        <img src="{{ character_image_url(character.image) }}" alt="{{ character.name }}">
+                                        <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
                                     {% else %}
                                         {{ character.name|slice(0,1)|upper }}
                                     {% endif %}

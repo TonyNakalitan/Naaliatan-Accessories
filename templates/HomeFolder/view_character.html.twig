@@ -76,7 +76,7 @@
                 <div class="main-character-section">
                     <div class="main-character-image">
                         {% if character.image %}
-                            <img src="{{ character_image_url(character.image) }}" alt="{{ character.name }}">
+                            <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
                         {% else %}
                             <div class="no-image-placeholder">
                                 <i class="fas fa-user"></i>
@@ -89,7 +89,7 @@
                     <div class="character-card">
                         <div class="character-card-image">
                             {% if character.image %}
-                                <img src="{{ character_image_url(character.image) }}" alt="{{ character.name }}">
+                                <img src="{{ asset('images/characters/' ~ character.image) }}" alt="{{ character.name }}">
                             {% else %}
                                 <div class="card-no-image">
                                     <i class="fas fa-user"></i>

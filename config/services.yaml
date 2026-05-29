@@ -10,7 +10,6 @@ parameters:
     product_images_directory: '%kernel.project_dir%/public/images/products'
     character_images_directory: '%kernel.project_dir%/public/images/characters'
     app.mail_from_address: '%env(MAIL_FROM_ADDRESS)%'
-    cloudinary_url: '%env(default::CLOUDINARY_URL)%'
 
 services:
     # default configuration for services in *this* file
@@ -42,9 +41,5 @@ services:
         arguments:
             $mailFromAddress: '%app.mail_from_address%'
             $mailFromName: "Naaliatan's Accessories"
-
-    App\Service\CloudinaryUploader:
-        arguments:
-            $cloudinaryUrl: '%cloudinary_url%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

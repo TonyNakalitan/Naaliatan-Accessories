@@ -6,7 +6,6 @@ use App\Entity\ActivityLog;
 use App\Entity\Character;
 use App\Form\CharacterType;
 use App\Repository\CharacterRepository;
-use App\Service\CloudinaryUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -17,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CharacterManagementController extends AbstractController
 {
-    public function __construct(private CharacterRepository $characterRepository, private CloudinaryUploader $cloudinaryUploader)
+    public function __construct(private CharacterRepository $characterRepository)
     {
     }
 
@@ -124,10 +123,17 @@ class CharacterManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                
                 try {
-                    $imageUrl = $this->cloudinaryUploader->upload($imageFile, 'characters');
-                    $character->setImage($imageUrl);
-                } catch (\Exception $e) {
+                    $imageFile->move(
+                        $this->getParameter('character_images_directory'),
+                        $newFilename
+                    );
+                    $character->setImage($newFilename);
+                } catch (FileException $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
             }
@@ -177,20 +183,28 @@ class CharacterManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
-                // Delete old image from Cloudinary if it exists
+                // Store old image filename to delete after successful upload
                 $oldImage = $character->getImage();
-                if ($oldImage && str_starts_with($oldImage, 'http')) {
-                    try {
-                        $this->cloudinaryUploader->deleteByUrl($oldImage);
-                    } catch (\Exception $e) {
-                        // Non-fatal: log but continue
-                    }
-                }
-
+                
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = preg_replace('/[^a-zA-Z0-9]/', '_', $originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                
                 try {
-                    $imageUrl = $this->cloudinaryUploader->upload($imageFile, 'characters');
-                    $character->setImage($imageUrl);
-                } catch (\Exception $e) {
+                    $imageFile->move(
+                        $this->getParameter('character_images_directory'),
+                        $newFilename
+                    );
+                    $character->setImage($newFilename);
+                    
+                    // Delete old image file if it exists
+                    if ($oldImage) {
+                        $oldImagePath = $this->getParameter('character_images_directory') . '/' . $oldImage;
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                        }
+                    }
+                } catch (FileException $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
                 }
             }
@@ -225,12 +239,11 @@ class CharacterManagementController extends AbstractController
             $characterName = $character->getName();
             $characterId = $character->getId();
 
-            // Delete the character image from Cloudinary if it exists
-            if ($character->getImage() && str_starts_with($character->getImage(), 'http')) {
-                try {
-                    $this->cloudinaryUploader->deleteByUrl($character->getImage());
-                } catch (\Exception $e) {
-                    // Non-fatal
+            // Delete the character image file if it exists
+            if ($character->getImage()) {
+                $imagePath = $this->getParameter('character_images_directory') . '/' . $character->getImage();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
                 }
             }
 

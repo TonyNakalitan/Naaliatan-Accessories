@@ -229,7 +229,7 @@
                                     <div class="game-card-container">
                                         <div class="game-card-image">
                                             {% if character.image %}
-                                                <img src="{{ character_image_url(character.image) }}" 
+                                                <img src="{{ asset('images/characters/' ~ character.image) }}" 
                                                      alt="{{ character.name }}" 
                                                      class="game-cover"
                                                      onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ character.name|url_encode }}&background=2d3748&size=400&color=fff';">
