@@ -7,20 +7,20 @@ use App\Entity\Product;
 use App\Form\ProductType;
 use App\Repository\CharacterRepository;
 use App\Repository\ProductRepository;
-use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ProductManagementController extends AbstractController
 {
     public function __construct(
         private ProductRepository $productRepository,
         private CharacterRepository $characterRepository,
-        private CloudinaryService $cloudinaryService,
+        private SluggerInterface $slugger,
     ) {
     }
 
@@ -155,8 +155,16 @@ class ProductManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $this->slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
                 try {
-                    $product->setImage($this->cloudinaryService->upload($imageFile, 'products'));
+                    $imageFile->move(
+                        $this->getParameter('product_images_directory'),
+                        $newFilename
+                    );
+                    $product->setImage($newFilename);
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'There was an error uploading the image.');
                 }
@@ -227,13 +235,24 @@ class ProductManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
-                // Delete old image from Cloudinary if exists
+                // Delete old image if exists
                 if ($product->getImage()) {
-                    $this->cloudinaryService->delete($product->getImage());
+                    $oldImagePath = $this->getParameter('product_images_directory') . '/' . $product->getImage();
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
                 }
 
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $this->slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
                 try {
-                    $product->setImage($this->cloudinaryService->upload($imageFile, 'products'));
+                    $imageFile->move(
+                        $this->getParameter('product_images_directory'),
+                        $newFilename
+                    );
+                    $product->setImage($newFilename);
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'There was an error uploading the image.');
                 }

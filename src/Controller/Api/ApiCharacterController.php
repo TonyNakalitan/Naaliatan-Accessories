@@ -52,6 +52,7 @@ class ApiCharacterController extends AbstractController
             'alignment' => $character->getAlignment(),
             'description' => $character->getDescription(),
             'image' => $character->getImage(),
+            'colorCode' => $character->getColorCode(),
             'createdAt' => $character->getCreatedAt()?->format(\DateTimeInterface::ATOM),
         ];
     }

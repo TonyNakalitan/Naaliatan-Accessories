@@ -57,9 +57,10 @@ class ApiProductController extends AbstractController
             'name' => $product->getName(),
             'productCode' => $product->getProductCode(),
             'description' => $product->getDescription(),
+            'image' => $product->getImage(),
             'price' => $product->getPrice(),
             'stockQuantity' => $product->getStockQuantity(),
-            'image' => $product->getImage(),
+            'colorHex' => $product->getColorHex(),
             'createdAt' => $product->getCreatedAt()?->format(\DateTimeInterface::ATOM),
             'character' => $product->getCharacter() ? [
                 'id' => $product->getCharacter()->getId(),

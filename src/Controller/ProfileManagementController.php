@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\ActivityLog;
 use App\Entity\User;
 use App\Form\ProfileType;
-use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,10 +12,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ProfileManagementController extends AbstractController
 {
-    public function __construct(private CloudinaryService $cloudinaryService)
+    public function __construct(private SluggerInterface $slugger)
     {
     }
 
@@ -79,8 +79,24 @@ class ProfileManagementController extends AbstractController
             // Handle profile picture upload
             $imageFile = $form->get('profilePicture')->getData();
             if ($imageFile) {
+                // Delete old profile picture if exists
+                if ($user->getProfilePicture()) {
+                    $oldImagePath = $this->getParameter('profile_images_directory') . '/' . $user->getProfilePicture();
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $this->slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
                 try {
-                    $user->setProfilePicture($this->cloudinaryService->upload($imageFile, 'profiles'));
+                    $imageFile->move(
+                        $this->getParameter('profile_images_directory'),
+                        $newFilename
+                    );
+                    $user->setProfilePicture($newFilename);
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'There was an error uploading your profile picture.');
                 }

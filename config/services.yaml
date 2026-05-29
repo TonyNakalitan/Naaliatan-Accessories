@@ -31,11 +31,6 @@ services:
         tags:
             - { name: 'security.user_checker' }
 
-    # Cloudinary service
-    App\Service\CloudinaryService:
-        arguments:
-            $cloudinaryUrl: '%env(CLOUDINARY_URL)%'
-
     # Test email command
     App\Command\TestEmailCommand:
         arguments:
