@@ -51,6 +51,9 @@ RUN composer install --no-dev --no-scripts --no-progress --no-interaction
 # Copy the rest of your application code
 COPY . .
 
+# Patch vendor: fix deprecated Request::get() in oauth2-client-bundle
+RUN php scripts/patch-vendor.php
+
 # FIX: Create a minimal .env file so the Symfony runtime can bootstrap 
 # during this build phase. This satisfies bin/console without baking 
 # real production secrets into the image layers.
