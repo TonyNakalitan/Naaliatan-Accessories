@@ -8,12 +8,23 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class CloudinaryUploader
 {
-    private Cloudinary $cloudinary;
+    private ?Cloudinary $cloudinary = null;
 
-    public function __construct(string $cloudinaryUrl)
+    public function __construct(private string $cloudinaryUrl)
     {
-        Configuration::instance($cloudinaryUrl);
-        $this->cloudinary = new Cloudinary();
+    }
+
+    private function getClient(): Cloudinary
+    {
+        if ($this->cloudinary === null) {
+            if (empty($this->cloudinaryUrl)) {
+                throw new \RuntimeException('CLOUDINARY_URL is not configured. Please add it to your Railway environment variables.');
+            }
+            Configuration::instance($this->cloudinaryUrl);
+            $this->cloudinary = new Cloudinary();
+        }
+
+        return $this->cloudinary;
     }
 
     /**
@@ -21,7 +32,7 @@ class CloudinaryUploader
      */
     public function upload(UploadedFile $file, string $folder): string
     {
-        $result = $this->cloudinary->uploadApi()->upload(
+        $result = $this->getClient()->uploadApi()->upload(
             $file->getRealPath(),
             [
                 'folder' => $folder,
@@ -37,9 +48,8 @@ class CloudinaryUploader
      */
     public function deleteByUrl(string $url): void
     {
-        // Extract public_id from URL: .../folder/filename.ext → folder/filename
         if (preg_match('/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i', $url, $matches)) {
-            $this->cloudinary->uploadApi()->destroy($matches[1]);
+            $this->getClient()->uploadApi()->destroy($matches[1]);
         }
     }
 }
