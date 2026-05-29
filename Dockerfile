@@ -1,7 +1,7 @@
 # ==========================================
 # 1. Base Image Setup
 # ==========================================
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 # Install system dependencies & PHP extensions required by Symfony
 RUN apk add --no-cache \
