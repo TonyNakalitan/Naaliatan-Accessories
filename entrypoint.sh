@@ -7,6 +7,8 @@ echo "=== Ensuring image directories exist ==="
 mkdir -p /app/public/images/characters
 mkdir -p /app/public/images/profiles
 mkdir -p /app/public/images/products
+chown -R www-data:www-data /app/public/images
+chmod -R 775 /app/public/images
 echo "=== Checking images ==="
 ls /app/public/images/ 2>&1 || echo "Images folder NOT FOUND"
 echo "=== End images check ==="
