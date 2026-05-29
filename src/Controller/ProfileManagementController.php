@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\ActivityLog;
 use App\Entity\User;
 use App\Form\ProfileType;
+use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class ProfileManagementController extends AbstractController
 {
+    public function __construct(private CloudinaryService $cloudinaryService)
+    {
+    }
+
     // Admin routes
     #[Route('/admin/profile', name: 'app_admin_profile_show')]
     #[IsGranted('ROLE_ADMIN')]
@@ -74,14 +79,8 @@ class ProfileManagementController extends AbstractController
             // Handle profile picture upload
             $imageFile = $form->get('profilePicture')->getData();
             if ($imageFile) {
-                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                
                 try {
-                    $imageFile->move(
-                        $this->getParameter('profile_images_directory'),
-                        $newFilename
-                    );
-                    $user->setProfilePicture($newFilename);
+                    $user->setProfilePicture($this->cloudinaryService->upload($imageFile, 'profiles'));
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'There was an error uploading your profile picture.');
                 }

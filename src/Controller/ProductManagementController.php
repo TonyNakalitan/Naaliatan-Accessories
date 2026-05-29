@@ -7,9 +7,9 @@ use App\Entity\Product;
 use App\Form\ProductType;
 use App\Repository\CharacterRepository;
 use App\Repository\ProductRepository;
+use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,7 +19,8 @@ class ProductManagementController extends AbstractController
 {
     public function __construct(
         private ProductRepository $productRepository,
-        private CharacterRepository $characterRepository
+        private CharacterRepository $characterRepository,
+        private CloudinaryService $cloudinaryService,
     ) {
     }
 
@@ -154,17 +155,9 @@ class ProductManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-                
                 try {
-                    $imageFile->move(
-                        $this->getParameter('product_images_directory'),
-                        $newFilename
-                    );
-                    $product->setImage($newFilename);
-                } catch (FileException $e) {
+                    $product->setImage($this->cloudinaryService->upload($imageFile, 'products'));
+                } catch (\Exception $e) {
                     $this->addFlash('error', 'There was an error uploading the image.');
                 }
             }
@@ -234,25 +227,14 @@ class ProductManagementController extends AbstractController
             // Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
-                // Delete old image if exists
+                // Delete old image from Cloudinary if exists
                 if ($product->getImage()) {
-                    $oldImagePath = $this->getParameter('product_images_directory').'/'.$product->getImage();
-                    if (file_exists($oldImagePath)) {
-                        unlink($oldImagePath);
-                    }
+                    $this->cloudinaryService->delete($product->getImage());
                 }
-                
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-                
+
                 try {
-                    $imageFile->move(
-                        $this->getParameter('product_images_directory'),
-                        $newFilename
-                    );
-                    $product->setImage($newFilename);
-                } catch (FileException $e) {
+                    $product->setImage($this->cloudinaryService->upload($imageFile, 'products'));
+                } catch (\Exception $e) {
                     $this->addFlash('error', 'There was an error uploading the image.');
                 }
             }
