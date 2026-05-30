@@ -225,17 +225,26 @@ class CharacterManagementController extends AbstractController
                 }
             }
             
-            $entityManager->flush();
+            try {
+                $entityManager->flush();
 
-            // Log the character edit activity
-            $activityLog = new ActivityLog();
-            $activityLog->setUser($this->getUser());
-            $activityLog->setUsername($this->getUser()->getUserIdentifier());
-            $activityLog->setRole(json_encode($this->getUser()->getRoles()));
-            $activityLog->setAction('UPDATE');
-            $activityLog->setTargetData('Character: ' . $character->getName() . ' (ID: ' . $character->getId() . ')');
-            $entityManager->persist($activityLog);
-            $entityManager->flush();
+                // Log the character edit activity
+                $activityLog = new ActivityLog();
+                $activityLog->setUser($this->getUser());
+                $activityLog->setUsername($this->getUser()->getUserIdentifier());
+                $activityLog->setRole(json_encode($this->getUser()->getRoles()));
+                $activityLog->setAction('UPDATE');
+                $activityLog->setTargetData('Character: ' . $character->getName() . ' (ID: ' . $character->getId() . ')');
+                $entityManager->persist($activityLog);
+                $entityManager->flush();
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Error saving character: ' . $e->getMessage());
+                error_log('Character save error: ' . $e->getMessage());
+                return $this->render('CharacterManagementFolder/edit.html.twig', [
+                    'character' => $character,
+                    'form' => $form->createView(),
+                ]);
+            }
 
             $this->addFlash('success', 'Character updated successfully!');
 
