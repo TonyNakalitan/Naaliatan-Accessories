@@ -160,21 +160,13 @@ class ProductManagementController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
-                    $uploadDir = $this->getParameter('product_images_directory');
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0775, true);
-                    }
-                    if (!is_writable($uploadDir)) {
-                        chmod($uploadDir, 0775);
-                    }
                     $imageFile->move(
-                        $uploadDir,
+                        $this->getParameter('product_images_directory'),
                         $newFilename
                     );
                     $product->setImage($newFilename);
                 } catch (\Exception $e) {
-                    $this->addFlash('error', 'There was an error uploading the image: ' . $e->getMessage());
-                    error_log('Product image upload error: ' . $e->getMessage());
+                    $this->addFlash('error', 'There was an error uploading the image.');
                 }
             }
             
@@ -256,21 +248,13 @@ class ProductManagementController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
-                    $uploadDir = $this->getParameter('product_images_directory');
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0775, true);
-                    }
-                    if (!is_writable($uploadDir)) {
-                        chmod($uploadDir, 0775);
-                    }
                     $imageFile->move(
-                        $uploadDir,
+                        $this->getParameter('product_images_directory'),
                         $newFilename
                     );
                     $product->setImage($newFilename);
                 } catch (\Exception $e) {
-                    $this->addFlash('error', 'There was an error uploading the image: ' . $e->getMessage());
-                    error_log('Product image upload error: ' . $e->getMessage());
+                    $this->addFlash('error', 'There was an error uploading the image.');
                 }
             }
             

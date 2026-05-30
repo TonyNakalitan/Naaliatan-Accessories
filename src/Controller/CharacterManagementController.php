@@ -130,21 +130,13 @@ class CharacterManagementController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
-                    $uploadDir = $this->getParameter('character_images_directory');
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0775, true);
-                    }
-                    if (!is_writable($uploadDir)) {
-                        chmod($uploadDir, 0775);
-                    }
                     $imageFile->move(
-                        $uploadDir,
+                        $this->getParameter('character_images_directory'),
                         $newFilename
                     );
                     $character->setImage($newFilename);
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
-                    error_log('Image upload error: ' . $e->getMessage());
                 }
             }
             
@@ -207,44 +199,27 @@ class CharacterManagementController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
-                    $uploadDir = $this->getParameter('character_images_directory');
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0775, true);
-                    }
-                    if (!is_writable($uploadDir)) {
-                        chmod($uploadDir, 0775);
-                    }
                     $imageFile->move(
-                        $uploadDir,
+                        $this->getParameter('character_images_directory'),
                         $newFilename
                     );
                     $character->setImage($newFilename);
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Error uploading image: ' . $e->getMessage());
-                    error_log('Image upload error: ' . $e->getMessage());
                 }
             }
             
-            try {
-                $entityManager->flush();
+            $entityManager->flush();
 
-                // Log the character edit activity
-                $activityLog = new ActivityLog();
-                $activityLog->setUser($this->getUser());
-                $activityLog->setUsername($this->getUser()->getUserIdentifier());
-                $activityLog->setRole(json_encode($this->getUser()->getRoles()));
-                $activityLog->setAction('UPDATE');
-                $activityLog->setTargetData('Character: ' . $character->getName() . ' (ID: ' . $character->getId() . ')');
-                $entityManager->persist($activityLog);
-                $entityManager->flush();
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Error saving character: ' . $e->getMessage());
-                error_log('Character save error: ' . $e->getMessage());
-                return $this->render('CharacterManagementFolder/edit.html.twig', [
-                    'character' => $character,
-                    'form' => $form->createView(),
-                ]);
-            }
+            // Log the character edit activity
+            $activityLog = new ActivityLog();
+            $activityLog->setUser($this->getUser());
+            $activityLog->setUsername($this->getUser()->getUserIdentifier());
+            $activityLog->setRole(json_encode($this->getUser()->getRoles()));
+            $activityLog->setAction('UPDATE');
+            $activityLog->setTargetData('Character: ' . $character->getName() . ' (ID: ' . $character->getId() . ')');
+            $entityManager->persist($activityLog);
+            $entityManager->flush();
 
             $this->addFlash('success', 'Character updated successfully!');
 

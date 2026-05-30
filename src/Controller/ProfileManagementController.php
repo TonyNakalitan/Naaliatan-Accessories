@@ -92,21 +92,13 @@ class ProfileManagementController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
-                    $uploadDir = $this->getParameter('profile_images_directory');
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0775, true);
-                    }
-                    if (!is_writable($uploadDir)) {
-                        chmod($uploadDir, 0775);
-                    }
                     $imageFile->move(
-                        $uploadDir,
+                        $this->getParameter('profile_images_directory'),
                         $newFilename
                     );
                     $user->setProfilePicture($newFilename);
                 } catch (\Exception $e) {
-                    $this->addFlash('error', 'There was an error uploading your profile picture: ' . $e->getMessage());
-                    error_log('Profile picture upload error: ' . $e->getMessage());
+                    $this->addFlash('error', 'There was an error uploading your profile picture.');
                 }
             }
 
