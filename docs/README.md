@@ -102,15 +102,7 @@ Keys are saved to `config/jwt/private.pem` and `config/jwt/public.pem`.
 php bin/console doctrine:migrations:migrate
 ```
 
-**8. (Optional) Create an admin user**
-
-```bash
-php create_admin_user.php
-# or run the SQL directly:
-# mysql -u root -p NAcessoriesDB < insert_admin.sql
-```
-
-**9. Start the development server**
+**8. Start the development server**
 
 ```bash
 symfony server:start
