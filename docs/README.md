@@ -26,6 +26,15 @@ A Symfony 7.4 full-stack e-commerce platform for game-character-themed accessori
 
 ## Changelog
 
+### v2.2.0 — June 2026
+
+#### 🆕 New Characters
+
+- **Demogorgon** — Added as a new character. The terrifying creature from the Upside Down, featured in *Stranger Things*. Alignment: Evil.
+- **Ignited Chica** — Added as a new character. The ignited, burnt form of Chica from *Five Nights at Freddy's*. Alignment: Evil.
+
+---
+
 ### v2.1.0 — June 2026
 
 #### 🆕 New Features
