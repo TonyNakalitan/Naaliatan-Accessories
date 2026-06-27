@@ -11,367 +11,348 @@
 {% endblock %}
 
 {% block body %}
-<div id="dashboard-app-wrapper" class="min-h-screen">
+<div id="dashboard-app-wrapper">
 
-    <!-- App Wrapper -->
-    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
-        
-        <!-- Header -->
-        <header class="relative z-50 flex items-center justify-between px-10 py-8">
-            <div class="flex items-center gap-3">
-                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <span class="text-3xl font-bold tracking-tighter text-gray-800">
-                    Admin Dashboard
-                </span>
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="dashboard-layout">
+
+        <!-- ===== HEADER ===== -->
+        <header class="dash-header">
+            <div class="dash-header-left">
+                <h1 class="dash-title">Admin Dashboard</h1>
+                <p class="dash-subtitle">Welcome back, {{ app.user.displayName ?: app.user.username }}</p>
             </div>
 
-            <!-- Search bar -->
-            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
-                <i class="fa fa-search text-gray-400 mr-3"></i>
-                <input type="text" id="searchInput" placeholder="Search metrics..." class="bg-transparent outline-none text-sm w-full">
+            <!-- Search -->
+            <div class="dash-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search anything...">
             </div>
 
-            <div class="flex items-center gap-6">
-                <a href="{{ path('app_admin_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <!-- Profile -->
+            <a href="{{ path('app_admin_profile_edit') }}" class="dash-profile">
+                <div class="dash-profile-avatar">
                     {% if app.user.profilePicture %}
-                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
+                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="Profile">
                     {% else %}
-                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
+                        <div class="dash-profile-initials">
                             {% set displayText = app.user.displayName ?: app.user.username %}
                             {% set words = displayText|split(' ') %}
                             {% if words|length > 1 %}
-                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
                             {% else %}
-                                {{ displayText|slice(0, 2)|upper }}
+                                {{ displayText|slice(0,2)|upper }}
                             {% endif %}
                         </div>
                     {% endif %}
-                    <div class="flex flex-col items-start">
-                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
-                        <span class="text-xs text-gray-500">Admin</span>
-                    </div>
-                </a>
-            </div>
+                    <span class="dash-profile-status"></span>
+                </div>
+                <div class="dash-profile-info">
+                    <span class="dash-profile-name">{{ app.user.displayName ?: app.user.username }}</span>
+                    <span class="dash-profile-role">Administrator</span>
+                </div>
+                <i class="fas fa-chevron-right dash-profile-arrow"></i>
+            </a>
         </header>
 
-        <!-- Viewport -->
-        <main class="relative flex-1 overflow-x-auto">
-            
-            <!-- GRID VIEW (The Carousel) -->
-            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
-                
-                <!-- Carousel at bottom -->
-                <div id="statsCarousel" class="flex gap-8 items-end h-[500px] mb-6">
-                    <!-- Cards injected by JS -->
+        <!-- ===== DATA BOARD — Stat Cards ===== -->
+        <section class="data-board">
+            <div class="stat-card stat-blue">
+                <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">Total Users</span>
+                    <span class="stat-card-value">{{ stats.totalUsers }}</span>
+                    <span class="stat-card-sub">{{ stats.totalStaff }} staff members</span>
                 </div>
-
-                <!-- Footer Nav -->
-                <div class="flex items-center justify-between pt-4 pb-2">
-                    <div class="flex gap-6 text-sm font-medium text-gray-500">
-                        <span>Total Users: <span id="totalUsers">{{ stats.totalUsers }}</span></span>
-                        <span>Products: <span id="totalProducts">{{ stats.totalProducts }}</span></span>
-                        <span>Characters: <span id="totalCharacters">{{ stats.totalCharacters }}</span></span>
-                    </div>
-                    <div class="flex gap-4">
-                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            <i class="fa fa-chevron-left text-xs"></i> Prev
-                        </button>
-                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            Next <i class="fa fa-chevron-right text-xs"></i>
-                        </button>
-                    </div>
-                </div>
+                <a href="{{ path('app_admin_user_management_index') }}" class="stat-card-link">
+                    Manage <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
 
-            <!-- DETAIL / HERO VIEW -->
-            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
-                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
-                
-                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
-                    <i class="fa fa-times text-red-500"></i> Close
-                </button>
+            <div class="stat-card stat-purple">
+                <div class="stat-card-icon"><i class="fas fa-box-open"></i></div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">Total Products</span>
+                    <span class="stat-card-value">{{ stats.totalProducts }}</span>
+                    <span class="stat-card-sub">{{ stats.lowStockProducts }} low stock</span>
+                </div>
+                <a href="{{ path('app_admin_product_management_index') }}" class="stat-card-link">
+                    Manage <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
 
-                <div class="relative z-10 h-full flex items-center px-16">
-                    <!-- Left Side: Large Icon -->
-                    <div class="w-1/2 flex justify-center items-center">
-                        <div class="hero-icon-frame">
-                            <div id="heroIcon" class="hero-icon-wrapper"></div>
+            <div class="stat-card stat-green">
+                <div class="stat-card-icon"><i class="fas fa-id-badge"></i></div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">Characters</span>
+                    <span class="stat-card-value">{{ stats.totalCharacters }}</span>
+                    <span class="stat-card-sub">
+                        {{ characterStats|filter(c => c.alignment == 'Good')|first.count|default(0) }} good /
+                        {{ characterStats|filter(c => c.alignment == 'Evil')|first.count|default(0) }} evil
+                    </span>
+                </div>
+                <a href="{{ path('app_admin_character_management_index') }}" class="stat-card-link">
+                    Manage <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stat-card stat-orange">
+                <div class="stat-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">Low / Out of Stock</span>
+                    <span class="stat-card-value">{{ stats.lowStockProducts }}</span>
+                    <span class="stat-card-sub">{{ stats.outOfStockProducts }} out of stock</span>
+                </div>
+                <a href="{{ path('app_admin_stock_management_index') }}" class="stat-card-link">
+                    View <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stat-card stat-teal">
+                <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">Total Orders</span>
+                    <span class="stat-card-value">{{ stats.totalOrders ?? '—' }}</span>
+                    <span class="stat-card-sub">All time orders</span>
+                </div>
+                <a href="{{ path('app_admin_order_index') }}" class="stat-card-link">
+                    View <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stat-card stat-rose">
+                <div class="stat-card-icon"><i class="fas fa-coins"></i></div>
+                <div class="stat-card-body">
+                    <span class="stat-card-label">Stock Value</span>
+                    <span class="stat-card-value">₱{{ stats.totalStockValue|number_format(0, '.', ',') }}</span>
+                    <span class="stat-card-sub">Total inventory value</span>
+                </div>
+                <a href="{{ path('app_admin_stock_management_index') }}" class="stat-card-link">
+                    View <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- ===== MAIN CONTENT: Chart + Table ===== -->
+        <div class="dash-content">
+
+            <!-- LEFT: Charts -->
+            <div class="dash-charts">
+
+                <!-- Bar Chart — Stock Overview -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <h3 class="chart-title">Stock Overview</h3>
+                            <p class="chart-subtitle">Products · Low Stock · Out of Stock</p>
                         </div>
+                        <span class="chart-badge">Inventory</span>
                     </div>
-
-                    <!-- Right Side: Content -->
-                    <div class="w-1/2 pl-12 pr-8">
-                        <div class="hero-content-wrapper">
-                            <h2 id="heroTitle" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
-                            
-                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
-                                <div class="meta-item">
-                                    <i id="heroMetaIcon1" class="text-blue-500"></i>
-                                    <span class="meta-label" id="heroMetaLabel1"></span>
-                                    <span id="heroMetaValue1" class="meta-value"></span>
-                                </div>
-                                <div class="meta-item">
-                                    <i id="heroMetaIcon2" class="text-purple-500"></i>
-                                    <span class="meta-label" id="heroMetaLabel2"></span>
-                                    <span id="heroMetaValue2" class="meta-value"></span>
-                                </div>
-                                <div class="meta-item">
-                                    <i id="heroMetaIcon3" class="text-green-500"></i>
-                                    <span class="meta-label" id="heroMetaLabel3"></span>
-                                    <span id="heroMetaValue3" class="meta-value"></span>
-                                </div>
-                            </div>
-                            
-                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
-                                <h3 class="description-title">Details</h3>
-                                <div id="heroDescription" class="description-text"></div>
-                            </div>
-
-                            <div class="hero-actions slide-in" style="animation-delay: 0.4s" id="heroActions">
-                                <!-- Actions injected by JS -->
-                            </div>
-                        </div>
+                    <div class="chart-wrapper">
+                        <canvas id="stockBarChart"></canvas>
                     </div>
                 </div>
+
+                <!-- Donut Chart — Character Alignment -->
+                <div class="chart-card chart-card-sm">
+                    <div class="chart-card-header">
+                        <div>
+                            <h3 class="chart-title">Character Alignment</h3>
+                            <p class="chart-subtitle">Good vs Evil vs Neutral</p>
+                        </div>
+                        <span class="chart-badge">Characters</span>
+                    </div>
+                    <div class="chart-wrapper chart-wrapper-donut">
+                        <canvas id="alignmentDonut"></canvas>
+                    </div>
+                    <div class="donut-legend" id="donutLegend"></div>
+                </div>
+
             </div>
-        </main>
+
+            <!-- RIGHT: Recent Activity Table -->
+            <div class="dash-table-panel">
+                <div class="table-panel-header">
+                    <h3 class="chart-title">Recent Stats</h3>
+                    <input type="text" id="tableSearch" placeholder="Filter rows..." class="table-search-input">
+                </div>
+
+                <div class="dash-table-wrapper">
+                    <table class="dash-table" id="statsTable">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="fas fa-users text-blue-500 mr-2"></i>Total Users</td>
+                                <td><strong>{{ stats.totalUsers }}</strong></td>
+                                <td><span class="dash-badge badge-blue">Active</span></td>
+                                <td><a href="{{ path('app_admin_user_management_index') }}" class="table-action-link">View</a></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-user-tie text-purple-500 mr-2"></i>Staff Members</td>
+                                <td><strong>{{ stats.totalStaff }}</strong></td>
+                                <td><span class="dash-badge badge-purple">Team</span></td>
+                                <td><a href="{{ path('app_admin_user_management_index') }}" class="table-action-link">View</a></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-box-open text-green-500 mr-2"></i>Total Products</td>
+                                <td><strong>{{ stats.totalProducts }}</strong></td>
+                                <td><span class="dash-badge badge-green">Catalog</span></td>
+                                <td><a href="{{ path('app_admin_product_management_index') }}" class="table-action-link">View</a></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>Low Stock</td>
+                                <td><strong>{{ stats.lowStockProducts }}</strong></td>
+                                <td><span class="dash-badge badge-yellow">Alert</span></td>
+                                <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">Check</a></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-times-circle text-red-500 mr-2"></i>Out of Stock</td>
+                                <td><strong>{{ stats.outOfStockProducts }}</strong></td>
+                                <td><span class="dash-badge badge-red">Critical</span></td>
+                                <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">Fix</a></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-id-badge text-pink-500 mr-2"></i>Characters</td>
+                                <td><strong>{{ stats.totalCharacters }}</strong></td>
+                                <td><span class="dash-badge badge-pink">Collection</span></td>
+                                <td><a href="{{ path('app_admin_character_management_index') }}" class="table-action-link">View</a></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-coins text-teal-500 mr-2"></i>Stock Value</td>
+                                <td><strong>₱{{ stats.totalStockValue|number_format(0, '.', ',') }}</strong></td>
+                                <td><span class="dash-badge badge-teal">Inventory</span></td>
+                                <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">View</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
-
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
     <script>
-        const statsData = [
-            {
-                id: 'users',
-                title: 'Total Users',
-                value: {{ stats.totalUsers }},
-                badge: 'Active',
-                icon: 'fa-users',
-                colorCode: '#3b82f6',
-                description: 'Total registered users in the system',
-                meta: [
-                    { icon: 'fa-user-check', label: 'Active Users', value: '{{ stats.totalUsers }}' },
-                    { icon: 'fa-user-shield', label: 'Staff Members', value: '{{ stats.totalStaff }}' },
-                    { icon: 'fa-calendar', label: 'Last Updated', value: '{{ "now"|date("M j, Y") }}' }
-                ],
-                actions: [
-                    { label: 'Manage Users', url: '{{ path('app_admin_user_management_index') }}', class: 'primary' }
-                ]
-            },
-            {
-                id: 'staff',
-                title: 'Staff Members',
-                value: {{ stats.totalStaff }},
-                badge: 'Team',
-                icon: 'fa-user-tie',
-                colorCode: '#8b5cf6',
-                description: 'Staff members with elevated permissions',
-                meta: [
-                    { icon: 'fa-users', label: 'Total Staff', value: '{{ stats.totalStaff }}' },
-                    { icon: 'fa-user-shield', label: 'Admins', value: 'N/A' },
-                    { icon: 'fa-calendar', label: 'Last Updated', value: '{{ "now"|date("M j, Y") }}' }
-                ],
-                actions: [
-                    { label: 'View Staff', url: '{{ path('app_admin_user_management_index') }}', class: 'primary' }
-                ]
-            },
-            {
-                id: 'products',
-                title: 'Total Products',
-                value: {{ stats.totalProducts }},
-                badge: 'Catalog',
-                icon: 'fa-box',
-                colorCode: '#10b981',
-                description: 'Products available in the catalog',
-                meta: [
-                    { icon: 'fa-box', label: 'Total Products', value: '{{ stats.totalProducts }}' },
-                    { icon: 'fa-exclamation-triangle', label: 'Low Stock', value: '{{ stats.lowStockProducts }}' },
-                    { icon: 'fa-times-circle', label: 'Out of Stock', value: '{{ stats.outOfStockProducts }}' }
-                ],
-                actions: [
-                    { label: 'Manage Products', url: '{{ path('app_admin_product_management_index') }}', class: 'primary' }
-                ]
-            },
-            {
-                id: 'characters',
-                title: 'Total Characters',
-                value: {{ stats.totalCharacters }},
-                badge: 'Collection',
-                icon: 'fa-user-ninja',
-                colorCode: '#ec4899',
-                description: 'Characters in the collection',
-                meta: [
-                    { icon: 'fa-user-ninja', label: 'Total Characters', value: '{{ stats.totalCharacters }}' },
-                    { icon: 'fa-heart', label: 'Good Alignment', value: '{{ characterStats|filter(c => c.alignment == "Good")|first.count|default(0) }}' },
-                    { icon: 'fa-skull', label: 'Evil Alignment', value: '{{ characterStats|filter(c => c.alignment == "Evil")|first.count|default(0) }}' }
-                ],
-                actions: [
-                    { label: 'Manage Characters', url: '{{ path('app_admin_character_management_index') }}', class: 'primary' }
-                ]
-            },
-            {
-                id: 'lowstock',
-                title: 'Low Stock',
-                value: {{ stats.lowStockProducts }},
-                badge: 'Alert',
-                icon: 'fa-exclamation-triangle',
-                colorCode: '#f59e0b',
-                description: 'Products with low inventory levels',
-                meta: [
-                    { icon: 'fa-exclamation-triangle', label: 'Low Stock', value: '{{ stats.lowStockProducts }}' },
-                    { icon: 'fa-times-circle', label: 'Out of Stock', value: '{{ stats.outOfStockProducts }}' },
-                    { icon: 'fa-coins', label: 'Total Value', value: '?{{ stats.totalStockValue|number_format(0, ".", ",") }}' }
-                ],
-                actions: [
-                    { label: 'View Inventory', url: '{{ path('app_admin_stock_management_index') }}', class: 'primary' }
-                ]
-            }
-        ];
-
-        let currentIndex = 0;
-        const visibleCount = 3;
-
-        function adjustColor(color, amount) {
-            const num = parseInt(color.replace("#",""), 16);
-            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
-            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
-            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
-        }
-
-        function renderCarousel() {
-            const container = document.getElementById('statsCarousel');
-            container.innerHTML = '';
-            
-            const displayed = statsData.slice(currentIndex, currentIndex + visibleCount);
-
-            displayed.forEach((stat) => {
-                const colorLight = adjustColor(stat.colorCode, 30);
-                const colorDark = adjustColor(stat.colorCode, -30);
-                
-                const card = document.createElement('div');
-                card.className = `stat-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
-                card.style.cssText = `background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
-                card.setAttribute('data-color', stat.colorCode);
-                
-                card.innerHTML = `
-                    <div class="stat-icon-wrapper">
-                        <i class="fas ${stat.icon}"></i>
-                    </div>
-                    <div class="relative z-10 pt-8">
-                        <h3 class="text-4xl font-bold text-white mb-1">${stat.title}</h3>
-                        <p class="text-white/70 text-sm mb-2">${stat.badge}</p>
-                        <p class="text-6xl font-extrabold text-white mb-4">${stat.value}</p>
-                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
-                            View Details >
-                        </button>
-                    </div>
-                `;
-                card.onclick = () => openHero(stat);
-                container.appendChild(card);
-            });
-            
-            updateNavigationButtons();
-        }
-        
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            
-            if (prevBtn && nextBtn) {
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex + visibleCount >= statsData.length;
-            }
-        }
-
-        function nextSlide() {
-            if (currentIndex + visibleCount < statsData.length) {
-                currentIndex++;
-                renderCarousel();
-            }
-        }
-
-        function prevSlide() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderCarousel();
-            }
-        }
-
-        let currentStat = null;
-        
-        function openHero(stat) {
-            currentStat = stat;
-            const app = document.getElementById('app');
-            const heroBg = document.getElementById('heroBg');
-            const heroIcon = document.getElementById('heroIcon');
-            const heroTitle = document.getElementById('heroTitle');
-            const heroDescription = document.getElementById('heroDescription');
-
-            const colorLight = adjustColor(stat.colorCode, 30);
-            const colorDark = adjustColor(stat.colorCode, -30);
-            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
-            
-            heroIcon.innerHTML = `<i class="fas ${stat.icon}"></i>`;
-            heroTitle.innerText = stat.title;
-            heroDescription.innerText = stat.description;
-            
-            // Set meta items
-            stat.meta.forEach((meta, index) => {
-                document.getElementById(`heroMetaIcon${index + 1}`).className = `fas ${meta.icon} text-blue-500`;
-                document.getElementById(`heroMetaLabel${index + 1}`).innerText = meta.label + ':';
-                document.getElementById(`heroMetaValue${index + 1}`).innerText = meta.value;
-            });
-            
-            // Set actions
-            const actionsContainer = document.getElementById('heroActions');
-            actionsContainer.innerHTML = '';
-            stat.actions.forEach(action => {
-                const btn = document.createElement('a');
-                btn.href = action.url;
-                btn.className = `action-btn action-btn-${action.class}`;
-                btn.innerHTML = `<i class="fa fa-arrow-right"></i><span>${action.label}</span>`;
-                actionsContainer.appendChild(btn);
-            });
-
-            app.classList.add('hero-active');
-            
-            const animatedElements = document.querySelectorAll('.slide-in');
-            animatedElements.forEach(el => {
-                el.style.animation = 'none';
-                el.offsetHeight;
-                el.style.animation = null;
-            });
-        }
-
-        function closeHero() {
-            document.getElementById('app').classList.remove('hero-active');
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            renderCarousel();
-            
+        // ---- Sidebar toggle ----
+        document.addEventListener('DOMContentLoaded', function () {
             const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            
-            if (sidebarToggle && sidebar && sidebarOverlay) {
-                sidebarToggle.addEventListener('click', function() {
+            const sidebar       = document.getElementById('sidebar');
+            const overlay       = document.getElementById('sidebarOverlay');
+
+            if (sidebarToggle && sidebar && overlay) {
+                sidebarToggle.addEventListener('click', () => {
                     sidebar.classList.toggle('active');
-                    sidebarOverlay.classList.toggle('active');
+                    overlay.classList.toggle('active');
                 });
-                
-                sidebarOverlay.addEventListener('click', function() {
+                overlay.addEventListener('click', () => {
                     sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
+                    overlay.classList.remove('active');
                 });
             }
+
+            // ---- Table search ----
+            const tableSearch = document.getElementById('tableSearch');
+            if (tableSearch) {
+                tableSearch.addEventListener('input', function () {
+                    const q = this.value.toLowerCase();
+                    document.querySelectorAll('#statsTable tbody tr').forEach(row => {
+                        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+                    });
+                });
+            }
+
+            // ---- Bar Chart ----
+            const barCtx = document.getElementById('stockBarChart').getContext('2d');
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Total Products', 'Low Stock', 'Out of Stock'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [
+                            {{ stats.totalProducts }},
+                            {{ stats.lowStockProducts }},
+                            {{ stats.outOfStockProducts }}
+                        ],
+                        backgroundColor: [
+                            'rgba(99, 102, 241, 0.85)',
+                            'rgba(245, 158, 11, 0.85)',
+                            'rgba(239, 68, 68, 0.85)'
+                        ],
+                        borderRadius: 10,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y + ' items' } }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 12 } } },
+                        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'Poppins', size: 12 }, stepSize: 1 }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // ---- Donut Chart ----
+            const goodCount    = {{ characterStats|filter(c => c.alignment == 'Good')|first.count|default(0) }};
+            const evilCount    = {{ characterStats|filter(c => c.alignment == 'Evil')|first.count|default(0) }};
+            const neutralCount = {{ stats.totalCharacters }} - goodCount - evilCount;
+
+            const donutCtx = document.getElementById('alignmentDonut').getContext('2d');
+            new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Good', 'Evil', 'Neutral'],
+                    datasets: [{
+                        data: [goodCount, evilCount, neutralCount < 0 ? 0 : neutralCount],
+                        backgroundColor: ['#10b981', '#ef4444', '#6366f1'],
+                        borderWidth: 3,
+                        borderColor: '#fff',
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.parsed } }
+                    }
+                }
+            });
+
+            // Custom legend
+            const legend = document.getElementById('donutLegend');
+            const alignLabels  = ['Good', 'Evil', 'Neutral'];
+            const alignColors  = ['#10b981', '#ef4444', '#6366f1'];
+            const alignCounts  = [goodCount, evilCount, neutralCount < 0 ? 0 : neutralCount];
+            alignLabels.forEach((label, i) => {
+                const item = document.createElement('div');
+                item.className = 'donut-legend-item';
+                item.innerHTML = `<span class="donut-legend-dot" style="background:${alignColors[i]}"></span><span>${label}</span><strong>${alignCounts[i]}</strong>`;
+                legend.appendChild(item);
+            });
         });
     </script>
 {% endblock %}
