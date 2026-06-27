@@ -10,53 +10,105 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.order-card {
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+/* Table Styles */
+#orderTableBody {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.order-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+#orderTableBody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
 }
 
-.order-icon-wrapper {
-    position: absolute;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 400px;
+#orderTableBody tr:hover {
+    background-color: #f9fafb;
+}
+
+#orderTableBody tr:last-child {
+    border-bottom: none;
+}
+
+#orderTableBody td {
+    padding: 16px;
+    vertical-align: middle;
+}
+
+.order-info {
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 12px;
 }
 
-.order-card:hover .order-icon-wrapper {
-    transform: translateX(-50%) translateY(-20px) scale(1.08);
+.order-number {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.95rem;
 }
 
-.order-icon-wrapper i {
-    width: 280px;
-    height: 280px;
-    font-size: 8rem;
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+.customer-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.95rem;
+}
+
+.table-status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-completed {
+    background: #10b981;
+    color: white;
+}
+
+.status-cancelled {
+    background: #ef4444;
+    color: white;
+}
+
+.status-pending {
+    background: #f59e0b;
+    color: white;
+}
+
+.table-actions {
     display: flex;
+    gap: 8px;
+}
+
+.table-action-btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
 }
 
-.order-card:hover .order-icon-wrapper i {
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 20px 45px rgba(0,0,0,0.3);
-    filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3));
+.table-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.table-action-view {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.table-action-delete {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
 /* Status Indicator Badges */
@@ -659,4 +711,135 @@
 
 #sidebarToggle:hover i {
     transform: rotate(90deg);
+}
+
+/* ============================================
+   PAYMENT MANAGEMENT - TABLE & HERO STYLES
+   (matching User Management design)
+   ============================================ */
+
+/* Reuse user-table avatar fallback for payment icon cells */
+.user-table-avatar-fallback {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    flex-shrink: 0;
+}
+
+.user-email {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* Status badge (inline, used in hero) */
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Info rows inside hero description box */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.info-value {
+    font-weight: 600;
+    color: #1f2937;
+    text-align: right;
+    max-width: 60%;
+    word-break: break-word;
+}
+
+/* Hero Image Frame (circular avatar on left) */
+.hero-image-frame {
+    position: relative;
+    width: 380px;
+    height: 380px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    padding: 20px;
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.05),
+        0 20px 60px rgba(0, 0, 0, 0.15),
+        0 40px 80px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-image-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    padding: 2px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.hero-image-frame:hover {
+    transform: translateY(-5px);
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.08),
+        0 25px 70px rgba(0, 0, 0, 0.2),
+        0 50px 100px rgba(0, 0, 0, 0.15);
+}
+
+.hero-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.hero-avatar-text {
+    font-size: 7rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+}
+
+/* Hide scrollbars for order wrapper */
+#order-app-wrapper,
+#order-app-wrapper * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#order-app-wrapper ::-webkit-scrollbar,
+#order-app-wrapper::-webkit-scrollbar {
+    display: none;
 }

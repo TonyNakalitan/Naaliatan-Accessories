@@ -15,7 +15,7 @@
 
     <!-- App Wrapper -->
     <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
-        
+
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
             <div class="flex items-center gap-3">
@@ -63,35 +63,36 @@
 
         <!-- Viewport -->
         <main class="relative flex-1 overflow-x-auto">
-            
-            <!-- GRID VIEW (The Carousel) -->
-            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
-                
-                <!-- Carousel at bottom -->
-                <div id="characterCarousel" class="flex gap-8 items-end h-[500px] mb-6">
-                    <!-- Cards injected by JS -->
+
+            <!-- TABLE VIEW -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col px-12 py-8 transition-all duration-500">
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Character</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Creator</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Alignment</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Color</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="characterTableBody">
+                            <!-- Table rows injected by JS -->
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Footer Nav -->
-                <div class="flex items-center justify-between pt-4 pb-2">
-                    <div class="flex gap-6 text-sm font-medium text-gray-500">
-                        <span>Total Characters: <span id="totalCount">{{ totalCharacters }}</span></span>
-                    </div>
-                    <div class="flex gap-4">
-                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            <i class="fa fa-chevron-left text-xs"></i> Prev
-                        </button>
-                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            Next <i class="fa fa-chevron-right text-xs"></i>
-                        </button>
-                    </div>
+                <!-- Footer Stats -->
+                <div class="flex items-center gap-6 pt-4 pb-2 text-sm font-medium text-gray-500">
+                    <span>Total Characters: <span id="totalCount">{{ totalCharacters }}</span></span>
                 </div>
             </div>
 
             <!-- DETAIL / HERO VIEW -->
             <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
                 <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
-                
+
                 <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
                     <i class="fa fa-times text-red-500"></i> Close
                 </button>
@@ -108,7 +109,7 @@
                     <div class="w-1/2 pl-12 pr-8">
                         <div class="hero-content-wrapper">
                             <h2 id="heroName" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
-                            
+
                             <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
                                 <div class="meta-item">
                                     <i class="fa fa-user-circle text-blue-500"></i>
@@ -121,7 +122,7 @@
                                     <span id="heroAlignment" class="alignment-badge"></span>
                                 </div>
                             </div>
-                            
+
                             <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
                                 <h3 class="description-title">About</h3>
                                 <p id="heroDesc" class="description-text"></p>
@@ -159,7 +160,7 @@
         </main>
     </div>
 
-    <!-- Delete Form Template (hidden) -->
+    <!-- Delete Form (hidden) -->
     <form id="deleteForm" method="POST" style="display: none;">
         <input type="hidden" name="_token" value="">
     </form>
@@ -171,7 +172,6 @@
     {{ parent() }}
     <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
     <script>
-        // Load characters from Symfony - serialize manually to ensure all fields are available
         const allCharactersData = [
             {% for char in allCharacters %}
             {
@@ -186,230 +186,220 @@
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         ];
-        
+
         const isAdmin = {{ isAdmin ? 'true' : 'false' }};
         const isStaff = {{ isStaff ? 'true' : 'false' }};
         const baseUrl = '{{ app.request.schemeAndHttpHost }}';
         const imageBasePath = '{{ asset('images/characters/') }}';
-        
-        console.log('Total characters loaded:', allCharactersData.length);
-        
-        // Transform characters to match the expected format
+        const showAdminBase = '{{ path('app_admin_character_management_show', {'id': 0}) }}'.replace('/0/show', '');
+        const showStaffBase = '{{ path('app_staff_character_management_show', {'id': 0}) }}'.replace('/0/show', '');
+        const editAdminBase = '{{ path('app_admin_character_management_edit', {'id': 0}) }}'.replace('/0/edit', '');
+        const editStaffBase = '{{ path('app_staff_character_management_edit', {'id': 0}) }}'.replace('/0/edit', '');
+
         let characters = allCharactersData.map(char => ({
             id: char.id,
             name: char.name || 'Unknown',
             creator: char.creator || 'Unknown',
             alignment: char.alignment || 'Neutral',
             colorCode: char.colorCode || '#6c757d',
-            image: char.image ? imageBasePath + char.image : 'https://via.placeholder.com/400x600?text=' + encodeURIComponent(char.name || 'Character'),
+            image: char.image ? imageBasePath + char.image : null,
             description: char.description || 'No description available.',
             csrfToken: char.csrfToken
         }));
-        
+
         let filteredCharacters = [...characters];
-        
-        console.log('Processed characters:', characters);
 
-        let currentIndex = 0;
-        function getVisibleCount() {
-            if (window.innerWidth < 768) return 1;
-            if (window.innerWidth < 1024) return 2;
-            return 3;
-        }
-
-        // Helper function to lighten/darken colors
         function adjustColor(color, amount) {
-            const num = parseInt(color.replace("#",""), 16);
+            const num = parseInt(color.replace('#', ''), 16);
             const r = Math.min(255, Math.max(0, (num >> 16) + amount));
             const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
             const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
-            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
         }
 
-        function renderCarousel() {
-            const container = document.getElementById('characterCarousel');
-            container.innerHTML = '';
-            
-            if (!filteredCharacters || filteredCharacters.length === 0) {
-                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No characters found.' + (isAdmin ? ' <a href="{{ path('app_admin_character_management_new') }}" class="text-blue-600 hover:underline">Add one now!</a>' : '') + '</div>';
-                updateNavigationButtons();
+        function getAlignmentInfo(alignment) {
+            const a = (alignment || '').toLowerCase();
+            if (a === 'good')  return { cls: 'alignment-good',    color: '#10b981', icon: 'fa-heart' };
+            if (a === 'evil')  return { cls: 'alignment-evil',    color: '#ef4444', icon: 'fa-skull' };
+            return               { cls: 'alignment-neutral', color: '#3b82f6', icon: 'fa-balance-scale' };
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('characterTableBody');
+            tbody.innerHTML = '';
+
+            if (!filteredCharacters.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 text-xl py-20">
+                    No characters found.${isAdmin ? ' <a href="${baseUrl}/admin/characters/new" class="text-blue-600 hover:underline">Add one now!</a>' : ''}
+                </td></tr>`;
                 return;
             }
 
-            const displayed = filteredCharacters.slice(currentIndex, currentIndex + getVisibleCount());
+            filteredCharacters.forEach(char => {
+                const ai  = getAlignmentInfo(char.alignment);
+                const row = document.createElement('tr');
 
-            displayed.forEach((char, index) => {
-                const colorLight = adjustColor(char.colorCode, 30);
-                const colorDark = adjustColor(char.colorCode, -30);
-                
-                const card = document.createElement('div');
-                card.className = `character-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
-                card.style.cssText = `--char-color-light: ${colorLight}; --char-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
-                card.setAttribute('data-color', char.colorCode);
-                
-                card.innerHTML = `
-                    <div class="character-image-wrapper">
-                        <img src="${char.image}" alt="${char.name}" onerror="this.src='https://via.placeholder.com/300x400?text=${encodeURIComponent(char.name)}'">
-                    </div>
-                    <div class="relative z-10 pt-8">
-                        <h3 class="text-4xl font-bold text-white mb-1">${char.name}</h3>
-                        <p class="text-white/70 text-sm mb-4">Creator: ${char.creator}</p>
-                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
-                            View Details >
-                        </button>
-                    </div>
-                `;
-                card.onclick = () => openHero(char);
-                container.appendChild(card);
-            });
-            
-            updateNavigationButtons();
-        }
-        
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            
-            if (prevBtn && nextBtn) {
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex + getVisibleCount() >= filteredCharacters.length;
-            }
-        }
+                const imgSrc   = char.image || '';
+                const initials = char.name.charAt(0).toUpperCase();
 
-        function nextSlide() {
-            if (currentIndex + getVisibleCount() < filteredCharacters.length) {
-                currentIndex++;
-                renderCarousel();
-            }
-        }
-
-        function prevSlide() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderCarousel();
-            }
-        }
-        
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                const searchTerm = e.target.value.toLowerCase();
-                filteredCharacters = characters.filter(char => 
-                    char.name.toLowerCase().includes(searchTerm) ||
-                    char.creator.toLowerCase().includes(searchTerm) ||
-                    char.alignment.toLowerCase().includes(searchTerm)
-                );
-                currentIndex = 0;
-                const totalCountEl = document.getElementById('totalCount');
-                if (totalCountEl) {
-                    totalCountEl.textContent = filteredCharacters.length;
+                let actionBtns = '';
+                if (isAdmin) {
+                    actionBtns = `
+                        <a href="${showAdminBase}/${char.id}/show" class="table-action-btn table-action-view" title="View">
+                            <i class="fa fa-eye"></i>
+                        </a>
+                        <a href="${editAdminBase}/${char.id}/edit" class="table-action-btn table-action-edit" title="Edit">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <button onclick="event.stopPropagation(); deleteCharacterById(${char.id})" class="table-action-btn table-action-delete" title="Delete">
+                            <i class="fa fa-trash"></i>
+                        </button>`;
+                } else if (isStaff) {
+                    actionBtns = `
+                        <a href="${showStaffBase}/${char.id}/show" class="table-action-btn table-action-view" title="View">
+                            <i class="fa fa-eye"></i>
+                        </a>
+                        <a href="${editStaffBase}/${char.id}/edit" class="table-action-btn table-action-edit" title="Edit">
+                            <i class="fa fa-edit"></i>
+                        </a>`;
                 }
-                renderCarousel();
+
+                row.innerHTML = `
+                    <td>
+                        <div class="character-info">
+                            ${imgSrc
+                                ? `<img src="${imgSrc}" alt="${char.name}" class="character-table-avatar"
+                                       onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                   <div class="character-table-fallback" style="background:linear-gradient(135deg,${adjustColor(char.colorCode,20)},${char.colorCode});display:none;">${initials}</div>`
+                                : `<div class="character-table-fallback" style="background:linear-gradient(135deg,${adjustColor(char.colorCode,20)},${char.colorCode});">${initials}</div>`
+                            }
+                            <div>
+                                <div class="character-name">${char.name}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-gray-700">${char.creator}</td>
+                    <td>
+                        <span class="table-alignment-badge ${ai.cls}">
+                            <i class="fas ${ai.icon} mr-1"></i>${char.alignment}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="color-cell">
+                            <div class="color-swatch" style="background-color:${char.colorCode};"></div>
+                            <span class="color-hex">${char.colorCode}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="table-actions">${actionBtns}</div>
+                    </td>
+                `;
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', function(e) {
+                    if (!e.target.closest('a') && !e.target.closest('button')) openHero(char);
+                });
+                tbody.appendChild(row);
             });
         }
+
+        document.getElementById('searchInput')?.addEventListener('input', function(e) {
+            const q = e.target.value.toLowerCase();
+            filteredCharacters = characters.filter(c =>
+                c.name.toLowerCase().includes(q) ||
+                c.creator.toLowerCase().includes(q) ||
+                c.alignment.toLowerCase().includes(q)
+            );
+            document.getElementById('totalCount').textContent = filteredCharacters.length;
+            renderTable();
+        });
 
         let currentCharacter = null;
-        
+
         function openHero(char) {
             currentCharacter = char;
-            const app = document.getElementById('app');
+            const app    = document.getElementById('app');
             const heroBg = document.getElementById('heroBg');
-            const heroImage = document.getElementById('heroImage');
-            const heroName = document.getElementById('heroName');
-            const heroCreator = document.getElementById('heroCreator');
-            const heroAlignment = document.getElementById('heroAlignment');
-            const heroDesc = document.getElementById('heroDesc');
+            const ai     = getAlignmentInfo(char.alignment);
 
-            // Set content
-            const colorLight = adjustColor(char.colorCode, 30);
-            const colorDark = adjustColor(char.colorCode, -30);
-            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
-            
-            heroImage.src = char.image;
+            heroBg.style.background = `linear-gradient(180deg,${adjustColor(char.colorCode,30)} 0%,${adjustColor(char.colorCode,-30)} 100%)`;
+
+            const heroImage = document.getElementById('heroImage');
+            heroImage.src = char.image || 'https://via.placeholder.com/400x400?text=' + encodeURIComponent(char.name);
             heroImage.onerror = function() {
-                this.src = 'https://via.placeholder.com/400x600?text=' + encodeURIComponent(char.name);
+                this.src = 'https://via.placeholder.com/400x400?text=' + encodeURIComponent(char.name);
             };
-            
-            heroName.innerText = char.name;
-            heroCreator.innerText = char.creator;
-            heroAlignment.innerText = char.alignment;
-            heroAlignment.style.backgroundColor = char.alignment === 'Good' ? '#28a745' : 
-                                                   char.alignment === 'Evil' ? '#dc3545' : '#6c757d';
-            heroDesc.innerText = char.description;
-            
-            // Update action buttons
+
+            document.getElementById('heroName').innerText    = char.name;
+            document.getElementById('heroCreator').innerText = char.creator;
+            document.getElementById('heroDesc').innerText    = char.description;
+
+            const heroAlignment = document.getElementById('heroAlignment');
+            heroAlignment.innerHTML = `<i class="fas ${ai.icon}"></i> ${char.alignment}`;
+            heroAlignment.className = `alignment-badge ${ai.cls}`;
+
             const viewBtn = document.getElementById('heroViewBtn');
-            if (viewBtn) {
-                viewBtn.href = `${baseUrl}/character/${char.id}`;
-            }
+            if (viewBtn) viewBtn.href = isAdmin
+                ? `${showAdminBase}/${char.id}/show`
+                : `${showStaffBase}/${char.id}/show`;
 
             const editBtn = document.getElementById('heroEditBtn');
             if (editBtn) {
-                const editRoute = isAdmin ? 
-                    `${baseUrl}/admin/characters/${char.id}/edit` : 
-                    `${baseUrl}/staff/characters/${char.id}/edit`;
-                editBtn.href = editRoute;
+                editBtn.href = isAdmin
+                    ? `${editAdminBase}/${char.id}/edit`
+                    : `${editStaffBase}/${char.id}/edit`;
             }
 
-            // Trigger animation
             app.classList.add('hero-active');
-            
-            // Reset text animations
-            const animatedElements = document.querySelectorAll('.slide-in');
-            animatedElements.forEach(el => {
+
+            document.querySelectorAll('.slide-in').forEach(el => {
                 el.style.animation = 'none';
-                el.offsetHeight; // trigger reflow
+                el.offsetHeight;
                 el.style.animation = null;
             });
         }
-        
+
         function deleteCharacter() {
-            if (!currentCharacter || !isAdmin) return;
-            
-            if (confirm(`Are you sure you want to delete "${currentCharacter.name}"?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `${baseUrl}/admin/characters/${currentCharacter.id}`;
-                
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = currentCharacter.csrfToken;
-                
-                form.appendChild(csrfToken);
-                document.body.appendChild(form);
-                form.submit();
-            }
+            if (currentCharacter) deleteCharacterById(currentCharacter.id);
+        }
+
+        function deleteCharacterById(charId) {
+            const char = characters.find(c => c.id === charId);
+            if (!char || !isAdmin) return;
+            if (!confirm(`Are you sure you want to delete "${char.name}"?`)) return;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `${editAdminBase}/${char.id}`;
+
+            const token = document.createElement('input');
+            token.type  = 'hidden';
+            token.name  = '_token';
+            token.value = char.csrfToken;
+
+            form.appendChild(token);
+            document.body.appendChild(form);
+            form.submit();
         }
 
         function closeHero() {
             document.getElementById('app').classList.remove('hero-active');
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, rendering carousel...');
-            renderCarousel();
-            
-            window.addEventListener('resize', function() { renderCarousel(); });
-            
-            // Sidebar toggle functionality
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
+            renderTable();
+
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
-            
-            if (sidebarToggle && sidebar && sidebarOverlay) {
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                    sidebarOverlay.classList.toggle('active');
-                });
-                
-                sidebarOverlay.addEventListener('click', function() {
-                    sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
-                });
-            }
+
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar?.classList.toggle('active');
+                sidebarOverlay?.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar?.classList.remove('active');
+                sidebarOverlay?.classList.remove('active');
+            });
         });
     </script>
 {% endblock %}

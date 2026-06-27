@@ -15,7 +15,7 @@
 
     <!-- App Wrapper -->
     <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
-        
+
         <!-- Header -->
         <header class="relative z-50 flex items-center justify-between px-10 py-8">
             <div class="flex items-center gap-3">
@@ -71,43 +71,44 @@
 
         <!-- Viewport -->
         <main class="relative flex-1 overflow-x-auto">
-            
-            <!-- GRID VIEW (The Carousel) -->
-            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
-                
-                <!-- Carousel at bottom -->
-                <div id="activityCarousel" class="flex gap-8 items-end h-[500px] mb-6">
-                    <!-- Cards injected by JS -->
+
+            <!-- TABLE VIEW -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col px-12 py-8 transition-all duration-500">
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Action</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">User</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Role</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Description</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Footer Nav -->
-                <div class="flex items-center justify-between pt-4 pb-2">
-                    <div class="flex gap-6 text-sm font-medium text-gray-500">
-                        <span>Total Logs: <span id="totalCount">{{ logs|length }}</span></span>
-                        <span>Today: <span id="todayCount">{{ todayCount|default(0) }}</span></span>
-                        <span>This Week: <span id="weekCount">{{ weekCount|default(0) }}</span></span>
-                    </div>
-                    <div class="flex gap-4">
-                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            <i class="fa fa-chevron-left text-xs"></i> Prev
-                        </button>
-                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            Next <i class="fa fa-chevron-right text-xs"></i>
-                        </button>
-                    </div>
+                <!-- Footer Stats -->
+                <div class="flex items-center gap-6 pt-4 pb-2 text-sm font-medium text-gray-500">
+                    <span>Total Logs: <span id="totalCount">{{ logs|length }}</span></span>
+                    <span>Today: <span class="text-blue-600 font-bold">{{ todayCount|default(0) }}</span></span>
+                    <span>This Week: <span class="text-purple-600 font-bold">{{ weekCount|default(0) }}</span></span>
                 </div>
             </div>
 
             <!-- DETAIL / HERO VIEW -->
             <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
                 <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
-                
+
                 <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
                     <i class="fa fa-times text-red-500"></i> Close
                 </button>
 
                 <div class="relative z-10 h-full flex items-center px-16">
-                    <!-- Left Side: Large Icon with Frame -->
+                    <!-- Left Side: Icon Frame -->
                     <div class="w-1/2 flex justify-center items-center">
                         <div class="hero-image-frame">
                             <div id="heroIcon" class="hero-icon"></div>
@@ -118,7 +119,7 @@
                     <div class="w-1/2 pl-12 pr-8">
                         <div class="hero-content-wrapper">
                             <h2 id="heroAction" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
-                            
+
                             <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
                                 <div class="meta-item">
                                     <i class="fa fa-user text-blue-500"></i>
@@ -141,7 +142,7 @@
                                     <span id="heroRole" class="role-badge"></span>
                                 </div>
                             </div>
-                            
+
                             <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
                                 <h3 class="description-title">Activity Details</h3>
                                 <div class="description-text">
@@ -173,7 +174,6 @@
     {{ parent() }}
     <script src="{{ asset('JSFolder/zoom-disable.js') }}"></script>
     <script>
-        // Load activity logs from Symfony
         const allLogsData = [
             {% for log in logs %}
             {
@@ -187,250 +187,188 @@
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         ];
-        
-        const baseUrl = '{{ app.request.schemeAndHttpHost }}';
-        const imageBasePath = '{{ asset('images/profiles/') }}';
-        
-        console.log('Total logs loaded:', allLogsData.length);
-        
-        // Transform logs to match the expected format
+
+        const baseUrl    = '{{ app.request.schemeAndHttpHost }}';
+        const imagePath  = '{{ asset('images/profiles/') }}';
+
         let activities = allLogsData.map(log => ({
-            id: log.id,
-            username: log.username || 'Unknown',
-            action: log.action ? log.action.toUpperCase() : 'UNKNOWN',
-            targetData: log.targetData || 'No details provided',
-            role: log.role || 'ROLE_USER',
-            createdAt: log.createdAt,
-            profilePicture: log.profilePicture,
+            ...log,
+            action:    (log.action || 'UNKNOWN').toUpperCase(),
             colorCode: getActionColor(log.action),
-            avatar: log.profilePicture ? imageBasePath + log.profilePicture : null
+            avatar:    log.profilePicture ? imagePath + log.profilePicture : null
         }));
-        
+
         let filteredActivities = [...activities];
-        
-        console.log('Processed activities:', activities);
 
-        let currentIndex = 0;
-        function getVisibleCount() {
-            if (window.innerWidth < 768) return 1;
-            if (window.innerWidth < 1024) return 2;
-            return 3;
-        }
-
-        // Helper function to get action color
+        /* ---- helpers ---- */
         function getActionColor(action) {
-            const actionType = action ? action.toUpperCase() : 'UNKNOWN';
-            switch(actionType) {
-                case 'CREATE': return '#10b981'; // Green
-                case 'UPDATE': return '#f59e0b'; // Amber
-                case 'DELETE': return '#ef4444'; // Red
-                case 'LOGIN': return '#3b82f6'; // Blue
-                case 'LOGOUT': return '#8b5cf6'; // Purple
-                case 'RESTOCK': return '#14b8a6'; // Teal
-                default: return '#64748b'; // Gray
+            switch ((action || '').toUpperCase()) {
+                case 'CREATE':  return '#10b981';
+                case 'UPDATE':  return '#f59e0b';
+                case 'DELETE':  return '#ef4444';
+                case 'LOGIN':   return '#3b82f6';
+                case 'LOGOUT':  return '#8b5cf6';
+                case 'RESTOCK': return '#14b8a6';
+                default:        return '#64748b';
             }
         }
 
-        // Helper function to get action icon
         function getActionIcon(action) {
-            const actionType = action ? action.toUpperCase() : 'UNKNOWN';
-            switch(actionType) {
-                case 'CREATE': return 'fa-plus-circle';
-                case 'UPDATE': return 'fa-edit';
-                case 'DELETE': return 'fa-trash-alt';
-                case 'LOGIN': return 'fa-sign-in-alt';
-                case 'LOGOUT': return 'fa-sign-out-alt';
+            switch ((action || '').toUpperCase()) {
+                case 'CREATE':  return 'fa-plus-circle';
+                case 'UPDATE':  return 'fa-edit';
+                case 'DELETE':  return 'fa-trash-alt';
+                case 'LOGIN':   return 'fa-sign-in-alt';
+                case 'LOGOUT':  return 'fa-sign-out-alt';
                 case 'RESTOCK': return 'fa-boxes';
-                default: return 'fa-info-circle';
+                default:        return 'fa-info-circle';
             }
         }
 
-        // Helper function to get role display name
         function getRoleDisplay(role) {
-            const roleStr = role.replace(/[\[\]"]/g, '').trim();
-            if (roleStr.includes('ROLE_ADMIN')) return 'Administrator';
-            if (roleStr.includes('ROLE_STAFF')) return 'Staff';
+            const r = (role || '').replace(/[\[\]"]/g, '').trim();
+            if (r.includes('ROLE_ADMIN')) return 'Administrator';
+            if (r.includes('ROLE_STAFF')) return 'Staff';
             return 'User';
         }
 
-        // Helper function to lighten/darken colors
+        function getRoleColor(role) {
+            const r = (role || '');
+            if (r.includes('ADMIN')) return '#ef4444';
+            if (r.includes('STAFF')) return '#8b5cf6';
+            return '#3b82f6';
+        }
+
         function adjustColor(color, amount) {
-            const num = parseInt(color.replace("#",""), 16);
+            const num = parseInt(color.replace('#', ''), 16);
             const r = Math.min(255, Math.max(0, (num >> 16) + amount));
             const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
             const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
-            return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
         }
 
-        function renderCarousel() {
-            const container = document.getElementById('activityCarousel');
-            container.innerHTML = '';
-            
-            if (!filteredActivities || filteredActivities.length === 0) {
-                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No activity logs found.</div>';
-                updateNavigationButtons();
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        /* ---- table render ---- */
+        function renderTable() {
+            const tbody = document.getElementById('activityTableBody');
+            tbody.innerHTML = '';
+
+            if (!filteredActivities.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 text-xl py-20">No activity logs found.</td></tr>';
                 return;
             }
 
-            const displayed = filteredActivities.slice(currentIndex, currentIndex + getVisibleCount());
+            filteredActivities.forEach(log => {
+                const color    = log.colorCode;
+                const icon     = getActionIcon(log.action);
+                const initials = (log.username || '?').charAt(0).toUpperCase();
+                const row      = document.createElement('tr');
 
-            displayed.forEach((activity, index) => {
-                const colorLight = adjustColor(activity.colorCode, 30);
-                const colorDark = adjustColor(activity.colorCode, -30);
-                
-                const card = document.createElement('div');
-                card.className = `activity-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
-                card.style.cssText = `--activity-color-light: ${colorLight}; --activity-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
-                card.setAttribute('data-color', activity.colorCode);
-                
-                // Create icon HTML
-                const iconClass = getActionIcon(activity.action);
-                
-                card.innerHTML = `
-                    <div class="activity-icon-wrapper">
-                        <i class="fas ${iconClass}"></i>
-                    </div>
-                    <div class="relative z-10 pt-8">
-                        <h3 class="text-4xl font-bold text-white mb-1">${activity.action}</h3>
-                        <p class="text-white/70 text-sm mb-2">by ${activity.username}</p>
-                        <p class="text-white/60 text-xs mb-4">${new Date(activity.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
-                            View Details >
-                        </button>
-                    </div>
+                /* truncate long descriptions in the table */
+                const shortDesc = (log.targetData || '').length > 60
+                    ? (log.targetData || '').substring(0, 60) + '…'
+                    : (log.targetData || 'No details');
+
+                row.innerHTML = `
+                    <td>
+                        <div class="log-action-info">
+                            <div class="log-action-icon" style="background:linear-gradient(135deg,${adjustColor(color,20)},${color});">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                            <span class="table-action-badge" style="background:${color};">${log.action}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="log-user-info">
+                            ${log.avatar
+                                ? `<img src="${log.avatar}" alt="${log.username}" class="log-user-avatar"
+                                       onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                   <div class="log-user-fallback" style="display:none;">${initials}</div>`
+                                : `<div class="log-user-fallback">${initials}</div>`
+                            }
+                            <span class="log-username">${log.username}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="table-role-badge" style="background:${getRoleColor(log.role)};">
+                            ${getRoleDisplay(log.role)}
+                        </span>
+                    </td>
+                    <td class="text-gray-600 text-sm">${shortDesc}</td>
+                    <td class="text-gray-500 text-sm whitespace-nowrap">${formatDate(log.createdAt)}</td>
                 `;
-                card.onclick = () => openHero(activity);
-                container.appendChild(card);
-            });
-            
-            updateNavigationButtons();
-        }
-        
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            
-            if (prevBtn && nextBtn) {
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex + getVisibleCount() >= filteredActivities.length;
-            }
-        }
-
-        function nextSlide() {
-            if (currentIndex + getVisibleCount() < filteredActivities.length) {
-                currentIndex++;
-                renderCarousel();
-            }
-        }
-
-        function prevSlide() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderCarousel();
-            }
-        }
-        
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                const searchTerm = e.target.value.toLowerCase();
-                filteredActivities = activities.filter(activity => 
-                    activity.username.toLowerCase().includes(searchTerm) ||
-                    activity.action.toLowerCase().includes(searchTerm) ||
-                    activity.targetData.toLowerCase().includes(searchTerm) ||
-                    getRoleDisplay(activity.role).toLowerCase().includes(searchTerm)
-                );
-                currentIndex = 0;
-                const totalCountEl = document.getElementById('totalCount');
-                if (totalCountEl) {
-                    totalCountEl.textContent = filteredActivities.length;
-                }
-                renderCarousel();
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', () => openHero(log));
+                tbody.appendChild(row);
             });
         }
 
-        // Action filter functionality
-        const actionFilter = document.getElementById('actionFilter');
-        if (actionFilter) {
-            actionFilter.addEventListener('change', function(e) {
-                const selectedAction = e.target.value;
-                
-                if (selectedAction === 'all') {
-                    filteredActivities = [...activities];
-                } else {
-                    filteredActivities = activities.filter(activity => 
-                        activity.action.toUpperCase() === selectedAction.toUpperCase()
-                    );
-                }
-                
-                currentIndex = 0;
-                const totalCountEl = document.getElementById('totalCount');
-                if (totalCountEl) {
-                    totalCountEl.textContent = filteredActivities.length;
-                }
-                renderCarousel();
+        /* ---- filters ---- */
+        function applyFilters() {
+            const q      = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const action = document.getElementById('actionFilter')?.value || 'all';
+
+            filteredActivities = activities.filter(log => {
+                const matchQ = !q ||
+                    log.username.toLowerCase().includes(q) ||
+                    log.action.toLowerCase().includes(q) ||
+                    (log.targetData || '').toLowerCase().includes(q) ||
+                    getRoleDisplay(log.role).toLowerCase().includes(q);
+                const matchAction = action === 'all' || log.action === action.toUpperCase();
+                return matchQ && matchAction;
             });
+
+            document.getElementById('totalCount').textContent = filteredActivities.length;
+            renderTable();
         }
 
-        let currentActivity = null;
-        
-        function openHero(activity) {
-            currentActivity = activity;
-            const app = document.getElementById('app');
+        document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+        document.getElementById('actionFilter')?.addEventListener('change', applyFilters);
+
+        /* ---- hero ---- */
+        function openHero(log) {
+            const app    = document.getElementById('app');
             const heroBg = document.getElementById('heroBg');
+            const color  = log.colorCode;
+
+            heroBg.style.background = `linear-gradient(180deg,${adjustColor(color,30)} 0%,${adjustColor(color,-30)} 100%)`;
+
             const heroIcon = document.getElementById('heroIcon');
-            const heroAction = document.getElementById('heroAction');
-            const heroUsername = document.getElementById('heroUsername');
-            const heroTimestamp = document.getElementById('heroTimestamp');
+            heroIcon.innerHTML = `<i class="fas ${getActionIcon(log.action)}"></i>`;
+            heroIcon.style.background = `linear-gradient(135deg,${adjustColor(color,20)},${adjustColor(color,-20)})`;
+
+            document.getElementById('heroAction').innerText    = log.action + ' Action';
+            document.getElementById('heroUsername').innerText  = log.username;
+            document.getElementById('heroTimestamp').innerText = formatDate(log.createdAt);
+            document.getElementById('heroId').innerText        = '#' + log.id;
+            document.getElementById('heroDescription').innerText = log.targetData || 'No details provided';
+            document.getElementById('heroDate').innerText      = log.createdAt
+                ? new Date(log.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'long', day: 'numeric',
+                      hour: '2-digit', minute: '2-digit', second: '2-digit'
+                  })
+                : 'N/A';
+
             const heroActionType = document.getElementById('heroActionType');
+            heroActionType.innerText            = log.action;
+            heroActionType.style.backgroundColor = color;
+
             const heroRole = document.getElementById('heroRole');
-            const heroId = document.getElementById('heroId');
-            const heroDescription = document.getElementById('heroDescription');
-            const heroDate = document.getElementById('heroDate');
+            heroRole.innerText            = getRoleDisplay(log.role);
+            heroRole.style.backgroundColor = getRoleColor(log.role);
 
-            // Set content
-            const colorLight = adjustColor(activity.colorCode, 30);
-            const colorDark = adjustColor(activity.colorCode, -30);
-            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
-            
-            // Set icon
-            const iconClass = getActionIcon(activity.action);
-            heroIcon.innerHTML = `<i class="fas ${iconClass}"></i>`;
-            heroIcon.style.background = `linear-gradient(135deg, ${activity.colorCode}, ${colorDark})`;
-            
-            heroAction.innerText = activity.action + ' Action';
-            heroUsername.innerText = activity.username;
-            heroTimestamp.innerText = new Date(activity.createdAt).toLocaleString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            heroActionType.innerText = activity.action;
-            heroActionType.style.backgroundColor = activity.colorCode;
-            heroRole.innerText = getRoleDisplay(activity.role);
-            heroRole.style.backgroundColor = activity.role.includes('ADMIN') ? '#ef4444' : activity.role.includes('STAFF') ? '#8b5cf6' : '#3b82f6';
-            heroId.innerText = '#' + activity.id;
-            heroDescription.innerText = activity.targetData;
-            heroDate.innerText = new Date(activity.createdAt).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-
-            // Trigger animation
             app.classList.add('hero-active');
-            
-            // Reset text animations
-            const animatedElements = document.querySelectorAll('.slide-in');
-            animatedElements.forEach(el => {
+
+            document.querySelectorAll('.slide-in').forEach(el => {
                 el.style.animation = 'none';
-                el.offsetHeight; // trigger reflow
+                el.offsetHeight;
                 el.style.animation = null;
             });
         }
@@ -439,29 +377,22 @@
             document.getElementById('app').classList.remove('hero-active');
         }
 
-        // Initialize
+        /* ---- init ---- */
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, rendering carousel...');
-            renderCarousel();
-            
-            window.addEventListener('resize', function() { renderCarousel(); });
-            
-            // Sidebar toggle functionality
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
+            renderTable();
+
+            const sidebarToggle  = document.getElementById('sidebarToggle');
+            const sidebar        = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
-            
-            if (sidebarToggle && sidebar && sidebarOverlay) {
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                    sidebarOverlay.classList.toggle('active');
-                });
-                
-                sidebarOverlay.addEventListener('click', function() {
-                    sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
-                });
-            }
+
+            sidebarToggle?.addEventListener('click', () => {
+                sidebar?.classList.toggle('active');
+                sidebarOverlay?.classList.toggle('active');
+            });
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar?.classList.remove('active');
+                sidebarOverlay?.classList.remove('active');
+            });
         });
     </script>
 {% endblock %}

@@ -1,16 +1,17 @@
-# NAaccessories API — Project Documentation
+# Naaliatan Accessories — Project Documentation
 
-A Symfony 7.4 REST API for a game-character-themed accessories e-commerce platform. Supports JWT authentication, product/character browsing, shopping cart, order management, and payments.
+A Symfony 7.4 full-stack e-commerce platform for game-character-themed accessories. Features a REST API with JWT authentication, a staff/admin dashboard, product and character management, shopping cart, order management, and payment processing.
 
 ---
 
 ## Table of Contents
 
-1. [Tech Stack](#tech-stack)
-2. [Installation & Setup](#installation--setup)
-3. [Environment Variables](#environment-variables)
-4. [Authentication](#authentication)
-5. [API Reference](#api-reference)
+1. [Changelog](#changelog)
+2. [Tech Stack](#tech-stack)
+3. [Installation & Setup](#installation--setup)
+4. [Environment Variables](#environment-variables)
+5. [Authentication](#authentication)
+6. [API Reference](#api-reference)
    - [Auth](#auth)
    - [Profile](#profile)
    - [Characters](#characters)
@@ -18,8 +19,43 @@ A Symfony 7.4 REST API for a game-character-themed accessories e-commerce platfo
    - [Cart](#cart)
    - [Orders](#orders)
    - [Payments](#payments)
-6. [Roles & Permissions](#roles--permissions)
-7. [Error Responses](#error-responses)
+7. [Roles & Permissions](#roles--permissions)
+8. [Error Responses](#error-responses)
+
+---
+
+## Changelog
+
+### v2.1.0 — June 2026
+
+#### 🆕 New Features
+
+- **Unified table layout across all management pages** — Payment Management, Items Management, Shopping Cart, Character Management, and Activity Logs pages all now use the same clean table + hero detail panel design as User Management. Clicking any row or the eye button opens a full-screen hero panel with a gradient background, circular image/icon frame, and slide-in detail sections.
+- **Character Management — Color column** — The character table now shows a live color swatch alongside the hex code (e.g. `#ff6b6b`) for each character's brand color, making it easy to identify characters at a glance.
+- **Character Management — View button** — The View button in the table and hero panel now correctly navigates to the character's detail page (`/admin/characters/{id}/show` or `/staff/characters/{id}/show`) instead of the customer-facing route. The Back and Edit buttons on the show page are also now role-aware (admin vs. staff).
+- **Activity Logs — Combined search + action filter** — Search and the action-type dropdown now filter simultaneously in real time without a page reload.
+- **Shopping Cart — Color-coded product avatars** — Cart items now display the character's brand color as a gradient on the product initial fallback avatar in the table.
+
+#### 🐛 Bug Fixes
+
+- **Character Management show page** — Back button and Edit button were hardcoded to admin routes, causing 403 errors for staff users. Both are now role-aware.
+- **Character Management hero view** — View and Edit buttons were pointing to the customer-facing `/character/{id}` route instead of the management show/edit routes.
+- **Payment Management index** — Status filter dropdown now filters in-place (client-side) without triggering a full page reload.
+- **Items Management index** — Carousel was missing Prev/Next state updates on search — resolved by switching to table layout with client-side filtering.
+- **Cart Management hero** — Quantity increment/decrement was not enforcing the max stock limit correctly when reopening the hero for a different item. Fixed by resetting `currentMaxQty` on every `openHero()` call.
+- **Activity Logs** — Long `targetData` descriptions were breaking the carousel card layout. Resolved by truncating to 60 characters in the table and displaying the full text in the hero detail panel.
+
+#### 🎨 UI / Design Changes
+
+- All card/carousel-based index pages replaced with the User Management table design:
+  - `PaymentManagementFolder/index.html.twig`
+  - `ItemsFolder/index.html.twig`
+  - `CartFolder/index.html.twig`
+  - `CharacterManagementFolder/index.html.twig`
+  - `ActivityLogsFolder/index.html.twig`
+- Corresponding CSS files updated to remove carousel-specific styles and add consistent table, badge, and avatar styles.
+- Scrollbar hiding applied uniformly across all management page wrappers.
+- Hero detail panels now use Symfony-generated route paths (`path()`) instead of manually constructed URL strings, eliminating route drift bugs.
 
 ---
 
@@ -34,7 +70,7 @@ A Symfony 7.4 REST API for a game-character-themed accessories e-commerce platfo
 | Auth | Lexik JWT Bundle 3.2 + Google OAuth2 |
 | Email | Brevo SMTP |
 | PHP | 8.2+ |
-| Frontend | Twig, Stimulus.js, Webpack Encore |
+| Frontend | Twig, Tailwind CSS (CDN), Stimulus.js, Webpack Encore |
 
 ---
 
@@ -743,8 +779,8 @@ Process payment for an order. Moves order status to `processing`.
 | Role | Inherits | Access |
 |---|---|---|
 | `ROLE_CUSTOMER` | `ROLE_USER` | Browse products/characters, manage own cart/orders/payments, update profile |
-| `ROLE_STAFF` | `ROLE_USER` | Staff dashboard, manage products/orders/stock |
-| `ROLE_ADMIN` | `ROLE_STAFF`, `ROLE_CUSTOMER` | Full access including user management, activity logs, order completion/deletion |
+| `ROLE_STAFF` | `ROLE_USER` | Staff dashboard, manage products/orders/stock, view and edit characters |
+| `ROLE_ADMIN` | `ROLE_STAFF`, `ROLE_CUSTOMER` | Full access including user management, character management, activity logs, order completion/deletion |
 
 ---
 

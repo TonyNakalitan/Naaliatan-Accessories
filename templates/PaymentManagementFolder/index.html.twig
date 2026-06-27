@@ -37,7 +37,6 @@
                         <option value="cancelled">Rejected</option>
                     </select>
                 </div>
-
                 <a href="{{ is_granted('ROLE_ADMIN') ? path('app_admin_profile_edit') : path('app_staff_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
                         <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
@@ -63,25 +62,33 @@
         <!-- Viewport -->
         <main class="relative flex-1 overflow-x-auto">
 
-            <!-- CAROUSEL VIEW -->
-            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
-                <div id="paymentCarousel" class="flex gap-8 items-end h-[500px] mb-6"></div>
+            <!-- TABLE VIEW -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col px-12 py-8 transition-all duration-500">
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Order</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Customer</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Amount</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Method</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Paid At</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentTableBody">
+                            <!-- Table rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
 
-                <div class="flex items-center justify-between pt-4 pb-2">
-                    <div class="flex gap-6 text-sm font-medium text-gray-500">
-                        <span>Total: <span id="totalCount">{{ payments|length }}</span></span>
-                        <span>Pending: <span class="text-amber-600 font-bold">{{ counts.processing }}</span></span>
-                        <span>Approved: <span class="text-emerald-600 font-bold">{{ counts.completed }}</span></span>
-                        <span>Rejected: <span class="text-red-500 font-bold">{{ counts.cancelled }}</span></span>
-                    </div>
-                    <div class="flex gap-4">
-                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            <i class="fa fa-chevron-left text-xs"></i> Prev
-                        </button>
-                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            Next <i class="fa fa-chevron-right text-xs"></i>
-                        </button>
-                    </div>
+                <!-- Footer Stats -->
+                <div class="flex items-center gap-6 pt-4 pb-2 text-sm font-medium text-gray-500">
+                    <span>Total: <span id="totalCount">{{ payments|length }}</span></span>
+                    <span>Pending: <span class="text-amber-600 font-bold">{{ counts.processing }}</span></span>
+                    <span>Approved: <span class="text-emerald-600 font-bold">{{ counts.completed }}</span></span>
+                    <span>Rejected: <span class="text-red-500 font-bold">{{ counts.cancelled }}</span></span>
                 </div>
             </div>
 
@@ -94,71 +101,67 @@
                 </button>
 
                 <div class="relative z-10 h-full flex items-center px-16">
-                    <!-- Left: Card -->
+                    <!-- Left: Avatar / Icon frame -->
                     <div class="w-1/2 flex justify-center items-center">
-                        <div class="hero-order-card">
-                            <div class="order-card-header">
-                                <i class="fas fa-credit-card text-6xl mb-4"></i>
-                                <h3 id="heroOrderNumber" class="text-3xl font-bold mb-2"></h3>
-                                <span id="heroStatusBadge" class="status-badge-hero"></span>
-                            </div>
-                            <div class="order-card-body">
-                                <div class="customer-info-hero">
-                                    <div class="customer-avatar-hero" id="heroCustomerAvatar"></div>
-                                    <div>
-                                        <h4 id="heroCustomerName" class="text-xl font-bold"></h4>
-                                        <p id="heroCustomerPhone" class="text-gray-600"></p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="hero-image-frame">
+                            <div id="heroAvatar" class="hero-avatar"></div>
                         </div>
                     </div>
 
                     <!-- Right: Details -->
                     <div class="w-1/2 pl-12 pr-8">
                         <div class="hero-content-wrapper">
-                            <h2 class="hero-title slide-in" style="animation-delay: 0.1s">Payment Details</h2>
+                            <h2 id="heroOrderNumber" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
 
                             <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
-                                <div class="meta-row">
-                                    <div class="meta-item">
-                                        <i class="fa fa-calendar text-blue-500"></i>
-                                        <span class="meta-label">Paid At:</span>
-                                        <span id="heroPaidAt" class="meta-value"></span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class="fa fa-coins text-emerald-500"></i>
-                                        <span class="meta-label">Amount:</span>
-                                        <span id="heroAmount" class="meta-value"></span>
-                                    </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-user text-blue-500"></i>
+                                    <span class="meta-label">Customer:</span>
+                                    <span id="heroCustomerName" class="meta-value"></span>
                                 </div>
-                                <div class="meta-row">
-                                    <div class="meta-item">
-                                        <i class="fa fa-credit-card text-purple-500"></i>
-                                        <span class="meta-label">Method:</span>
-                                        <span id="heroMethod" class="meta-value"></span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class="fa fa-truck text-amber-500"></i>
-                                        <span class="meta-label">Delivery:</span>
-                                        <span id="heroDelivery" class="meta-value"></span>
-                                    </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-phone text-emerald-500"></i>
+                                    <span class="meta-label">Phone:</span>
+                                    <span id="heroPhone" class="meta-value"></span>
                                 </div>
-                                <div class="meta-item meta-item-address">
-                                    <i class="fa fa-map-marker-alt text-amber-500"></i>
-                                    <span class="meta-label">Address:</span>
-                                    <span id="heroAddress" class="meta-value meta-value-address"></span>
+                                <div class="meta-item">
+                                    <i class="fa fa-credit-card text-purple-500"></i>
+                                    <span class="meta-label">Method:</span>
+                                    <span id="heroMethod" class="meta-value"></span>
                                 </div>
-                                <div class="meta-item meta-item-location">
-                                    <i class="fa fa-city text-indigo-500"></i>
-                                    <span class="meta-label">City / Province:</span>
-                                    <span id="heroLocation" class="meta-value meta-value-address"></span>
+                                <div class="meta-item">
+                                    <i class="fa fa-coins text-amber-500"></i>
+                                    <span class="meta-label">Amount:</span>
+                                    <span id="heroAmount" class="meta-value"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-shield-alt text-indigo-500"></i>
+                                    <span class="meta-label">Status:</span>
+                                    <span id="heroStatus" class="status-badge"></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa fa-calendar text-gray-400"></i>
+                                    <span class="meta-label">Paid At:</span>
+                                    <span id="heroPaidAt" class="meta-value"></span>
                                 </div>
                             </div>
 
                             <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
-                                <h3 class="description-title">Phone Number</h3>
-                                <p id="heroNotes" class="description-text"></p>
+                                <h3 class="description-title">Delivery Information</h3>
+                                <div class="description-text">
+                                    <div class="info-row">
+                                        <span class="info-label">Delivery Type:</span>
+                                        <span id="heroDelivery" class="info-value"></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Address:</span>
+                                        <span id="heroAddress" class="info-value"></span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">City / Province:</span>
+                                        <span id="heroLocation" class="info-value"></span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="hero-actions slide-in" style="animation-delay: 0.4s">
@@ -210,27 +213,12 @@
         }));
 
         let filteredPayments = [...payments];
-        let currentIndex = 0;
-
-        function getVisibleCount() {
-            if (window.innerWidth < 768)  return 1;
-            if (window.innerWidth < 1024) return 2;
-            return 3;
-        }
-
-        function adjustColor(color, amount) {
-            const num = parseInt(color.replace('#', ''), 16);
-            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
-            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
-            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
-        }
 
         function getStatusInfo(status) {
-            if (status === 'completed')  return { text: 'Approved',       cls: 'status-completed' };
-            if (status === 'cancelled')  return { text: 'Rejected',       cls: 'status-cancelled' };
-            if (status === 'processing') return { text: 'Pending Review', cls: 'status-pending'   };
-            return { text: 'Pending', cls: 'status-pending' };
+            if (status === 'completed')  return { text: 'Approved',       cls: 'status-completed', color: '#10b981' };
+            if (status === 'cancelled')  return { text: 'Rejected',       cls: 'status-cancelled', color: '#ef4444' };
+            if (status === 'processing') return { text: 'Pending Review', cls: 'status-pending',   color: '#f59e0b' };
+            return { text: 'Pending', cls: 'status-pending', color: '#f59e0b' };
         }
 
         function formatDate(dateStr) {
@@ -246,63 +234,64 @@
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
-        function renderCarousel() {
-            const container = document.getElementById('paymentCarousel');
-            container.innerHTML = '';
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('paymentTableBody');
+            tbody.innerHTML = '';
 
             if (!filteredPayments.length) {
-                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No payments found.</div>';
-                updateNav();
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 text-xl py-20">No payments found.</td></tr>';
                 return;
             }
 
-            filteredPayments.slice(currentIndex, currentIndex + getVisibleCount()).forEach(p => {
-                const colorLight = adjustColor(p.colorCode, 30);
-                const colorDark  = adjustColor(p.colorCode, -30);
+            filteredPayments.forEach(p => {
                 const si = getStatusInfo(p.status);
+                const initials = p.customerName ? p.customerName.charAt(0).toUpperCase() : '?';
+                const row = document.createElement('tr');
 
-                const card = document.createElement('div');
-                card.className = 'order-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group';
-                card.style.cssText = `--order-color-light:${colorLight};--order-color-dark:${colorDark};background:linear-gradient(180deg,${colorLight} 0%,${colorDark} 100%);`;
-                card.setAttribute('data-color', p.colorCode);
-
-                card.innerHTML = `
-                    <div class="order-icon-wrapper">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <div class="relative z-10 pt-8">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="status-indicator ${si.cls}">${si.text}</span>
+                row.innerHTML = `
+                    <td>
+                        <div class="order-info">
+                            <div class="user-table-avatar-fallback" style="background:linear-gradient(135deg,${adjustColor(p.colorCode,20)},${p.colorCode})">
+                                <i class="fas fa-credit-card" style="font-size:1rem;"></i>
+                            </div>
+                            <div>
+                                <div class="order-number">#${p.orderNumber}</div>
+                            </div>
                         </div>
-                        <h3 class="text-3xl font-bold text-white mb-1">${p.orderNumber}</h3>
-                        <p class="text-white/70 text-sm mb-1">${p.customerName}</p>
-                        <p class="text-white/90 text-lg font-semibold mb-2">&#8369;${parseFloat(p.totalAmount).toFixed(2)}</p>
-                        <p class="text-white/60 text-xs mb-1"><i class="fas fa-credit-card mr-1"></i>${capitalize(p.paymentMethod)}</p>
-                        <p class="text-white/60 text-xs mb-4">${formatDate(p.paidAt)}</p>
-                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
-                            Review >
-                        </button>
-                    </div>
+                    </td>
+                    <td>
+                        <div class="customer-name">${p.customerName}</div>
+                        <div class="user-email">${p.phoneNumber}</div>
+                    </td>
+                    <td class="text-gray-700 font-semibold">&#8369;${parseFloat(p.totalAmount).toFixed(2)}</td>
+                    <td class="text-gray-700">${capitalize(p.paymentMethod)}</td>
+                    <td><span class="table-status-badge ${si.cls}">${si.text}</span></td>
+                    <td class="text-gray-700">${formatDate(p.paidAt)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="${baseUrl}/${isAdmin ? 'admin' : 'staff'}/payment-management/${p.id}"
+                               class="table-action-btn table-action-view" title="Review Payment">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                        </div>
+                    </td>
                 `;
-                card.onclick = () => openHero(p);
-                container.appendChild(card);
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', function(e) {
+                    if (!e.target.closest('a') && !e.target.closest('button')) {
+                        openHero(p);
+                    }
+                });
+                tbody.appendChild(row);
             });
-
-            updateNav();
-        }
-
-        function updateNav() {
-            const prev = document.getElementById('prevBtn');
-            const next = document.getElementById('nextBtn');
-            if (prev) prev.disabled = currentIndex === 0;
-            if (next) next.disabled = currentIndex + getVisibleCount() >= filteredPayments.length;
-        }
-
-        function nextSlide() {
-            if (currentIndex + getVisibleCount() < filteredPayments.length) { currentIndex++; renderCarousel(); }
-        }
-        function prevSlide() {
-            if (currentIndex > 0) { currentIndex--; renderCarousel(); }
         }
 
         function applyFilters() {
@@ -318,18 +307,14 @@
                 return matchSearch && matchStatus;
             });
 
-            currentIndex = 0;
             const el = document.getElementById('totalCount');
             if (el) el.textContent = filteredPayments.length;
-            renderCarousel();
+            renderTable();
         }
 
         document.getElementById('searchInput')?.addEventListener('input', applyFilters);
         document.getElementById('statusFilter')?.addEventListener('change', function () {
-            const val = this.value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('status', val);
-            window.location.href = url.toString();
+            applyFilters();
         });
 
         function openHero(p) {
@@ -339,28 +324,29 @@
 
             heroBg.style.background = `linear-gradient(180deg,${adjustColor(p.colorCode,30)} 0%,${adjustColor(p.colorCode,-30)} 100%)`;
 
-            document.getElementById('heroOrderNumber').innerText  = p.orderNumber;
-            document.getElementById('heroCustomerName').innerText = p.customerName;
-            document.getElementById('heroCustomerPhone').innerText = p.phoneNumber;
-            document.getElementById('heroPaidAt').innerText       = formatDate(p.paidAt);
-            document.getElementById('heroAmount').innerText       = '&#8369;' + parseFloat(p.totalAmount).toFixed(2);
-            document.getElementById('heroMethod').innerText       = capitalize(p.paymentMethod);
-            document.getElementById('heroDelivery').innerText     = p.deliveryType;
-            document.getElementById('heroAddress').innerText      = p.address;
-            document.getElementById('heroLocation').innerText     = `${p.city}, ${p.province}`;
-            document.getElementById('heroNotes').innerText        = p.phoneNumber;
+            // Avatar
+            const heroAvatar = document.getElementById('heroAvatar');
+            heroAvatar.innerHTML = `<div class="hero-avatar-text">${p.customerName.charAt(0).toUpperCase()}</div>`;
+            heroAvatar.style.background = `linear-gradient(135deg, ${adjustColor(p.colorCode, 40)}, ${p.colorCode})`;
 
-            document.getElementById('heroCustomerAvatar').innerText = p.customerName.charAt(0).toUpperCase();
+            document.getElementById('heroOrderNumber').innerText   = '#' + p.orderNumber;
+            document.getElementById('heroCustomerName').innerText  = p.customerName;
+            document.getElementById('heroPhone').innerText         = p.phoneNumber;
+            document.getElementById('heroMethod').innerText        = capitalize(p.paymentMethod);
+            document.getElementById('heroAmount').innerText        = '₱' + parseFloat(p.totalAmount).toFixed(2);
+            document.getElementById('heroPaidAt').innerText        = formatDate(p.paidAt);
+            document.getElementById('heroDelivery').innerText      = p.deliveryType || 'N/A';
+            document.getElementById('heroAddress').innerText       = p.address || 'N/A';
+            document.getElementById('heroLocation').innerText      = `${p.city}, ${p.province}`;
 
-            const badge = document.getElementById('heroStatusBadge');
-            badge.className = `status-badge-hero ${si.cls}`;
-            badge.innerText = si.text;
+            const heroStatus = document.getElementById('heroStatus');
+            heroStatus.className = 'status-badge';
+            heroStatus.innerText = si.text;
+            heroStatus.style.backgroundColor = si.color;
 
             const viewBtn = document.getElementById('heroViewBtn');
             if (viewBtn) {
-                viewBtn.href = isAdmin
-                    ? `${baseUrl}/admin/payment-management/${p.id}`
-                    : `${baseUrl}/staff/payment-management/${p.id}`;
+                viewBtn.href = `${baseUrl}/${isAdmin ? 'admin' : 'staff'}/payment-management/${p.id}`;
             }
 
             app.classList.add('hero-active');
@@ -379,10 +365,10 @@
         document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
             const statusFromUrl = urlParams.get('status');
-            document.getElementById('statusFilter').value = statusFromUrl || 'processing';
+            if (statusFromUrl) {
+                document.getElementById('statusFilter').value = statusFromUrl;
+            }
             applyFilters();
-
-            window.addEventListener('resize', renderCarousel);
 
             const toggle  = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
