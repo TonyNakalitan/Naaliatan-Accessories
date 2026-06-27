@@ -10,48 +10,116 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.product-card {
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+/* Table Styles */
+#productTableBody {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.product-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+#productTableBody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
 }
 
-.product-image-wrapper {
-    position: absolute;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 400px;
+#productTableBody tr:hover {
+    background-color: #f9fafb;
+}
+
+#productTableBody tr:last-child {
+    border-bottom: none;
+}
+
+#productTableBody td {
+    padding: 16px;
+    vertical-align: middle;
+}
+
+.product-table-image {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+}
+
+.product-info {
     display: flex;
     align-items: center;
+    gap: 12px;
+}
+
+.product-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.95rem;
+}
+
+.product-code {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.table-stock-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stock-good {
+    background: #10b981;
+    color: white;
+}
+
+.stock-low {
+    background: #f59e0b;
+    color: white;
+}
+
+.stock-critical {
+    background: #ef4444;
+    color: white;
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.table-action-btn {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
 }
 
-.product-card:hover .product-image-wrapper {
-    transform: translateX(-50%) translateY(-20px) scale(1.08);
+.table-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.product-image-wrapper img {
-    width: 280px;
-    height: 280px;
-    object-fit: cover;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 10px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+.table-action-view {
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 
-.product-card:hover .product-image-wrapper img {
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+.table-action-edit {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.table-action-delete {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
 /* Stock indicators */

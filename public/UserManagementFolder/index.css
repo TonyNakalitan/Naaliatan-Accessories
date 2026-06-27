@@ -10,60 +10,130 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.user-card {
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+/* Table Styles */
+#userTableBody {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.user-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+#userTableBody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
 }
 
-.user-avatar-wrapper {
-    position: absolute;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 400px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+#userTableBody tr:hover {
+    background-color: #f9fafb;
 }
 
-.user-card:hover .user-avatar-wrapper {
-    transform: translateX(-50%) translateY(-20px) scale(1.08);
+#userTableBody tr:last-child {
+    border-bottom: none;
 }
 
-.user-avatar-wrapper img,
-.user-avatar-wrapper .avatar-fallback {
-    width: 280px;
-    height: 280px;
-    object-fit: cover;
+#userTableBody td {
+    padding: 16px;
+    vertical-align: middle;
+}
+
+.user-table-avatar {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 10px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
 }
 
-.avatar-fallback {
+.user-table-avatar-fallback {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: white;
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
 }
 
-.user-card:hover .user-avatar-wrapper img,
-.user-card:hover .user-avatar-wrapper .avatar-fallback {
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.95rem;
+}
+
+.user-email {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.table-role-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.table-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+}
+
+.table-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.table-action-view {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.table-action-edit {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.table-action-toggle {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.table-action-delete {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
 /* Hero Transition Styles */

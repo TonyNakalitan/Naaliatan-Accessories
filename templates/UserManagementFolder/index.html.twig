@@ -62,30 +62,34 @@
         <!-- Viewport -->
         <main class="relative flex-1 overflow-x-auto">
             
-            <!-- GRID VIEW (The Carousel) -->
-            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
-                
-                <!-- Carousel at bottom -->
-                <div id="userCarousel" class="flex gap-8 items-end h-[500px] mb-6">
-                    <!-- Cards injected by JS -->
+            <!-- TABLE VIEW -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col px-12 py-8 transition-all duration-500">
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">User</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Username</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Email</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Role</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Online</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Created</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- Table rows injected by JS -->
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Footer Nav -->
-                <div class="flex items-center justify-between pt-4 pb-2">
-                    <div class="flex gap-6 text-sm font-medium text-gray-500">
-                        <span>Total Users: <span id="totalCount">{{ allUsers|length }}</span></span>
-                        <span>Active: <span id="activeCount">{{ allUsers|filter(u => u.isActive)|length }}</span></span>
-                        <span>Online: <span id="onlineCount">{{ allUsers|filter(u => u.isOnline)|length }}</span></span>
-                        <span>Admins: <span id="adminCount">{{ allUsers|filter(u => 'ROLE_ADMIN' in u.roles)|length }}</span></span>
-                    </div>
-                    <div class="flex gap-4">
-                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            <i class="fa fa-chevron-left text-xs"></i> Prev
-                        </button>
-                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            Next <i class="fa fa-chevron-right text-xs"></i>
-                        </button>
-                    </div>
+                <!-- Footer Stats -->
+                <div class="flex items-center gap-6 pt-4 pb-2 text-sm font-medium text-gray-500">
+                    <span>Total Users: <span id="totalCount">{{ allUsers|length }}</span></span>
+                    <span>Active: <span id="activeCount">{{ allUsers|filter(u => u.isActive)|length }}</span></span>
+                    <span>Online: <span id="onlineCount">{{ allUsers|filter(u => u.isOnline)|length }}</span></span>
+                    <span>Admins: <span id="adminCount">{{ allUsers|filter(u => 'ROLE_ADMIN' in u.roles)|length }}</span></span>
                 </div>
             </div>
 
@@ -244,13 +248,6 @@
         
         console.log('Processed users:', users);
 
-        let currentIndex = 0;
-        function getVisibleCount() {
-            if (window.innerWidth < 768) return 1;
-            if (window.innerWidth < 1024) return 2;
-            return 3;
-        }
-
         // Helper function to get user color based on role
         function getUserColor(roles) {
             if (roles.includes('ROLE_ADMIN')) return '#ef4444'; // Red
@@ -274,78 +271,62 @@
             return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
         }
 
-        function renderCarousel() {
-            const container = document.getElementById('userCarousel');
-            container.innerHTML = '';
+        function renderTable() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
             
             if (!filteredUsers || filteredUsers.length === 0) {
-                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No users found. <a href="' + baseUrl + '/admin/users/new" class="text-blue-600 hover:underline">Add one now!</a></div>';
-                updateNavigationButtons();
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 text-xl py-20">No users found. <a href="' + baseUrl + '/admin/users/new" class="text-blue-600 hover:underline">Add one now!</a></td></tr>';
                 return;
             }
 
-            const displayed = filteredUsers.slice(currentIndex, currentIndex + getVisibleCount());
-
-            displayed.forEach((user, index) => {
-                const colorLight = adjustColor(user.colorCode, 30);
-                const colorDark = adjustColor(user.colorCode, -30);
-                
-                const card = document.createElement('div');
-                card.className = `user-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
-                card.style.cssText = `--user-color-light: ${colorLight}; --user-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
-                card.setAttribute('data-color', user.colorCode);
+            filteredUsers.forEach((user) => {
+                const row = document.createElement('tr');
                 
                 // Create avatar HTML
                 let avatarHTML = '';
                 if (user.avatar) {
-                    avatarHTML = `<img src="${user.avatar}" alt="${user.displayName}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                  <div class="avatar-fallback" style="display:none;">${user.displayName.substring(0, 2).toUpperCase()}</div>`;
+                    avatarHTML = `<img src="${user.avatar}" alt="${user.displayName}" class="user-table-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                  <div class="user-table-avatar-fallback" style="display:none;">${user.displayName.substring(0, 2).toUpperCase()}</div>`;
                 } else {
-                    avatarHTML = `<div class="avatar-fallback">${user.displayName.substring(0, 2).toUpperCase()}</div>`;
+                    avatarHTML = `<div class="user-table-avatar-fallback">${user.displayName.substring(0, 2).toUpperCase()}</div>`;
                 }
                 
-                card.innerHTML = `
-                    <div class="user-avatar-wrapper">
-                        ${avatarHTML}
-                    </div>
-                    <div class="relative z-10 pt-8">
-                        <h3 class="text-4xl font-bold text-white mb-1">${user.displayName}</h3>
-                        <p class="text-white/70 text-sm mb-2">@${user.username}</p>
-                        <p class="text-white/60 text-xs mb-4">${getRoleDisplay(user.roles)}</p>
-                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
-                            View Details >
-                        </button>
-                    </div>
+                row.innerHTML = `
+                    <td>
+                        <div class="user-info">
+                            ${avatarHTML}
+                            <div>
+                                <div class="user-name">${user.displayName}</div>
+                                <div class="user-email">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-gray-700">@${user.username}</td>
+                    <td class="text-gray-700">${user.email}</td>
+                    <td><span class="table-role-badge" style="background-color: ${user.colorCode}">${getRoleDisplay(user.roles)}</span></td>
+                    <td><span class="table-status-badge" style="background-color: ${user.isActive ? '#10b981' : '#ef4444'}">${user.isActive ? 'Active' : 'Inactive'}</span></td>
+                    <td><span class="table-status-badge" style="background-color: ${user.isOnline ? '#3b82f6' : '#ef4444'}">${user.isOnline ? 'Online' : 'Offline'}</span></td>
+                    <td class="text-gray-700">${new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="${showBaseUrl}/${user.id}" class="table-action-btn table-action-view" title="View">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                            <a href="${editBaseUrl}/${user.id}/edit" class="table-action-btn table-action-edit" title="Edit">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <button onclick="toggleUserStatus(${user.id})" class="table-action-btn table-action-toggle" title="${user.isActive ? 'Deactivate' : 'Activate'}">
+                                <i class="fa fa-${user.isActive ? 'ban' : 'check'}"></i>
+                            </button>
+                            <button onclick="deleteUser(${user.id})" class="table-action-btn table-action-delete" title="Delete">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
                 `;
-                card.onclick = () => openHero(user);
-                container.appendChild(card);
+                tbody.appendChild(row);
             });
-            
-            updateNavigationButtons();
-        }
-        
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            
-            if (prevBtn && nextBtn) {
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex + getVisibleCount() >= filteredUsers.length;
-            }
-        }
-
-        function nextSlide() {
-            if (currentIndex + getVisibleCount() < filteredUsers.length) {
-                currentIndex++;
-                renderCarousel();
-            }
-        }
-
-        function prevSlide() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderCarousel();
-            }
         }
         
         // Search functionality
@@ -359,12 +340,11 @@
                     user.email.toLowerCase().includes(searchTerm) ||
                     getRoleDisplay(user.roles).toLowerCase().includes(searchTerm)
                 );
-                currentIndex = 0;
                 const totalCountEl = document.getElementById('totalCount');
                 if (totalCountEl) {
                     totalCountEl.textContent = filteredUsers.length;
                 }
-                renderCarousel();
+                renderTable();
             });
         }
 
@@ -443,18 +423,19 @@
             });
         }
         
-        function deleteUser() {
-            if (!currentUser) return;
+        function deleteUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
             
-            if (confirm(`Are you sure you want to delete "${currentUser.displayName}"?`)) {
+            if (confirm(`Are you sure you want to delete "${user.displayName}"?`)) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `${deleteBaseUrl}/${currentUser.id}/delete`;
+                form.action = `${deleteBaseUrl}/${user.id}/delete`;
                 
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
                 csrfToken.name = '_token';
-                csrfToken.value = currentUser.csrfToken;
+                csrfToken.value = user.csrfToken;
                 
                 form.appendChild(csrfToken);
                 document.body.appendChild(form);
@@ -462,19 +443,20 @@
             }
         }
 
-        function toggleUserStatus() {
-            if (!currentUser) return;
+        function toggleUserStatus(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
 
-            const action = currentUser.isActive ? 'deactivate' : 'activate';
-            if (confirm(`Are you sure you want to ${action} "${currentUser.displayName}"?`)) {
+            const action = user.isActive ? 'deactivate' : 'activate';
+            if (confirm(`Are you sure you want to ${action} "${user.displayName}"?`)) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `${toggleBaseUrl}/${currentUser.id}/toggle-status`;
+                form.action = `${toggleBaseUrl}/${user.id}/toggle-status`;
 
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
                 csrfToken.name = '_token';
-                csrfToken.value = currentUser.toggleCsrfToken;
+                csrfToken.value = user.toggleCsrfToken;
 
                 form.appendChild(csrfToken);
                 document.body.appendChild(form);
@@ -488,13 +470,8 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, rendering carousel...');
-            renderCarousel();
-            
-            // Re-render on resize for responsive card count
-            window.addEventListener('resize', function() {
-                renderCarousel();
-            });
+            console.log('DOM loaded, rendering table...');
+            renderTable();
             
             // Sidebar toggle functionality
             const sidebarToggle = document.getElementById('sidebarToggle');

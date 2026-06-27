@@ -1,66 +1,38 @@
 version: "3.9"
 
-# This file is for LOCAL development only.
-# Railway deployment uses the Dockerfile directly via railway.toml.
-# Add a MySQL service in your Railway project dashboard and Railway will
-# automatically inject MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE.
-
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:80"
-    environment:
-      APP_ENV: prod
-      APP_SECRET: ${APP_SECRET}
-      MYSQLHOST: mysql
-      MYSQLPORT: 3306
-      MYSQLUSER: ${MYSQLUSER:-naaliatan}
-      MYSQLPASSWORD: ${MYSQLPASSWORD:-secret}
-      MYSQLDATABASE: ${MYSQLDATABASE:-naaliatan_db}
-      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN:-http://localhost:8080}
-      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-changeme}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      MAILER_DSN: ${MAILER_DSN:-null://null}
-    depends_on:
-      - mysql
-    networks:
-      - naaliatan_network
-
   mysql:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: ${MYSQLDATABASE:-naaliatan_db}
-      MYSQL_USER: ${MYSQLUSER:-naaliatan}
-      MYSQL_PASSWORD: ${MYSQLPASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-NaaliatanAccessories}
+      MYSQL_USER: ${MYSQL_USER:-NaaliatanAccessories}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-NaaliatanAccessories}
     ports:
-      - "3308:3306"
+      - "3309:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - naaliatan_network
+      - test_demo_network
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     restart: unless-stopped
     environment:
       PMA_HOST: mysql
-      PMA_PORT: 3306
+      PMA_USER: ${MYSQL_USER:-NaaliatanAccessories}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-NaaliatanAccessories}
+
     ports:
-      - "8083:80"
+      - "8081:80"
     depends_on:
       - mysql
     networks:
-      - naaliatan_network
+      - test_demo_network
 
 volumes:
   mysql_data:
 
 networks:
-  naaliatan_network:
-    driver: bridge
+  test_demo_network:

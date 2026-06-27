@@ -64,29 +64,32 @@
         <!-- Viewport -->
         <main class="relative flex-1 overflow-x-auto">
             
-            <!-- GRID VIEW (The Carousel) -->
-            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
-                
-                <!-- Carousel at bottom -->
-                <div id="productCarousel" class="flex gap-8 items-end h-[500px] mb-6">
-                    <!-- Cards injected by JS -->
+            <!-- TABLE VIEW -->
+            <div id="gridView" class="grid-view absolute inset-0 flex flex-col px-12 py-8 transition-all duration-500">
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Product</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Code</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Price</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Stock</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Character</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
+                                <th class="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <!-- Table rows injected by JS -->
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Footer Nav -->
-                <div class="flex items-center justify-between pt-4 pb-2">
-                    <div class="flex gap-6 text-sm font-medium text-gray-500">
-                        <span>Total Products: <span id="totalCount">{{ totalProducts }}</span></span>
-                        <span>Low Stock: <span class="text-amber-600 font-bold">{{ products|filter(p => p.stockQuantity > 0 and p.stockQuantity < 10)|length }}</span></span>
-                        <span>In Stock: <span class="text-emerald-600 font-bold">{{ products|filter(p => p.stockQuantity > 0)|length }}</span></span>
-                    </div>
-                    <div class="flex gap-4">
-                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            <i class="fa fa-chevron-left text-xs"></i> Prev
-                        </button>
-                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            Next <i class="fa fa-chevron-right text-xs"></i>
-                        </button>
-                    </div>
+                <!-- Footer Stats -->
+                <div class="flex items-center gap-6 pt-4 pb-2 text-sm font-medium text-gray-500">
+                    <span>Total Products: <span id="totalCount">{{ totalProducts }}</span></span>
+                    <span>Low Stock: <span class="text-amber-600 font-bold">{{ products|filter(p => p.stockQuantity > 0 and p.stockQuantity < 10)|length }}</span></span>
+                    <span>In Stock: <span class="text-emerald-600 font-bold">{{ products|filter(p => p.stockQuantity > 0)|length }}</span></span>
                 </div>
             </div>
 
@@ -215,13 +218,6 @@
         
         console.log('Processed products:', products);
 
-        let currentIndex = 0;
-        function getVisibleCount() {
-            if (window.innerWidth < 768) return 1;
-            if (window.innerWidth < 1024) return 2;
-            return 3;
-        }
-
         // Helper function to lighten/darken colors
         function adjustColor(color, amount) {
             const num = parseInt(color.replace("#",""), 16);
@@ -237,74 +233,52 @@
             return { text: 'In Stock', class: 'stock-good' };
         }
 
-        function renderCarousel() {
-            const container = document.getElementById('productCarousel');
-            container.innerHTML = '';
+        function renderTable() {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
             
             if (!filteredProducts || filteredProducts.length === 0) {
-                container.innerHTML = '<div class="w-full text-center text-gray-500 text-xl py-20">No products found.' + (isAdmin ? ' <a href="{{ path('app_admin_product_management_new') }}" class="text-blue-600 hover:underline">Add one now!</a>' : '') + '</div>';
-                updateNavigationButtons();
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 text-xl py-20">No products found.' + (isAdmin ? ' <a href="{{ path('app_admin_product_management_new') }}" class="text-blue-600 hover:underline">Add one now!</a>' : '') + '</td></tr>';
                 return;
             }
 
-            const displayed = filteredProducts.slice(currentIndex, currentIndex + getVisibleCount());
-
-            displayed.forEach((prod, index) => {
-                const colorLight = adjustColor(prod.colorCode, 30);
-                const colorDark = adjustColor(prod.colorCode, -30);
+            filteredProducts.forEach((prod) => {
                 const stockStatus = getStockStatus(prod.stockQuantity);
+                const row = document.createElement('tr');
                 
-                const card = document.createElement('div');
-                card.className = `product-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
-                card.style.cssText = `--prod-color-light: ${colorLight}; --prod-color-dark: ${colorDark}; background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
-                card.setAttribute('data-color', prod.colorCode);
-                
-                card.innerHTML = `
-                    <div class="product-image-wrapper">
-                        <img src="${prod.image}" alt="${prod.name}" onerror="this.src='https://via.placeholder.com/300x400?text=${encodeURIComponent(prod.name)}'">
-                    </div>
-                    <div class="relative z-10 pt-8">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="stock-indicator ${stockStatus.class}">${stockStatus.text}</span>
-                            <span class="text-white/70 text-xs">• ${prod.stockQuantity} units</span>
+                row.innerHTML = `
+                    <td>
+                        <div class="product-info">
+                            <img src="${prod.image}" alt="${prod.name}" class="product-table-image" onerror="this.src='https://via.placeholder.com/100x100?text=${encodeURIComponent(prod.name)}'">
+                            <div>
+                                <div class="product-name">${prod.name}</div>
+                                <div class="product-code">${prod.characterName}</div>
+                            </div>
                         </div>
-                        <h3 class="text-4xl font-bold text-white mb-1">${prod.name}</h3>
-                        <p class="text-white/70 text-sm mb-2">₱${prod.price.toLocaleString('en-PH', {minimumFractionDigits: 2})}</p>
-                        <p class="text-white/60 text-xs mb-4">${prod.characterName}</p>
-                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
-                            View Details >
-                        </button>
-                    </div>
+                    </td>
+                    <td class="text-gray-700">${prod.productCode}</td>
+                    <td class="text-gray-700">₱${prod.price.toLocaleString('en-PH', {minimumFractionDigits: 2})}</td>
+                    <td class="text-gray-700">${prod.stockQuantity}</td>
+                    <td class="text-gray-700">${prod.characterName}</td>
+                    <td><span class="table-stock-badge ${stockStatus.class}">${stockStatus.text}</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="${isAdmin ? baseUrl + '/admin/products/' + prod.id : baseUrl + '/staff/products/' + prod.id}" class="table-action-btn table-action-view" title="View">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                            <a href="${isAdmin ? baseUrl + '/admin/products/' + prod.id + '/edit' : baseUrl + '/staff/products/' + prod.id + '/edit'}" class="table-action-btn table-action-edit" title="Edit">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            ${isAdmin ? `
+                            <button onclick="deleteProduct(${prod.id})" class="table-action-btn table-action-delete" title="Delete">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                            ` : ''}
+                        </div>
+                    </td>
                 `;
-                card.onclick = () => openHero(prod);
-                container.appendChild(card);
+                tbody.appendChild(row);
             });
-            
-            updateNavigationButtons();
-        }
-        
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            
-            if (prevBtn && nextBtn) {
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex + getVisibleCount() >= filteredProducts.length;
-            }
-        }
-
-        function nextSlide() {
-            if (currentIndex + getVisibleCount() < filteredProducts.length) {
-                currentIndex++;
-                renderCarousel();
-            }
-        }
-
-        function prevSlide() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderCarousel();
-            }
         }
         
         // Search functionality
@@ -317,12 +291,11 @@
                     prod.productCode.toLowerCase().includes(searchTerm) ||
                     prod.characterName.toLowerCase().includes(searchTerm)
                 );
-                currentIndex = 0;
                 const totalCountEl = document.getElementById('totalCount');
                 if (totalCountEl) {
                     totalCountEl.textContent = filteredProducts.length;
                 }
-                renderCarousel();
+                renderTable();
             });
         }
 
@@ -390,13 +363,14 @@
             });
         }
         
-        function deleteProduct() {
-            if (!currentProduct || !isAdmin) return;
+        function deleteProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || !isAdmin) return;
             
-            if (confirm(`Are you sure you want to delete "${currentProduct.name}"?`)) {
+            if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `${baseUrl}/admin/products/${currentProduct.id}`;
+                form.action = `${baseUrl}/admin/products/${product.id}`;
                 
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
@@ -415,10 +389,8 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, rendering carousel...');
-            renderCarousel();
-            
-            window.addEventListener('resize', function() { renderCarousel(); });
+            console.log('DOM loaded, rendering table...');
+            renderTable();
             
             // Sidebar toggle functionality
             const sidebarToggle = document.getElementById('sidebarToggle');
