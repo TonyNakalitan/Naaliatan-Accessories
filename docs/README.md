@@ -1,4 +1,4 @@
-# Naaliatan Accessories — Project Documentation
+# Naaliatan's Accessories — Project Documentation
 
 A Symfony 7.4 full-stack e-commerce platform for game-character-themed accessories. Features a REST API with JWT authentication, a staff/admin dashboard, product and character management, shopping cart, order management, and payment processing.
 
