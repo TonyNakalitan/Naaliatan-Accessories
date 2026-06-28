@@ -72,84 +72,41 @@
         {% endfor %}
 
         <!-- Viewport -->
-        <main class="relative flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-x-auto px-12 py-8">
             
-            <!-- GRID VIEW (The Carousel) -->
-            <div id="gridView" class="grid-view absolute inset-0 flex flex-col justify-end px-12 transition-all duration-500 pb-8">
-                
-                <!-- Carousel at bottom -->
-                <div id="statsCarousel" class="flex gap-8 items-end h-[500px] mb-6">
-                    <!-- Cards injected by JS -->
-                </div>
-
-                <!-- Footer Nav -->
-                <div class="flex items-center justify-between pt-4 pb-2">
-                    <div class="flex gap-6 text-sm font-medium text-gray-500">
-                        <span>Member Since: <span class="text-gray-800">{{ user.createdAt ? user.createdAt|date('M Y') : 'Unknown' }}</span></span>
-                        <span>Activities: <span class="text-gray-800">{{ user.activityLogs|length }}</span></span>
-                        <span>Status: <span class="text-gray-800">{{ user.isActive ? 'Active' : 'Inactive' }}</span></span>
+            <!-- User Info Bar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        {% if user.profilePicture %}
+                            <img src="{{ user.profilePicture|image_url('images/profiles') }}" alt="Profile" class="w-16 h-16 rounded-xl object-cover border-2 border-gray-100 shadow-sm">
+                        {% else %}
+                            <div class="flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-xl">
+                                {% set displayText = user.displayName ?: user.username %}
+                                {% set words = displayText|split(' ') %}
+                                {% if words|length > 1 %}
+                                    {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
+                                {% else %}
+                                    {{ displayText|slice(0, 2)|upper }}
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">{{ user.displayName ?: user.username }}</h2>
+                            <p class="text-gray-500 text-sm">{{ user.email }}</p>
+                        </div>
                     </div>
-                    <div class="flex gap-4">
-                        <button onclick="prevSlide()" id="prevBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            <i class="fa fa-chevron-left text-xs"></i> Prev
-                        </button>
-                        <button onclick="nextSlide()" id="nextBtn" class="flex items-center gap-2 font-bold text-gray-800 hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                            Next <i class="fa fa-chevron-right text-xs"></i>
-                        </button>
+                    <div class="flex items-center gap-3">
+                        <span class="px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                            <i class="fas fa-shield-alt mr-2"></i>{{ user.isAdmin() ? 'Administrator' : (user.isStaff() ? 'Staff Member' : 'User') }}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <!-- DETAIL / HERO VIEW -->
-            <div id="heroView" class="hero-view absolute inset-0 z-40 bg-white">
-                <div id="heroBg" class="absolute inset-0 w-1/2 rounded-r-[80px] transition-colors duration-700"></div>
-                
-                <button onclick="closeHero()" class="absolute top-8 right-10 z-50 flex items-center gap-2 font-bold text-gray-800 hover:scale-105 transition-transform">
-                    <i class="fa fa-times text-red-500"></i> Close
-                </button>
-
-                <div class="relative z-10 h-full flex items-center px-16">
-                    <!-- Left Side: Large Icon -->
-                    <div class="w-1/2 flex justify-center items-center">
-                        <div class="hero-icon-frame">
-                            <div id="heroIcon" class="hero-icon-wrapper"></div>
-                        </div>
-                    </div>
-
-                    <!-- Right Side: Content -->
-                    <div class="w-1/2 pl-12 pr-8">
-                        <div class="hero-content-wrapper">
-                            <h2 id="heroTitle" class="hero-title slide-in" style="animation-delay: 0.1s"></h2>
-                            
-                            <div class="hero-meta-section slide-in" style="animation-delay: 0.2s">
-                                <div class="meta-item">
-                                    <i id="heroMetaIcon1" class="text-blue-500"></i>
-                                    <span class="meta-label" id="heroMetaLabel1"></span>
-                                    <span id="heroMetaValue1" class="meta-value"></span>
-                                </div>
-                                <div class="meta-item">
-                                    <i id="heroMetaIcon2" class="text-purple-500"></i>
-                                    <span class="meta-label" id="heroMetaLabel2"></span>
-                                    <span id="heroMetaValue2" class="meta-value"></span>
-                                </div>
-                                <div class="meta-item">
-                                    <i id="heroMetaIcon3" class="text-green-500"></i>
-                                    <span class="meta-label" id="heroMetaLabel3"></span>
-                                    <span id="heroMetaValue3" class="meta-value"></span>
-                                </div>
-                            </div>
-                            
-                            <div class="hero-description-section slide-in" style="animation-delay: 0.3s">
-                                <h3 class="description-title">Details</h3>
-                                <div id="heroDescription" class="description-text"></div>
-                            </div>
-
-                            <div class="hero-actions slide-in" style="animation-delay: 0.4s" id="heroActions">
-                                <!-- Actions injected by JS -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Profile Stats Grid -->
+            <div id="profileGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards injected by JS -->
             </div>
         </main>
     </div>
@@ -236,9 +193,6 @@
             {% endif %}
         ];
 
-        let currentIndex = 0;
-        const visibleCount = 3;
-
         function adjustColor(color, amount) {
             const num = parseInt(color.replace("#",""), 16);
             const r = Math.min(255, Math.max(0, (num >> 16) + amount));
@@ -247,117 +201,47 @@
             return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
         }
 
-        function renderCarousel() {
-            const container = document.getElementById('statsCarousel');
+        function renderProfileGrid() {
+            const container = document.getElementById('profileGrid');
             container.innerHTML = '';
-            
-            const displayed = profileData.slice(currentIndex, currentIndex + visibleCount);
 
-            displayed.forEach((stat) => {
-                const colorLight = adjustColor(stat.colorCode, 30);
-                const colorDark = adjustColor(stat.colorCode, -30);
-                
+            profileData.forEach((stat) => {
                 const card = document.createElement('div');
-                card.className = `stat-card relative w-1/3 h-full rounded-[40px] flex flex-col justify-end p-8 cursor-pointer group`;
-                card.style.cssText = `background: linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%);`;
-                card.setAttribute('data-color', stat.colorCode);
+                card.className = 'profile-card bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-lg hover:border-gray-200 transition-all duration-300 cursor-pointer group';
                 
                 card.innerHTML = `
-                    <div class="stat-icon-wrapper">
-                        <i class="fas ${stat.icon}"></i>
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="profile-icon-wrapper" style="background: linear-gradient(135deg, ${stat.colorCode}20, ${stat.colorCode}10);">
+                            <i class="fas ${stat.icon}" style="color: ${stat.colorCode};"></i>
+                        </div>
+                        <span class="profile-badge" style="background: ${stat.colorCode}15; color: ${stat.colorCode};">${stat.badge}</span>
                     </div>
-                    <div class="relative z-10 pt-8">
-                        <h3 class="text-4xl font-bold text-white mb-1">${stat.title}</h3>
-                        <p class="text-white/70 text-sm mb-2">${stat.badge}</p>
-                        <p class="text-4xl font-bold text-white mb-4 truncate">${stat.value}</p>
-                        <button class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wider transition-all">
-                            View Details >
-                        </button>
+                    <h3 class="profile-title">${stat.title}</h3>
+                    <p class="profile-description">${stat.description}</p>
+                    <div class="profile-meta">
+                        ${stat.meta.map(meta => `
+                            <div class="meta-row">
+                                <i class="fas ${meta.icon}" style="color: ${stat.colorCode};"></i>
+                                <span class="meta-label">${meta.label}:</span>
+                                <span class="meta-value">${meta.value}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="profile-actions">
+                        ${stat.actions.map(action => `
+                            <a href="${action.url}" class="profile-action-btn ${action.class}">
+                                <i class="fas fa-arrow-right"></i>
+                                ${action.label}
+                            </a>
+                        `).join('')}
                     </div>
                 `;
-                card.onclick = () => openHero(stat);
                 container.appendChild(card);
             });
-            
-            updateNavigationButtons();
-        }
-        
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            
-            if (prevBtn && nextBtn) {
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex + visibleCount >= profileData.length;
-            }
-        }
-
-        function nextSlide() {
-            if (currentIndex + visibleCount < profileData.length) {
-                currentIndex++;
-                renderCarousel();
-            }
-        }
-
-        function prevSlide() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderCarousel();
-            }
-        }
-
-        let currentStat = null;
-        
-        function openHero(stat) {
-            currentStat = stat;
-            const app = document.getElementById('app');
-            const heroBg = document.getElementById('heroBg');
-            const heroIcon = document.getElementById('heroIcon');
-            const heroTitle = document.getElementById('heroTitle');
-            const heroDescription = document.getElementById('heroDescription');
-
-            const colorLight = adjustColor(stat.colorCode, 30);
-            const colorDark = adjustColor(stat.colorCode, -30);
-            heroBg.style.background = `linear-gradient(180deg, ${colorLight} 0%, ${colorDark} 100%)`;
-            
-            heroIcon.innerHTML = `<i class="fas ${stat.icon}"></i>`;
-            heroTitle.innerText = stat.title;
-            heroDescription.innerText = stat.description;
-            
-            // Set meta items
-            stat.meta.forEach((meta, index) => {
-                document.getElementById(`heroMetaIcon${index + 1}`).className = `fas ${meta.icon} text-blue-500`;
-                document.getElementById(`heroMetaLabel${index + 1}`).innerText = meta.label + ':';
-                document.getElementById(`heroMetaValue${index + 1}`).innerText = meta.value;
-            });
-            
-            // Set actions
-            const actionsContainer = document.getElementById('heroActions');
-            actionsContainer.innerHTML = '';
-            stat.actions.forEach(action => {
-                const btn = document.createElement('a');
-                btn.href = action.url;
-                btn.className = `action-btn action-btn-${action.class}`;
-                btn.innerHTML = `<i class="fa fa-arrow-right"></i><span>${action.label}</span>`;
-                actionsContainer.appendChild(btn);
-            });
-
-            app.classList.add('hero-active');
-            
-            const animatedElements = document.querySelectorAll('.slide-in');
-            animatedElements.forEach(el => {
-                el.style.animation = 'none';
-                el.offsetHeight;
-                el.style.animation = null;
-            });
-        }
-
-        function closeHero() {
-            document.getElementById('app').classList.remove('hero-active');
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            renderCarousel();
+            renderProfileGrid();
             
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
