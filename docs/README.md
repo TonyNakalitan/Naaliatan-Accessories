@@ -33,11 +33,6 @@ A Symfony 7.4 full-stack e-commerce platform for game-character-themed accessori
 - **Settings Page Redesign** — Replaced carousel layout with modern responsive grid (1-3 columns). Added user info bar with profile picture and role badge. Clean white cards with subtle shadows and hover effects. Color-coded icons and badges based on category. All information immediately visible without navigation.
 - **Profile Page Redesign** — Applied same modern grid layout as Settings page. Enhanced user info display with profile picture, name, email, and role badge. Improved card design with meta information in styled boxes. Modern gradient action buttons with hover effects.
 
-#### 🆕 New Characters
-
-- **Demogorgon** — Added as a new character. The terrifying creature from the Upside Down, featured in *Stranger Things*. Alignment: Evil.
-- **Ignited Chica** — Added as a new character. The ignited, burnt form of Chica from *Five Nights at Freddy's*. Alignment: Evil.
-
 ---
 
 ## Tech Stack
