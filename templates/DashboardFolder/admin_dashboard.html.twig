@@ -11,237 +11,232 @@
 {% endblock %}
 
 {% block body %}
-<div id="dashboard-app-wrapper">
+<div id="dashboard-app-wrapper" class="min-h-screen">
 
-    <!-- Sidebar Toggle -->
-    <button class="sidebar-toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <div class="dashboard-layout">
-
-        <!-- ===== HEADER ===== -->
-        <header class="dash-header">
-            <div class="dash-header-left">
-                <h1 class="dash-title">Admin Dashboard</h1>
-                <p class="dash-subtitle">Welcome back, {{ app.user.displayName ?: app.user.username }}</p>
+    <!-- App Wrapper -->
+    <div id="app" class="relative w-full h-screen glass-container overflow-x-auto flex flex-col">
+        
+        <!-- Header -->
+        <header class="relative z-50 flex items-center justify-between px-10 py-8">
+            <div class="flex items-center gap-3">
+                <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md transition-all text-gray-700 hover:text-gray-900" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="text-3xl font-bold tracking-tighter text-gray-800">
+                    Admin Dashboard
+                </span>
             </div>
 
-            <!-- Search -->
-            <div class="dash-search">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search anything...">
+            <!-- Search bar -->
+            <div class="hidden md:flex items-center bg-gray-100/50 rounded-full px-5 py-2 w-72 border border-gray-200">
+                <i class="fa fa-search text-gray-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search dashboard..." class="bg-transparent outline-none text-sm w-full">
             </div>
 
-            <!-- Profile -->
-            <a href="{{ path('app_admin_profile_edit') }}" class="dash-profile">
-                <div class="dash-profile-avatar">
+            <div class="flex items-center gap-6">
+                <a href="{{ path('app_admin_profile_edit') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     {% if app.user.profilePicture %}
-                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="Profile">
+                        <img src="{{ app.user.profilePicture|image_url('images/profiles') }}" alt="Profile" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md">
                     {% else %}
-                        <div class="dash-profile-initials">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
                             {% set displayText = app.user.displayName ?: app.user.username %}
                             {% set words = displayText|split(' ') %}
                             {% if words|length > 1 %}
-                                {{ words[0]|slice(0,1)|upper }}{{ words[1]|slice(0,1)|upper }}
+                                {{ words[0]|slice(0, 1)|upper }}{{ words[1]|slice(0, 1)|upper }}
                             {% else %}
-                                {{ displayText|slice(0,2)|upper }}
+                                {{ displayText|slice(0, 2)|upper }}
                             {% endif %}
                         </div>
                     {% endif %}
-                    <span class="dash-profile-status"></span>
-                </div>
-                <div class="dash-profile-info">
-                    <span class="dash-profile-name">{{ app.user.displayName ?: app.user.username }}</span>
-                    <span class="dash-profile-role">Administrator</span>
-                </div>
-                <i class="fas fa-chevron-right dash-profile-arrow"></i>
-            </a>
+                    <div class="flex flex-col items-start">
+                        <span class="font-semibold text-gray-800 text-sm">{{ app.user.displayName ?: app.user.username }}</span>
+                        <span class="text-xs text-gray-500">Admin</span>
+                    </div>
+                </a>
+            </div>
         </header>
 
-        <!-- ===== DATA BOARD — Stat Cards ===== -->
-        <section class="data-board">
-            <div class="stat-card stat-blue">
-                <div class="stat-card-icon"><i class="fas fa-users"></i></div>
-                <div class="stat-card-body">
-                    <span class="stat-card-label">Total Users</span>
-                    <span class="stat-card-value">{{ stats.totalUsers }}</span>
-                    <span class="stat-card-sub">{{ stats.totalStaff }} staff members</span>
-                </div>
-                <a href="{{ path('app_admin_user_management_index') }}" class="stat-card-link">
-                    Manage <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <div class="stat-card stat-purple">
-                <div class="stat-card-icon"><i class="fas fa-box-open"></i></div>
-                <div class="stat-card-body">
-                    <span class="stat-card-label">Total Products</span>
-                    <span class="stat-card-value">{{ stats.totalProducts }}</span>
-                    <span class="stat-card-sub">{{ stats.lowStockProducts }} low stock</span>
-                </div>
-                <a href="{{ path('app_admin_product_management_index') }}" class="stat-card-link">
-                    Manage <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <div class="stat-card stat-green">
-                <div class="stat-card-icon"><i class="fas fa-id-badge"></i></div>
-                <div class="stat-card-body">
-                    <span class="stat-card-label">Characters</span>
-                    <span class="stat-card-value">{{ stats.totalCharacters }}</span>
-                    <span class="stat-card-sub">
-                        {{ characterStats|filter(c => c.alignment == 'Good')|first.count|default(0) }} good /
-                        {{ characterStats|filter(c => c.alignment == 'Evil')|first.count|default(0) }} evil
-                    </span>
-                </div>
-                <a href="{{ path('app_admin_character_management_index') }}" class="stat-card-link">
-                    Manage <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <div class="stat-card stat-orange">
-                <div class="stat-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <div class="stat-card-body">
-                    <span class="stat-card-label">Low / Out of Stock</span>
-                    <span class="stat-card-value">{{ stats.lowStockProducts }}</span>
-                    <span class="stat-card-sub">{{ stats.outOfStockProducts }} out of stock</span>
-                </div>
-                <a href="{{ path('app_admin_stock_management_index') }}" class="stat-card-link">
-                    View <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <div class="stat-card stat-teal">
-                <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
-                <div class="stat-card-body">
-                    <span class="stat-card-label">Total Orders</span>
-                    <span class="stat-card-value">{{ stats.totalOrders ?? '—' }}</span>
-                    <span class="stat-card-sub">All time orders</span>
-                </div>
-                <a href="{{ path('app_admin_order_index') }}" class="stat-card-link">
-                    View <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <div class="stat-card stat-rose">
-                <div class="stat-card-icon"><i class="fas fa-coins"></i></div>
-                <div class="stat-card-body">
-                    <span class="stat-card-label">Stock Value</span>
-                    <span class="stat-card-value">₱{{ stats.totalStockValue|number_format(0, '.', ',') }}</span>
-                    <span class="stat-card-sub">Total inventory value</span>
-                </div>
-                <a href="{{ path('app_admin_stock_management_index') }}" class="stat-card-link">
-                    View <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </section>
-
-        <!-- ===== MAIN CONTENT: Chart + Table ===== -->
-        <div class="dash-content">
-
-            <!-- LEFT: Charts -->
-            <div class="dash-charts">
-
-                <!-- Bar Chart — Stock Overview -->
-                <div class="chart-card">
-                    <div class="chart-card-header">
-                        <div>
-                            <h3 class="chart-title">Stock Overview</h3>
-                            <p class="chart-subtitle">Products · Low Stock · Out of Stock</p>
+        <!-- Viewport -->
+        <main class="relative flex-1 overflow-x-auto">
+            
+            <!-- STAT CARDS GRID -->
+            <div class="grid-view absolute inset-0 flex flex-col px-12 py-8 transition-all duration-500">
+                <div class="stats-grid">
+                    <div class="stat-card stat-blue">
+                        <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-card-body">
+                            <span class="stat-card-label">Total Users</span>
+                            <span class="stat-card-value">{{ stats.totalUsers }}</span>
+                            <span class="stat-card-sub">{{ stats.totalStaff }} staff members</span>
                         </div>
-                        <span class="chart-badge">Inventory</span>
+                        <a href="{{ path('app_admin_user_management_index') }}" class="stat-card-link">
+                            Manage <i class="fas fa-arrow-right"></i>
+                        </a>
                     </div>
-                    <div class="chart-wrapper">
-                        <canvas id="stockBarChart"></canvas>
-                    </div>
-                </div>
 
-                <!-- Donut Chart — Character Alignment -->
-                <div class="chart-card chart-card-sm">
-                    <div class="chart-card-header">
-                        <div>
-                            <h3 class="chart-title">Character Alignment</h3>
-                            <p class="chart-subtitle">Good vs Evil vs Neutral</p>
+                    <div class="stat-card stat-purple">
+                        <div class="stat-card-icon"><i class="fas fa-box-open"></i></div>
+                        <div class="stat-card-body">
+                            <span class="stat-card-label">Total Products</span>
+                            <span class="stat-card-value">{{ stats.totalProducts }}</span>
+                            <span class="stat-card-sub">{{ stats.lowStockProducts }} low stock</span>
                         </div>
-                        <span class="chart-badge">Characters</span>
+                        <a href="{{ path('app_admin_product_management_index') }}" class="stat-card-link">
+                            Manage <i class="fas fa-arrow-right"></i>
+                        </a>
                     </div>
-                    <div class="chart-wrapper chart-wrapper-donut">
-                        <canvas id="alignmentDonut"></canvas>
+
+                    <div class="stat-card stat-green">
+                        <div class="stat-card-icon"><i class="fas fa-id-badge"></i></div>
+                        <div class="stat-card-body">
+                            <span class="stat-card-label">Characters</span>
+                            <span class="stat-card-value">{{ stats.totalCharacters }}</span>
+                            <span class="stat-card-sub">
+                                {{ characterStats|filter(c => c.alignment == 'Good')|first.count|default(0) }} good /
+                                {{ characterStats|filter(c => c.alignment == 'Evil')|first.count|default(0) }} evil
+                            </span>
+                        </div>
+                        <a href="{{ path('app_admin_character_management_index') }}" class="stat-card-link">
+                            Manage <i class="fas fa-arrow-right"></i>
+                        </a>
                     </div>
-                    <div class="donut-legend" id="donutLegend"></div>
+
+                    <div class="stat-card stat-orange">
+                        <div class="stat-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-card-body">
+                            <span class="stat-card-label">Low / Out of Stock</span>
+                            <span class="stat-card-value">{{ stats.lowStockProducts }}</span>
+                            <span class="stat-card-sub">{{ stats.outOfStockProducts }} out of stock</span>
+                        </div>
+                        <a href="{{ path('app_admin_stock_management_index') }}" class="stat-card-link">
+                            View <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="stat-card stat-teal">
+                        <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
+                        <div class="stat-card-body">
+                            <span class="stat-card-label">Total Orders</span>
+                            <span class="stat-card-value">{{ stats.totalOrders ?? '—' }}</span>
+                            <span class="stat-card-sub">All time orders</span>
+                        </div>
+                        <a href="{{ path('app_admin_order_index') }}" class="stat-card-link">
+                            View <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="stat-card stat-rose">
+                        <div class="stat-card-icon"><i class="fas fa-coins"></i></div>
+                        <div class="stat-card-body">
+                            <span class="stat-card-label">Stock Value</span>
+                            <span class="stat-card-value">₱{{ stats.totalStockValue|number_format(0, '.', ',') }}</span>
+                            <span class="stat-card-sub">Total inventory value</span>
+                        </div>
+                        <a href="{{ path('app_admin_stock_management_index') }}" class="stat-card-link">
+                            View <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
 
+                <!-- Charts Section -->
+                <div class="charts-section">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <div>
+                                <h3 class="chart-title">Stock Overview</h3>
+                                <p class="chart-subtitle">Products · Low Stock · Out of Stock</p>
+                            </div>
+                            <span class="chart-badge">Inventory</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="stockBarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card chart-card-sm">
+                        <div class="chart-card-header">
+                            <div>
+                                <h3 class="chart-title">Character Alignment</h3>
+                                <p class="chart-subtitle">Good vs Evil vs Neutral</p>
+                            </div>
+                            <span class="chart-badge">Characters</span>
+                        </div>
+                        <div class="chart-wrapper chart-wrapper-donut">
+                            <canvas id="alignmentDonut"></canvas>
+                        </div>
+                        <div class="donut-legend" id="donutLegend"></div>
+                    </div>
+                </div>
+
+                <!-- Stats Table -->
+                <div class="table-panel">
+                    <div class="table-panel-header">
+                        <h3 class="chart-title">Recent Stats</h3>
+                        <input type="text" id="tableSearch" placeholder="Filter rows..." class="table-search-input">
+                    </div>
+
+                    <div class="dash-table-wrapper">
+                        <table class="dash-table" id="statsTable">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Value</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-users text-blue-500 mr-2"></i>Total Users</td>
+                                    <td><strong>{{ stats.totalUsers }}</strong></td>
+                                    <td><span class="dash-badge badge-blue">Active</span></td>
+                                    <td><a href="{{ path('app_admin_user_management_index') }}" class="table-action-link">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-user-tie text-purple-500 mr-2"></i>Staff Members</td>
+                                    <td><strong>{{ stats.totalStaff }}</strong></td>
+                                    <td><span class="dash-badge badge-purple">Team</span></td>
+                                    <td><a href="{{ path('app_admin_user_management_index') }}" class="table-action-link">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-box-open text-green-500 mr-2"></i>Total Products</td>
+                                    <td><strong>{{ stats.totalProducts }}</strong></td>
+                                    <td><span class="dash-badge badge-green">Catalog</span></td>
+                                    <td><a href="{{ path('app_admin_product_management_index') }}" class="table-action-link">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>Low Stock</td>
+                                    <td><strong>{{ stats.lowStockProducts }}</strong></td>
+                                    <td><span class="dash-badge badge-yellow">Alert</span></td>
+                                    <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">Check</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-times-circle text-red-500 mr-2"></i>Out of Stock</td>
+                                    <td><strong>{{ stats.outOfStockProducts }}</strong></td>
+                                    <td><span class="dash-badge badge-red">Critical</span></td>
+                                    <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">Fix</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-id-badge text-pink-500 mr-2"></i>Characters</td>
+                                    <td><strong>{{ stats.totalCharacters }}</strong></td>
+                                    <td><span class="dash-badge badge-pink">Collection</span></td>
+                                    <td><a href="{{ path('app_admin_character_management_index') }}" class="table-action-link">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-coins text-teal-500 mr-2"></i>Stock Value</td>
+                                    <td><strong>₱{{ stats.totalStockValue|number_format(0, '.', ',') }}</strong></td>
+                                    <td><span class="dash-badge badge-teal">Inventory</span></td>
+                                    <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">View</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-
-            <!-- RIGHT: Recent Activity Table -->
-            <div class="dash-table-panel">
-                <div class="table-panel-header">
-                    <h3 class="chart-title">Recent Stats</h3>
-                    <input type="text" id="tableSearch" placeholder="Filter rows..." class="table-search-input">
-                </div>
-
-                <div class="dash-table-wrapper">
-                    <table class="dash-table" id="statsTable">
-                        <thead>
-                            <tr>
-                                <th>Metric</th>
-                                <th>Value</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><i class="fas fa-users text-blue-500 mr-2"></i>Total Users</td>
-                                <td><strong>{{ stats.totalUsers }}</strong></td>
-                                <td><span class="dash-badge badge-blue">Active</span></td>
-                                <td><a href="{{ path('app_admin_user_management_index') }}" class="table-action-link">View</a></td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-user-tie text-purple-500 mr-2"></i>Staff Members</td>
-                                <td><strong>{{ stats.totalStaff }}</strong></td>
-                                <td><span class="dash-badge badge-purple">Team</span></td>
-                                <td><a href="{{ path('app_admin_user_management_index') }}" class="table-action-link">View</a></td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-box-open text-green-500 mr-2"></i>Total Products</td>
-                                <td><strong>{{ stats.totalProducts }}</strong></td>
-                                <td><span class="dash-badge badge-green">Catalog</span></td>
-                                <td><a href="{{ path('app_admin_product_management_index') }}" class="table-action-link">View</a></td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>Low Stock</td>
-                                <td><strong>{{ stats.lowStockProducts }}</strong></td>
-                                <td><span class="dash-badge badge-yellow">Alert</span></td>
-                                <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">Check</a></td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-times-circle text-red-500 mr-2"></i>Out of Stock</td>
-                                <td><strong>{{ stats.outOfStockProducts }}</strong></td>
-                                <td><span class="dash-badge badge-red">Critical</span></td>
-                                <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">Fix</a></td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-id-badge text-pink-500 mr-2"></i>Characters</td>
-                                <td><strong>{{ stats.totalCharacters }}</strong></td>
-                                <td><span class="dash-badge badge-pink">Collection</span></td>
-                                <td><a href="{{ path('app_admin_character_management_index') }}" class="table-action-link">View</a></td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-coins text-teal-500 mr-2"></i>Stock Value</td>
-                                <td><strong>₱{{ stats.totalStockValue|number_format(0, '.', ',') }}</strong></td>
-                                <td><span class="dash-badge badge-teal">Inventory</span></td>
-                                <td><a href="{{ path('app_admin_stock_management_index') }}" class="table-action-link">View</a></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
+        </main>
     </div>
 </div>
+
 {% endblock %}
 
 {% block javascripts %}
