@@ -26,6 +26,12 @@ A Symfony 7.4 full-stack e-commerce platform for game-character-themed accessori
 
 ## Changelog
 
+### v2.5.0 — June 30, 2026
+
+#### 🎨 UI/UX Improvements
+
+- **Staff Dashboard Redesign** — Updated to match Admin Dashboard design with glass-container styling, modern header with sidebar toggle, search bar, and profile section. Replaced carousel layout with responsive grid layout featuring stat cards and metrics table panel. Applied same sidebar animations, hover effects, and overall visual language for consistency.
+
 ### v2.4.0 — June 30, 2026
 
 #### 🎨 UI/UX Improvements
